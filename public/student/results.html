@@ -114,6 +114,8 @@
       .score-hero .actions { flex-direction: column; align-items: center; }
     }
   </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
 <nav class="topnav">
@@ -152,7 +154,7 @@ async function init() {
       return;
     }
     allReview = d.review || [];
-    renderResults(d);
+    renderResults(d.result, d.attempt, d.review, d.result.nextAttemptId);
   } catch(e) {
     console.error(e);
     document.getElementById('main-content').innerHTML = `<div class="alert alert-error">Failed to load results. Please try again.</div>`;
@@ -167,24 +169,27 @@ function getGrade(accuracy) {
   return { letter: 'F', color: '#c0392b' };
 }
 
-function renderResults({ attempt, result, review }) {
+function renderResults(result, attempt, review, nextAttemptId) {
   const grade = getGrade(result.accuracy);
-  const typeNames = { 'definition': 'Definitions', 'isolated-word': 'Word Knowledge', 'passage-in-context': 'Passage Context' };
+  const typeNames = { 'definition': 'Definitions', 'isolated-word': 'Word Knowledge', 'passage-in-context': 'Passage Context', 'math-multiple-choice': 'Math (MCQ)', 'math-grid-in': 'Math (Grid-in)' };
   const diffColors = { easy: 'var(--green)', medium: 'var(--orange)', hard: 'var(--red)' };
 
   const html = `
     <!-- Score Hero -->
     <div class="score-hero">
-      <div class="test-title">${attempt.testTitle}</div>
+      <div class="test-title">${attempt.testTitle || attempt.title || 'Test Results'}</div>
       <div class="score-circle">
         <div class="num">${result.score}</div>
         <div class="denom">/ ${result.correct_count + result.incorrect_count + result.unanswered_count}</div>
       </div>
       <div class="accuracy">${result.accuracy}% Accuracy &nbsp;·&nbsp; Grade: ${grade.letter}</div>
-      <div class="meta">📅 ${fmtDate(attempt.submittedAt)} &nbsp;·&nbsp; ⏱ ${fmtTime(result.time_used)}</div>
+      <div class="meta">📅 ${fmtDate(result.submittedAt || attempt.submittedAt)} &nbsp;·&nbsp; ⏱ ${fmtTime(result.time_used)}</div>
       <div class="actions">
         <a href="/student/dashboard.html" class="btn btn-white-outline btn-sm">← Dashboard</a>
-        <a href="/student/test.html?testId=${attempt.test_id || 'test-vocab-diagnostic-001'}" class="btn btn-white btn-sm">Retake Test</a>
+        ${nextAttemptId 
+          ? `<a href="/student/test.html?attemptId=${nextAttemptId}" class="btn btn-white btn-sm">Take Second Pass (Required)</a>`
+          : `<a href="/student/test.html?testId=${attempt.test_id || 'test-vocab-diagnostic-001'}" class="btn btn-white btn-sm">Retake Test</a>`
+        }
       </div>
     </div>
 
@@ -217,7 +222,13 @@ function renderResults({ attempt, result, review }) {
     </div>
 
     <!-- Review section -->
-    ${review ? `
+    ${nextAttemptId ? `
+    <div class="alert alert-warning mt-2">
+      <strong>Second Pass Required!</strong> You got some questions wrong. To unlock the detailed explanations and correct answers, you must complete a second pass of the missed questions. 
+      <br><br>
+      <a href="/student/test.html?attemptId=${nextAttemptId}" class="btn btn-primary btn-sm">Start Second Pass</a>
+    </div>`
+    : (review ? `
     <div class="card mt-2">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div class="card-title" style="margin-bottom:0">📋 Answer Review <span style="font-size:13px;color:var(--gray-500);font-weight:400">(${review.length} questions)</span></div>
@@ -229,7 +240,7 @@ function renderResults({ attempt, result, review }) {
         <button class="filter-btn unanswered-f" onclick="setFilter('unanswered')">— Skipped (${review.filter(x=>!x.selected_answer).length})</button>
       </div>
       <div id="review-list"></div>
-    </div>` : '<div class="alert alert-info">Detailed review is not enabled for this test.</div>'}
+    </div>` : '<div class="alert alert-info">Detailed review is not enabled for this test.</div>')}
   `;
 
   document.getElementById('main-content').innerHTML = html;
