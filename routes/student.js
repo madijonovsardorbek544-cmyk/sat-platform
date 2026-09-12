@@ -120,6 +120,50 @@ router.post('/test/:testId/start', (req, res) => {
   });
 });
 
+// ── Resume a specific attempt ───────────────────────────────────────
+router.post('/attempt/:attemptId/resume', (req, res) => {
+  const db = getDb();
+  const attempt = db.prepare(`
+    SELECT * FROM test_attempts WHERE id = ? AND student_id = ? AND status = 'in-progress'
+  `).get(req.params.attemptId, req.user.id);
+  
+  if (!attempt) return res.status(404).json({ error: 'Attempt not found or expired' });
+
+  const test = db.prepare("SELECT * FROM tests WHERE id = ?").get(attempt.test_id);
+
+  const questions = db.prepare(`
+    SELECT q.id, q.word, q.question, q.context, q.options, q.difficulty, q.category, q.question_type
+    FROM answers a
+    JOIN questions q ON q.id = a.question_id
+    WHERE a.attempt_id = ?
+  `).all(attempt.id);
+
+  const safeQuestions = questions.map(q => ({
+    id: q.id,
+    word: q.word,
+    question: q.question,
+    context: q.context,
+    options: JSON.parse(q.options),
+    difficulty: q.difficulty,
+    category: q.category,
+    question_type: q.question_type
+  }));
+
+  const questionsWithShuffledOptions = safeQuestions.map(q => {
+    const { shuffledOptions, mapping } = shuffleOptions(q.options);
+    return { ...q, options: shuffledOptions, optionMapping: mapping };
+  });
+
+  res.json({
+    attemptId: attempt.id,
+    resumed: true,
+    expiresAt: attempt.expires_at,
+    testTitle: test.title + (attempt.mastery_pass === 2 ? ' (Second Pass)' : ''),
+    durationSeconds: test.duration_seconds,
+    questions: questionsWithShuffledOptions
+  });
+});
+
 // ── Autosave a single answer ────────────────────────────────────────
 router.post('/attempt/:attemptId/answer', (req, res) => {
   const db = getDb();
@@ -250,10 +294,32 @@ router.post('/attempt/:attemptId/submit', (req, res) => {
   );
 
   const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(attempt.test_id);
-  const showExplanations = test?.show_explanations === 1;
+  
+  let reviewData = null;
+  let nextAttemptId = null;
 
-  // Return result (never returns correct_answer unless we decide to show explanations)
-  const reviewData = showExplanations ? buildReview(db, attempt.id) : null;
+  if (test?.requires_mastery_pass === 1 && (attempt.mastery_pass || 1) === 1 && (incorrect > 0 || unanswered > 0)) {
+    // Generate Pass 2
+    nextAttemptId = uuidv4();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + test.duration_seconds * 1000).toISOString();
+    db.prepare(`
+      INSERT INTO test_attempts (id, student_id, test_id, test_type, started_at, expires_at, status, mastery_pass, parent_attempt_id)
+      VALUES (?, ?, ?, ?, ?, ?, 'in-progress', 2, ?)
+    `).run(nextAttemptId, attempt.student_id, attempt.test_id, attempt.test_type, now.toISOString(), expiresAt, attempt.id);
+    
+    const insertAnswer = db.prepare(`
+      INSERT INTO answers (id, attempt_id, question_id) VALUES (?, ?, ?)
+    `);
+    const wrongAnswers = db.prepare('SELECT question_id FROM answers WHERE attempt_id = ? AND (is_correct = 0 OR is_correct IS NULL)').all(attempt.id);
+    db.transaction(() => {
+      for (const q of wrongAnswers) insertAnswer.run(uuidv4(), nextAttemptId, q.question_id);
+    })();
+  } else {
+    // Show explanations only if no mastery pass required, or if this is pass 2, or if pass 1 was 100%
+    const showExplanations = test?.show_explanations === 1;
+    reviewData = showExplanations ? buildReview(db, attempt.id) : null;
+  }
 
   res.json({
     ok: true,
@@ -270,7 +336,8 @@ router.post('/attempt/:attemptId/submit', (req, res) => {
       difficultyBreakdown: diffBreakdown,
       categoryBreakdown: catBreakdown,
       questionTypeBreakdown: typeBreakdown,
-      review: reviewData
+      review: reviewData,
+      nextAttemptId: nextAttemptId
     }
   });
 });
