@@ -6,36 +6,129 @@
   <title>Test Results — SAT Platform</title>
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .score-hero { text-align:center; padding:32px 0 24px; border-bottom:1px solid var(--gray-200); margin-bottom:24px; }
-    .score-num { font-size:64px; font-weight:800; color:var(--blue); line-height:1; }
-    .score-denom { font-size:28px; color:var(--gray-400); }
-    .score-acc { font-size:18px; color:var(--gray-500); margin-top:8px; }
-    .result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
-    .result-stat { background:var(--gray-50); border-radius:10px; padding:18px; text-align:center; }
-    .result-stat .val { font-size:28px; font-weight:700; }
-    .result-stat .lbl { font-size:12px; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
-    .review-item { border:1px solid var(--gray-200); border-radius:10px; padding:18px; margin-bottom:12px; }
-    .review-item.correct   { border-left:4px solid var(--green); }
-    .review-item.incorrect { border-left:4px solid var(--red); }
-    .review-item.unanswered { border-left:4px solid var(--gray-300); }
-    .passage-text { font-size:14px; color:var(--gray-600); font-style:italic; background:var(--gray-50); padding:10px 14px; border-radius:7px; margin-bottom:10px; }
-    .review-explanation { font-size:13px; color:var(--gray-600); background:var(--blue-light); padding:10px 12px; border-radius:7px; margin-top:10px; }
-    .breakdown-section { margin-bottom:20px; }
-    .breakdown-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:14px; }
-    .progress-bar-wrap { background:var(--gray-100); border-radius:99px; height:8px; overflow:hidden; margin-bottom:2px; }
-    .progress-bar-fill { height:100%; border-radius:99px; transition:width .4s; }
+    /* ── Score Hero ─────────────────────────────────── */
+    .score-hero {
+      text-align: center;
+      padding: 36px 24px 28px;
+      background: linear-gradient(135deg, #1a56db 0%, #0f9b6c 100%);
+      border-radius: 14px;
+      color: #fff;
+      margin-bottom: 24px;
+      animation: fadeSlideUp .5s ease-out;
+    }
+    .score-hero .test-title { font-size: 13px; font-weight: 600; opacity: .8; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px; }
+    .score-circle {
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      border: 4px solid rgba(255,255,255,.4);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .score-circle .num { font-size: 48px; font-weight: 800; line-height: 1; }
+    .score-circle .denom { font-size: 16px; opacity: .75; }
+    .score-hero .accuracy { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .score-hero .meta { font-size: 13px; opacity: .75; }
+    .score-hero .actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+    .btn-white { background: #fff; color: var(--blue); font-weight: 600; }
+    .btn-white:hover { background: #e8f0fe; color: var(--blue-dark); }
+    .btn-white-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.6); }
+    .btn-white-outline:hover { background: rgba(255,255,255,.15); }
+
+    /* ── Stats bar ──────────────────────────────────── */
+    .stats-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-pill { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 18px; text-align: center; box-shadow: var(--shadow-sm); }
+    .stat-pill .val { font-size: 32px; font-weight: 800; }
+    .stat-pill .lbl { font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+
+    /* ── Breakdown ──────────────────────────────────── */
+    .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .breakdown-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm); }
+    .breakdown-title { font-size: 12px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 14px; }
+    .breakdown-row { margin-bottom: 12px; }
+    .breakdown-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+    .progress-wrap { background: var(--gray-100); border-radius: 99px; height: 7px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 99px; transition: width .6s ease-out; }
+
+    /* ── Filter bar ─────────────────────────────────── */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+    .filter-btn { padding: 7px 16px; border-radius: 99px; font-size: 13px; font-weight: 500; border: 1.5px solid var(--gray-200); background: #fff; cursor: pointer; transition: all .15s; color: var(--gray-700); }
+    .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .filter-btn.all { background: var(--gray-900); border-color: var(--gray-900); color: #fff; }
+    .filter-btn.correct-f.active { background: var(--green); border-color: var(--green); }
+    .filter-btn.incorrect-f.active { background: var(--red); border-color: var(--red); }
+    .filter-btn.unanswered-f.active { background: var(--gray-500); border-color: var(--gray-500); }
+
+    /* ── Review cards ───────────────────────────────── */
+    .review-item {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-left: 5px solid var(--gray-300);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeSlideUp .3s ease-out backwards;
+      transition: box-shadow .2s;
+    }
+    .review-item:hover { box-shadow: var(--shadow); }
+    .review-item.correct   { border-left-color: var(--green); }
+    .review-item.incorrect { border-left-color: var(--red); }
+    .review-item.unanswered { border-left-color: var(--gray-400); }
+
+    .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .review-word { font-size: 17px; font-weight: 800; color: var(--blue); }
+    .review-meta { display: flex; gap: 6px; align-items: center; }
+    .question-num { font-size: 12px; color: var(--gray-400); font-weight: 600; }
+
+    .passage-box { font-size: 13px; color: var(--gray-600); font-style: italic; background: var(--gray-50); border-left: 3px solid var(--gray-300); padding: 10px 14px; border-radius: 0 7px 7px 0; margin-bottom: 10px; }
+    .question-text { font-size: 14px; color: var(--gray-800); margin-bottom: 12px; line-height: 1.5; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+    .option-pill {
+      padding: 8px 12px; border-radius: 8px; font-size: 13px;
+      border: 1.5px solid var(--gray-200); background: var(--gray-50);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .option-pill .opt-letter { font-weight: 700; font-size: 12px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--gray-200); color: var(--gray-700); }
+    .option-pill.correct-opt { background: var(--green-bg); border-color: var(--green); }
+    .option-pill.correct-opt .opt-letter { background: var(--green); color: #fff; }
+    .option-pill.wrong-opt { background: var(--red-bg); border-color: var(--red); }
+    .option-pill.wrong-opt .opt-letter { background: var(--red); color: #fff; }
+
+    .answer-row { display: flex; gap: 20px; font-size: 13px; margin-bottom: 10px; }
+    .answer-row span strong { font-weight: 700; }
+
+    .explanation-box { background: var(--blue-light); border: 1px solid #c3d9ff; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #1e3a8a; line-height: 1.6; }
+    .explanation-box .exp-label { font-weight: 700; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+
+    .empty-state { text-align: center; padding: 48px; color: var(--gray-400); font-size: 15px; }
+
+    @media (max-width: 600px) {
+      .breakdown-grid { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: repeat(3,1fr); gap: 8px; }
+      .stat-pill .val { font-size: 24px; }
+      .options-grid { grid-template-columns: 1fr; }
+      .score-hero .actions { flex-direction: column; align-items: center; }
+    }
   </style>
 </head>
 <body>
 <nav class="topnav">
   <span class="logo">🎓 SAT Platform</span>
   <div class="user-info">
+    <span id="nav-name"></span>
     <a href="/student/dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
   </div>
 </nav>
 
 <div class="container page-wrap" id="main-content">
-  <div style="text-align:center;padding:60px 0;color:var(--gray-500)">Loading results…</div>
+  <div style="text-align:center;padding:80px 0;color:var(--gray-500)">
+    <div class="skeleton" style="width:200px;height:24px;margin:0 auto 12px"></div>
+    <div class="skeleton" style="width:300px;height:16px;margin:0 auto"></div>
+  </div>
 </div>
 
 <script>
@@ -43,110 +136,201 @@ const params = new URLSearchParams(location.search);
 const attemptId = params.get('attemptId');
 if (!attemptId) location.href = '/student/dashboard.html';
 
+let allReview = [];
+let currentFilter = 'all';
+
 async function init() {
   try {
     const me = await fetch('/api/auth/me').then(r => r.json());
-    if (!me.authenticated || me.user.role !== 'student') { location.href='/'; return; }
+    if (!me.authenticated || me.user.role !== 'student') { location.href = '/'; return; }
+    document.getElementById('nav-name').textContent = me.user.name;
 
     const r = await fetch(`/api/student/attempt/${attemptId}/result`);
     const d = await r.json();
-    if (!r.ok) { document.getElementById('main-content').innerHTML = `<div class="alert alert-error">${d.error}</div>`; return; }
-
+    if (!r.ok) {
+      document.getElementById('main-content').innerHTML = `<div class="alert alert-error">${d.error || 'Could not load results.'}</div>`;
+      return;
+    }
+    allReview = d.review || [];
     renderResults(d);
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    console.error(e);
+    document.getElementById('main-content').innerHTML = `<div class="alert alert-error">Failed to load results. Please try again.</div>`;
+  }
+}
+
+function getGrade(accuracy) {
+  if (accuracy >= 90) return { letter: 'A', color: '#0f9b6c' };
+  if (accuracy >= 80) return { letter: 'B', color: '#1a56db' };
+  if (accuracy >= 70) return { letter: 'C', color: '#d97706' };
+  if (accuracy >= 60) return { letter: 'D', color: '#f97316' };
+  return { letter: 'F', color: '#c0392b' };
 }
 
 function renderResults({ attempt, result, review }) {
-  const typeNames = { 'definition':'Definitions','isolated-word':'Word Knowledge','passage-in-context':'Passage in Context' };
-  const diffNames = { easy:'Easy', medium:'Medium', hard:'Hard' };
+  const grade = getGrade(result.accuracy);
+  const typeNames = { 'definition': 'Definitions', 'isolated-word': 'Word Knowledge', 'passage-in-context': 'Passage Context' };
+  const diffColors = { easy: 'var(--green)', medium: 'var(--orange)', hard: 'var(--red)' };
 
-  let html = `
-    <div class="card">
-      <div class="score-hero">
-        <div style="font-size:14px;font-weight:600;color:var(--gray-500);margin-bottom:8px">${attempt.testTitle}</div>
-        <div class="score-num">${result.score}<span class="score-denom"> / 40</span></div>
-        <div class="score-acc">${result.accuracy}% accuracy</div>
-        <div style="font-size:13px;color:var(--gray-500);margin-top:8px">
-          📅 ${fmtDate(attempt.submittedAt)} &bull; ⏱ ${fmtTime(result.time_used)}
-        </div>
+  const html = `
+    <!-- Score Hero -->
+    <div class="score-hero">
+      <div class="test-title">${attempt.testTitle}</div>
+      <div class="score-circle">
+        <div class="num">${result.score}</div>
+        <div class="denom">/ ${result.correct_count + result.incorrect_count + result.unanswered_count}</div>
       </div>
-
-      <div class="result-grid">
-        <div class="result-stat">
-          <div class="val" style="color:var(--green)">${result.correct_count}</div>
-          <div class="lbl">Correct</div>
-        </div>
-        <div class="result-stat">
-          <div class="val" style="color:var(--red)">${result.incorrect_count}</div>
-          <div class="lbl">Incorrect</div>
-        </div>
-        <div class="result-stat">
-          <div class="val" style="color:var(--gray-500)">${result.unanswered_count}</div>
-          <div class="lbl">Unanswered</div>
-        </div>
+      <div class="accuracy">${result.accuracy}% Accuracy &nbsp;·&nbsp; Grade: ${grade.letter}</div>
+      <div class="meta">📅 ${fmtDate(attempt.submittedAt)} &nbsp;·&nbsp; ⏱ ${fmtTime(result.time_used)}</div>
+      <div class="actions">
+        <a href="/student/dashboard.html" class="btn btn-white-outline btn-sm">← Dashboard</a>
+        <a href="/student/test.html?testId=${attempt.test_id || 'test-vocab-diagnostic-001'}" class="btn btn-white btn-sm">Retake Test</a>
       </div>
+    </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
-        <div class="breakdown-section">
-          <div style="font-size:13px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">By Section</div>
-          ${renderBreakdown(result.questionTypeBreakdown, typeNames, 'var(--blue)')}
-        </div>
-        <div class="breakdown-section">
-          <div style="font-size:13px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">By Difficulty</div>
-          ${renderBreakdown(result.difficultyBreakdown, diffNames, 'var(--green)')}
-        </div>
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <div class="val" style="color:var(--green)">${result.correct_count}</div>
+        <div class="lbl">✓ Correct</div>
       </div>
-
-      <div style="text-align:center;display:flex;gap:12px;justify-content:center">
-        <a href="/student/dashboard.html" class="btn btn-ghost">← Dashboard</a>
-        <a href="/student/test.html?testId=${attempt.test_id}" class="btn btn-primary">Retake Test</a>
+      <div class="stat-pill">
+        <div class="val" style="color:var(--red)">${result.incorrect_count}</div>
+        <div class="lbl">✗ Incorrect</div>
       </div>
-    </div>`;
+      <div class="stat-pill">
+        <div class="val" style="color:var(--gray-500)">${result.unanswered_count}</div>
+        <div class="lbl">— Skipped</div>
+      </div>
+    </div>
 
-  if (review) {
-    html += `<div class="card mt-3">
-      <div class="card-title">📋 Answer Review</div>`;
-    review.forEach((item, i) => {
-      const status = item.is_correct === 1 ? 'correct' : item.selected_answer ? 'incorrect' : 'unanswered';
-      const icon = { correct:'✓', incorrect:'✗', unanswered:'—' }[status];
-      const badgeCls = { correct:'badge-green', incorrect:'badge-red', unanswered:'badge-gray' }[status];
-      html += `<div class="review-item ${status}">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span><strong>${i+1}.</strong> <span style="color:var(--blue);font-weight:700">${item.word}</span> <span class="badge badge-gray" style="margin-left:6px;font-size:11px">${item.question_type}</span></span>
-          <span class="badge ${badgeCls}">${icon} ${status.charAt(0).toUpperCase()+status.slice(1)}</span>
-        </div>
-        ${item.context ? `<div class="passage-text">${item.context}</div>` : ''}
-        <div style="font-size:14px;color:var(--gray-700);margin-bottom:8px">${item.question}</div>
-        <div style="font-size:13px;display:flex;gap:16px">
-          <span>Your answer: <strong style="color:${status==='correct'?'var(--green)':'var(--red)'}">${item.selected_answer || '—'}</strong></span>
-          <span>Correct: <strong style="color:var(--green)">${item.correct_answer}</strong></span>
-        </div>
-        ${item.explanation ? `<div class="review-explanation">💡 ${item.explanation}</div>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
-  }
+    <!-- Breakdown -->
+    <div class="breakdown-grid">
+      <div class="breakdown-card">
+        <div class="breakdown-title">By Section</div>
+        ${renderBreakdown(result.questionTypeBreakdown, typeNames, 'var(--blue)')}
+      </div>
+      <div class="breakdown-card">
+        <div class="breakdown-title">By Difficulty</div>
+        ${renderBreakdown(result.difficultyBreakdown, { easy:'Easy', medium:'Medium', hard:'Hard' }, 'var(--green)')}
+      </div>
+    </div>
+
+    <!-- Review section -->
+    ${review ? `
+    <div class="card mt-2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:0">📋 Answer Review <span style="font-size:13px;color:var(--gray-500);font-weight:400">(${review.length} questions)</span></div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn all active" onclick="setFilter('all')">All (${review.length})</button>
+        <button class="filter-btn correct-f" onclick="setFilter('correct')">✓ Correct (${review.filter(x=>x.is_correct===1).length})</button>
+        <button class="filter-btn incorrect-f" onclick="setFilter('incorrect')">✗ Incorrect (${review.filter(x=>x.is_correct===0).length})</button>
+        <button class="filter-btn unanswered-f" onclick="setFilter('unanswered')">— Skipped (${review.filter(x=>!x.selected_answer).length})</button>
+      </div>
+      <div id="review-list"></div>
+    </div>` : '<div class="alert alert-info">Detailed review is not enabled for this test.</div>'}
+  `;
 
   document.getElementById('main-content').innerHTML = html;
+  if (review) renderReviewList();
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const map = { all: '.all', correct: '.correct-f', incorrect: '.incorrect-f', unanswered: '.unanswered-f' };
+  document.querySelector(map[f])?.classList.add('active');
+  renderReviewList();
+}
+
+function renderReviewList() {
+  const filtered = allReview.filter(item => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'correct') return item.is_correct === 1;
+    if (currentFilter === 'incorrect') return item.is_correct === 0 && !!item.selected_answer;
+    if (currentFilter === 'unanswered') return !item.selected_answer;
+    return true;
+  });
+
+  if (!filtered.length) {
+    document.getElementById('review-list').innerHTML = `<div class="empty-state">No questions match this filter.</div>`;
+    return;
+  }
+
+  const html = filtered.map((item, i) => {
+    const status = item.is_correct === 1 ? 'correct' : item.selected_answer ? 'incorrect' : 'unanswered';
+    const statusIcon = { correct: '✓', incorrect: '✗', unanswered: '—' }[status];
+    const badgeCls = { correct: 'badge-green', incorrect: 'badge-red', unanswered: 'badge-gray' }[status];
+    const statusLabel = { correct: 'Correct', incorrect: 'Incorrect', unanswered: 'Skipped' }[status];
+    const opts = typeof item.options === 'string' ? JSON.parse(item.options) : item.options;
+    const letters = ['A', 'B', 'C', 'D'];
+
+    const optionsHtml = opts.map((opt, idx) => {
+      const letter = letters[idx];
+      const isCorrect = letter === item.correct_answer;
+      const isStudentWrong = letter === item.selected_answer && !isCorrect;
+      let cls = '';
+      if (isCorrect) cls = 'correct-opt';
+      else if (isStudentWrong) cls = 'wrong-opt';
+      return `<div class="option-pill ${cls}">
+        <span class="opt-letter">${letter}</span>
+        <span>${opt}</span>
+        ${isCorrect ? '<span style="margin-left:auto;font-size:11px;color:var(--green);font-weight:700">✓ Correct</span>' : ''}
+        ${isStudentWrong ? '<span style="margin-left:auto;font-size:11px;color:var(--red);font-weight:700">Your answer</span>' : ''}
+      </div>`;
+    }).join('');
+
+    return `<div class="review-item ${status}" style="animation-delay:${i * 0.03}s">
+      <div class="review-header">
+        <div>
+          <span class="question-num">Q${i + 1}</span>
+          <div class="review-word">${item.word}</div>
+        </div>
+        <div class="review-meta">
+          <span class="badge badge-gray" style="font-size:11px">${item.difficulty}</span>
+          <span class="badge ${badgeCls}">${statusIcon} ${statusLabel}</span>
+        </div>
+      </div>
+
+      ${item.context ? `<div class="passage-box">"${item.context}"</div>` : ''}
+      <div class="question-text">${item.question}</div>
+      <div class="options-grid">${optionsHtml}</div>
+
+      ${item.explanation ? `
+      <div class="explanation-box">
+        <div class="exp-label">💡 Explanation</div>
+        ${item.explanation}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('review-list').innerHTML = html;
 }
 
 function renderBreakdown(breakdown, names, color) {
   if (!breakdown || !Object.keys(breakdown).length) return '<p class="text-muted">No data</p>';
   return Object.entries(breakdown).map(([key, counts]) => {
     const total = (counts.correct||0) + (counts.incorrect||0) + (counts.unanswered||0);
-    const pct = total > 0 ? Math.round(counts.correct/total*100) : 0;
-    return `<div style="margin-bottom:10px">
-      <div class="breakdown-row">
-        <span>${names[key]||key}</span>
-        <span><strong>${counts.correct||0}/${total}</strong> (${pct}%)</span>
+    const pct = total > 0 ? Math.round((counts.correct||0) / total * 100) : 0;
+    return `<div class="breakdown-row">
+      <div class="breakdown-label">
+        <span>${names[key] || key}</span>
+        <span><strong>${counts.correct||0}/${total}</strong> <span style="color:var(--gray-400)">${pct}%</span></span>
       </div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
     </div>`;
   }).join('');
 }
 
-function fmtTime(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
-function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function fmtTime(s) {
+  if (!s) return '—';
+  const m = Math.floor(s / 60), sec = s % 60;
+  return `${m}m ${String(sec).padStart(2, '0')}s`;
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 init();
 </script>
