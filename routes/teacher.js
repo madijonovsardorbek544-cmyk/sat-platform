@@ -249,4 +249,51 @@ router.get('/stats', (req, res) => {
   res.json({ totalStudents, totalAttempts, avgAccuracy: avgAccuracy ? Math.round(avgAccuracy * 10) / 10 : 0, recentAttempts });
 });
 
+// ── Analytics ──────────────────────────────────────────────────────
+router.get('/analytics', (req, res) => {
+  const db = getDb();
+  
+  // 1. Top Missed Words
+  const mostMissed = db.prepare(`
+    SELECT q.id, q.word, q.difficulty, q.question_type, COUNT(*) as missed_count
+    FROM answers a
+    JOIN questions q ON q.id = a.question_id
+    WHERE a.is_correct = 0 OR a.selected_answer IS NULL
+    GROUP BY q.id
+    ORDER BY missed_count DESC
+    LIMIT 5
+  `).all();
+
+  // 2. Accuracy Over Time (grouped by day, last 14 days)
+  const accuracyTrend = db.prepare(`
+    SELECT date(ta.submitted_at) as day, 
+           AVG(tr.accuracy) as avg_accuracy,
+           COUNT(*) as test_count
+    FROM test_attempts ta
+    JOIN test_results tr ON tr.attempt_id = ta.id
+    WHERE ta.status = 'submitted'
+      AND ta.submitted_at >= date('now', '-14 days')
+    GROUP BY day
+    ORDER BY day ASC
+  `).all();
+
+  // 3. Score Distribution
+  const results = db.prepare('SELECT score FROM test_results').all();
+  const scoreDistribution = {
+    '0-10': 0, '11-20': 0, '21-30': 0, '31-40': 0
+  };
+  for (const row of results) {
+    if (row.score <= 10) scoreDistribution['0-10']++;
+    else if (row.score <= 20) scoreDistribution['11-20']++;
+    else if (row.score <= 30) scoreDistribution['21-30']++;
+    else scoreDistribution['31-40']++;
+  }
+
+  res.json({
+    mostMissed,
+    accuracyTrend,
+    scoreDistribution
+  });
+});
+
 module.exports = router;
