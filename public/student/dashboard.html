@@ -51,9 +51,24 @@
     </div>
   </div>
 
+  <!-- Progress Overview -->
+  <div class="card mt-3" id="progress-card" style="display:none; margin-bottom:24px">
+    <div class="card-title">📈 My Progress</div>
+    <div style="display:grid; grid-template-columns: 1fr 3fr; gap:20px; align-items:center">
+      <div>
+        <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--gray-500);text-transform:uppercase">Average Score</div><div style="font-size:28px;font-weight:800;color:var(--blue)" id="prog-avg-score">—</div></div>
+        <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--gray-500);text-transform:uppercase">Best Score</div><div style="font-size:28px;font-weight:800;color:var(--green)" id="prog-best-score">—</div></div>
+        <div><div style="font-size:12px;color:var(--gray-500);text-transform:uppercase">Tests Completed</div><div style="font-size:24px;font-weight:700;color:var(--gray-800)" id="prog-total-tests">—</div></div>
+      </div>
+      <div class="chart-container" style="height:220px">
+        <canvas id="studentProgressChart"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- Test history -->
-  <div class="card mt-3" id="history-card" style="display:none">
-    <div class="card-title">📊 My Test History</div>
+  <div class="card" id="history-card" style="display:none">
+    <div class="card-title">📋 Test History</div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -74,6 +89,9 @@
     </div>
   </div>
 </div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 let currentUser = null;
@@ -132,6 +150,8 @@ async function loadHistory() {
   const r = await fetch('/api/student/history').then(r => r.json());
   const attempts = r.attempts || [];
   if (!attempts.length) return;
+  
+  // Render History Table
   document.getElementById('history-card').style.display = 'block';
   document.getElementById('history-body').innerHTML = attempts.map(a => `
     <tr>
@@ -145,6 +165,50 @@ async function loadHistory() {
       <td>${fmtDate(a.submitted_at)}</td>
       <td><a class="btn btn-ghost btn-sm" href="/student/results.html?attemptId=${a.id}">View</a></td>
     </tr>`).join('');
+
+  // Render Progress Chart
+  document.getElementById('progress-card').style.display = 'block';
+  
+  // Calculate metrics
+  let totalScore = 0;
+  let maxScore = 0;
+  attempts.forEach(a => {
+    totalScore += (a.score || 0);
+    if ((a.score || 0) > maxScore) maxScore = a.score;
+  });
+  const avgScore = Math.round(totalScore / attempts.length);
+  
+  document.getElementById('prog-avg-score').textContent = avgScore;
+  document.getElementById('prog-best-score').textContent = maxScore;
+  document.getElementById('prog-total-tests').textContent = attempts.length;
+
+  // Chart data (oldest to newest)
+  const chronoAttempts = [...attempts].reverse();
+  const labels = chronoAttempts.map((a, i) => `Attempt ${i+1}`);
+  const data = chronoAttempts.map(a => a.accuracy);
+
+  const ctx = document.getElementById('studentProgressChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Accuracy (%)',
+        data,
+        borderColor: '#0f9b6c',
+        backgroundColor: 'rgba(15,155,108,0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: '#0f9b6c'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, max: 100 } },
+      plugins: { legend: { display: false } }
+    }
+  });
 }
 
 function fmtTime(s) {
