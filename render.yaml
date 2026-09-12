@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: sat-platform
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/sat_platform.db
+      - key: JWT_SECRET
+        generateValue: true
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1

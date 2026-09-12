@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard — SAT Platform</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="logo">🎓 SAT Platform</span>
+  <div class="user-info">
+    <span>Welcome, <strong id="user-name">…</strong></span>
+    <span id="student-id-display" class="text-muted"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="container page-wrap">
+  <h1 class="section-heading">My Dashboard</h1>
+
+  <!-- Active modules -->
+  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Available Modules</h2>
+  <div class="module-grid" id="module-grid">
+    <!-- Vocabulary module injected by JS -->
+  </div>
+
+  <!-- Coming soon -->
+  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 16px">Coming Soon</h2>
+  <div class="module-grid">
+    <div class="module-card disabled">
+      <div class="module-icon">📐</div>
+      <div class="module-name">Math</div>
+      <div class="module-status">Coming Soon</div>
+    </div>
+    <div class="module-card disabled">
+      <div class="module-icon">📖</div>
+      <div class="module-name">Reading</div>
+      <div class="module-status">Coming Soon</div>
+    </div>
+    <div class="module-card disabled">
+      <div class="module-icon">✏️</div>
+      <div class="module-name">Grammar</div>
+      <div class="module-status">Coming Soon</div>
+    </div>
+    <div class="module-card disabled">
+      <div class="module-icon">📝</div>
+      <div class="module-name">Mock Tests</div>
+      <div class="module-status">Coming Soon</div>
+    </div>
+  </div>
+
+  <!-- Test history -->
+  <div class="card mt-3" id="history-card" style="display:none">
+    <div class="card-title">📊 My Test History</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Score</th>
+            <th>Correct</th>
+            <th>Wrong</th>
+            <th>Unanswered</th>
+            <th>Accuracy</th>
+            <th>Time</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUser = null;
+
+async function init() {
+  try {
+    const r = await fetch('/api/auth/me');
+    const d = await r.json();
+    if (!d.authenticated || d.user.role !== 'student') { location.href = '/'; return; }
+    currentUser = d.user;
+    document.getElementById('user-name').textContent = d.user.name;
+
+    const dash = await fetch('/api/student/dashboard').then(r => r.json());
+    if (dash.user?.student_id) {
+      document.getElementById('student-id-display').textContent = 'ID: ' + dash.user.student_id;
+    }
+    renderModules(dash.tests || []);
+    await loadHistory();
+  } catch (e) { console.error(e); }
+}
+
+function renderModules(tests) {
+  const grid = document.getElementById('module-grid');
+  if (!tests.length) {
+    grid.innerHTML = '<p class="text-muted">No tests available yet.</p>';
+    return;
+  }
+  grid.innerHTML = tests.map(test => {
+    const done = test.lastAttempt?.status === 'submitted';
+    const score = done ? `${test.lastAttempt.score}/${test.question_count}` : '';
+    const accuracy = done ? `${test.lastAttempt.accuracy}%` : '';
+    return `
+      <div class="module-card" onclick="goToTest('${test.id}', ${done})">
+        <div class="module-icon">📚</div>
+        <div class="module-name">${test.title}</div>
+        <div class="module-status" style="margin-bottom:12px">
+          ${done
+            ? `<span class="badge badge-green">Completed</span>`
+            : `<span class="badge badge-blue">Available</span>`}
+        </div>
+        ${done ? `<div style="font-size:13px;color:var(--gray-700)">Score: <strong>${score}</strong> &bull; ${accuracy}</div>` : ''}
+        <div style="margin-top:12px">
+          <button class="btn ${done ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="goToTest('${test.id}', ${done}); event.stopPropagation()">
+            ${done ? 'Retake / Review' : 'Start Test'}
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function goToTest(testId, done) {
+  location.href = `/student/test.html?testId=${testId}`;
+}
+
+async function loadHistory() {
+  const r = await fetch('/api/student/history').then(r => r.json());
+  const attempts = r.attempts || [];
+  if (!attempts.length) return;
+  document.getElementById('history-card').style.display = 'block';
+  document.getElementById('history-body').innerHTML = attempts.map(a => `
+    <tr>
+      <td>${a.title}</td>
+      <td><strong>${a.score ?? '—'}/${a.question_count || 40}</strong></td>
+      <td class="badge badge-green">${a.correct_count ?? '—'}</td>
+      <td style="color:var(--red)">${a.incorrect_count ?? '—'}</td>
+      <td style="color:var(--gray-500)">${a.unanswered_count ?? '—'}</td>
+      <td>${a.accuracy != null ? a.accuracy + '%' : '—'}</td>
+      <td>${a.time_used != null ? fmtTime(a.time_used) : '—'}</td>
+      <td>${fmtDate(a.submitted_at)}</td>
+      <td><a class="btn btn-ghost btn-sm" href="/student/results.html?attemptId=${a.id}">View</a></td>
+    </tr>`).join('');
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60), sec = s % 60;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+async function logout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>

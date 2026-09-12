@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAT Platform — Sign In</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    .google-divider {
+      display:flex; align-items:center; gap:14px; margin:20px 0;
+      font-size:12px; color:var(--gray-400); text-transform:uppercase; letter-spacing:1px; font-weight:600;
+    }
+    .google-divider::before, .google-divider::after {
+      content:''; flex:1; height:1px; background:var(--gray-200);
+    }
+    #google-btn-wrap { display:flex; justify-content:center; margin-bottom:4px; }
+    .login-card { animation: fadeSlideUp 0.5s ease-out; }
+    @keyframes fadeSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <h1>🎓 SAT Platform</h1>
+      <p>Vocabulary Diagnostic &amp; Progress Tracker</p>
+    </div>
+
+    <!-- Tab switcher -->
+    <div class="tab-switcher">
+      <button id="tab-student" class="active" onclick="switchTab('student')">Student</button>
+      <button id="tab-teacher" onclick="switchTab('teacher')">Teacher</button>
+    </div>
+
+    <div id="alert" class="alert alert-error hidden"></div>
+
+    <!-- ── Student panel ── -->
+    <div id="panel-student">
+
+      <!-- Google Sign-In button (hidden until client ID is detected) -->
+      <div id="google-btn-wrap" style="display:none">
+        <div id="g_id_onload"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleGoogleCredential"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="signin_with"
+             data-size="large"
+             data-logo_alignment="left"
+             data-width="340">
+        </div>
+      </div>
+      <div id="google-divider" class="google-divider" style="display:none">or continue with email</div>
+
+      <div class="tab-switcher" style="margin-bottom:20px">
+        <button id="sub-login"    class="active" onclick="switchSubTab('login')">Sign In</button>
+        <button id="sub-register"               onclick="switchSubTab('register')">Register</button>
+      </div>
+
+      <!-- Student Login -->
+      <form id="form-student-login" onsubmit="submitStudentLogin(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="sl-email" required placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="sl-password" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%" id="btn-student-login">
+          Sign In as Student
+        </button>
+      </form>
+
+      <!-- Student Register -->
+      <form id="form-student-register" class="hidden" onsubmit="submitStudentRegister(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="sr-name" required placeholder="Your full name" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="sr-email" required placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Username <span class="text-muted">(optional)</span></label>
+          <input type="text" id="sr-username" placeholder="e.g. john_doe" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="sr-password" required placeholder="Min. 6 characters" minlength="6" />
+        </div>
+        <button type="submit" class="btn btn-success" style="width:100%" id="btn-student-register">
+          Create Account
+        </button>
+      </form>
+    </div>
+
+    <!-- ── Teacher panel ── -->
+    <div id="panel-teacher" class="hidden">
+      <form onsubmit="submitTeacherLogin(event)">
+        <div class="form-group">
+          <label>Teacher Email</label>
+          <input type="email" id="tl-email" required placeholder="teacher@satplatform.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="tl-password" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%" id="btn-teacher-login">
+          Sign In as Teacher
+        </button>
+      </form>
+    </div>
+
+    <p class="text-muted text-center mt-2" style="font-size:12px">
+      SAT Tutoring Platform &copy; 2026
+    </p>
+  </div>
+</div>
+
+<script>
+// Check auth & discover Google Client ID
+(async () => {
+  try {
+    const r = await fetch('/api/auth/me');
+    const d = await r.json();
+    if (d.authenticated) {
+      location.href = d.user.role === 'teacher' ? '/teacher/dashboard.html' : '/student/dashboard.html';
+      return;
+    }
+    // If server provides a Google Client ID, show the button
+    if (d.GOOGLE_CLIENT_ID) {
+      document.getElementById('g_id_onload').setAttribute('data-client_id', d.GOOGLE_CLIENT_ID);
+      document.getElementById('google-btn-wrap').style.display = 'flex';
+      document.getElementById('google-divider').style.display = 'flex';
+    }
+  } catch {}
+})();
+
+// Google credential callback
+async function handleGoogleCredential(response) {
+  hideAlert();
+  try {
+    const r = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential })
+    });
+    const d = await r.json();
+    if (!r.ok) { showAlert(d.error || 'Google Sign-In failed'); return; }
+    location.href = d.role === 'teacher' ? '/teacher/dashboard.html' : '/student/dashboard.html';
+  } catch { showAlert('Network error during Google Sign-In.'); }
+}
+
+function showAlert(msg, type='error') {
+  const el = document.getElementById('alert');
+  el.textContent = msg;
+  el.className = `alert alert-${type}`;
+  el.classList.remove('hidden');
+}
+function hideAlert() { document.getElementById('alert').classList.add('hidden'); }
+
+function switchTab(tab) {
+  document.getElementById('panel-student').classList.toggle('hidden', tab !== 'student');
+  document.getElementById('panel-teacher').classList.toggle('hidden', tab !== 'teacher');
+  document.getElementById('tab-student').classList.toggle('active', tab === 'student');
+  document.getElementById('tab-teacher').classList.toggle('active', tab === 'teacher');
+  hideAlert();
+}
+
+function switchSubTab(sub) {
+  document.getElementById('form-student-login').classList.toggle('hidden', sub !== 'login');
+  document.getElementById('form-student-register').classList.toggle('hidden', sub !== 'register');
+  document.getElementById('sub-login').classList.toggle('active', sub === 'login');
+  document.getElementById('sub-register').classList.toggle('active', sub === 'register');
+  hideAlert();
+}
+
+async function submitStudentLogin(e) {
+  e.preventDefault(); hideAlert();
+  const btn = document.getElementById('btn-student-login');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const r = await fetch('/api/auth/login/student', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('sl-email').value, password: document.getElementById('sl-password').value })
+    });
+    const d = await r.json();
+    if (!r.ok) { showAlert(d.error || 'Login failed'); return; }
+    location.href = '/student/dashboard.html';
+  } catch { showAlert('Network error. Please try again.'); }
+  finally { btn.disabled = false; btn.textContent = 'Sign In as Student'; }
+}
+
+async function submitStudentRegister(e) {
+  e.preventDefault(); hideAlert();
+  const btn = document.getElementById('btn-student-register');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const r = await fetch('/api/auth/register/student', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('sr-name').value,
+        email: document.getElementById('sr-email').value,
+        username: document.getElementById('sr-username').value,
+        password: document.getElementById('sr-password').value
+      })
+    });
+    const d = await r.json();
+    if (!r.ok) { showAlert(d.error || 'Registration failed'); return; }
+    location.href = '/student/dashboard.html';
+  } catch { showAlert('Network error. Please try again.'); }
+  finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+}
+
+async function submitTeacherLogin(e) {
+  e.preventDefault(); hideAlert();
+  const btn = document.getElementById('btn-teacher-login');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const r = await fetch('/api/auth/login/teacher', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('tl-email').value, password: document.getElementById('tl-password').value })
+    });
+    const d = await r.json();
+    if (!r.ok) { showAlert(d.error || 'Invalid credentials'); return; }
+    location.href = '/teacher/dashboard.html';
+  } catch { showAlert('Network error. Please try again.'); }
+  finally { btn.disabled = false; btn.textContent = 'Sign In as Teacher'; }
+}
+</script>
+</body>
+</html>

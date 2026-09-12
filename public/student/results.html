@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Results — SAT Platform</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .score-hero { text-align:center; padding:32px 0 24px; border-bottom:1px solid var(--gray-200); margin-bottom:24px; }
+    .score-num { font-size:64px; font-weight:800; color:var(--blue); line-height:1; }
+    .score-denom { font-size:28px; color:var(--gray-400); }
+    .score-acc { font-size:18px; color:var(--gray-500); margin-top:8px; }
+    .result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+    .result-stat { background:var(--gray-50); border-radius:10px; padding:18px; text-align:center; }
+    .result-stat .val { font-size:28px; font-weight:700; }
+    .result-stat .lbl { font-size:12px; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+    .review-item { border:1px solid var(--gray-200); border-radius:10px; padding:18px; margin-bottom:12px; }
+    .review-item.correct   { border-left:4px solid var(--green); }
+    .review-item.incorrect { border-left:4px solid var(--red); }
+    .review-item.unanswered { border-left:4px solid var(--gray-300); }
+    .passage-text { font-size:14px; color:var(--gray-600); font-style:italic; background:var(--gray-50); padding:10px 14px; border-radius:7px; margin-bottom:10px; }
+    .review-explanation { font-size:13px; color:var(--gray-600); background:var(--blue-light); padding:10px 12px; border-radius:7px; margin-top:10px; }
+    .breakdown-section { margin-bottom:20px; }
+    .breakdown-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:14px; }
+    .progress-bar-wrap { background:var(--gray-100); border-radius:99px; height:8px; overflow:hidden; margin-bottom:2px; }
+    .progress-bar-fill { height:100%; border-radius:99px; transition:width .4s; }
+  </style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">🎓 SAT Platform</span>
+  <div class="user-info">
+    <a href="/student/dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+</nav>
+
+<div class="container page-wrap" id="main-content">
+  <div style="text-align:center;padding:60px 0;color:var(--gray-500)">Loading results…</div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const attemptId = params.get('attemptId');
+if (!attemptId) location.href = '/student/dashboard.html';
+
+async function init() {
+  try {
+    const me = await fetch('/api/auth/me').then(r => r.json());
+    if (!me.authenticated || me.user.role !== 'student') { location.href='/'; return; }
+
+    const r = await fetch(`/api/student/attempt/${attemptId}/result`);
+    const d = await r.json();
+    if (!r.ok) { document.getElementById('main-content').innerHTML = `<div class="alert alert-error">${d.error}</div>`; return; }
+
+    renderResults(d);
+  } catch(e) { console.error(e); }
+}
+
+function renderResults({ attempt, result, review }) {
+  const typeNames = { 'definition':'Definitions','isolated-word':'Word Knowledge','passage-in-context':'Passage in Context' };
+  const diffNames = { easy:'Easy', medium:'Medium', hard:'Hard' };
+
+  let html = `
+    <div class="card">
+      <div class="score-hero">
+        <div style="font-size:14px;font-weight:600;color:var(--gray-500);margin-bottom:8px">${attempt.testTitle}</div>
+        <div class="score-num">${result.score}<span class="score-denom"> / 40</span></div>
+        <div class="score-acc">${result.accuracy}% accuracy</div>
+        <div style="font-size:13px;color:var(--gray-500);margin-top:8px">
+          📅 ${fmtDate(attempt.submittedAt)} &bull; ⏱ ${fmtTime(result.time_used)}
+        </div>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-stat">
+          <div class="val" style="color:var(--green)">${result.correct_count}</div>
+          <div class="lbl">Correct</div>
+        </div>
+        <div class="result-stat">
+          <div class="val" style="color:var(--red)">${result.incorrect_count}</div>
+          <div class="lbl">Incorrect</div>
+        </div>
+        <div class="result-stat">
+          <div class="val" style="color:var(--gray-500)">${result.unanswered_count}</div>
+          <div class="lbl">Unanswered</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+        <div class="breakdown-section">
+          <div style="font-size:13px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">By Section</div>
+          ${renderBreakdown(result.questionTypeBreakdown, typeNames, 'var(--blue)')}
+        </div>
+        <div class="breakdown-section">
+          <div style="font-size:13px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">By Difficulty</div>
+          ${renderBreakdown(result.difficultyBreakdown, diffNames, 'var(--green)')}
+        </div>
+      </div>
+
+      <div style="text-align:center;display:flex;gap:12px;justify-content:center">
+        <a href="/student/dashboard.html" class="btn btn-ghost">← Dashboard</a>
+        <a href="/student/test.html?testId=${attempt.test_id}" class="btn btn-primary">Retake Test</a>
+      </div>
+    </div>`;
+
+  if (review) {
+    html += `<div class="card mt-3">
+      <div class="card-title">📋 Answer Review</div>`;
+    review.forEach((item, i) => {
+      const status = item.is_correct === 1 ? 'correct' : item.selected_answer ? 'incorrect' : 'unanswered';
+      const icon = { correct:'✓', incorrect:'✗', unanswered:'—' }[status];
+      const badgeCls = { correct:'badge-green', incorrect:'badge-red', unanswered:'badge-gray' }[status];
+      html += `<div class="review-item ${status}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span><strong>${i+1}.</strong> <span style="color:var(--blue);font-weight:700">${item.word}</span> <span class="badge badge-gray" style="margin-left:6px;font-size:11px">${item.question_type}</span></span>
+          <span class="badge ${badgeCls}">${icon} ${status.charAt(0).toUpperCase()+status.slice(1)}</span>
+        </div>
+        ${item.context ? `<div class="passage-text">${item.context}</div>` : ''}
+        <div style="font-size:14px;color:var(--gray-700);margin-bottom:8px">${item.question}</div>
+        <div style="font-size:13px;display:flex;gap:16px">
+          <span>Your answer: <strong style="color:${status==='correct'?'var(--green)':'var(--red)'}">${item.selected_answer || '—'}</strong></span>
+          <span>Correct: <strong style="color:var(--green)">${item.correct_answer}</strong></span>
+        </div>
+        ${item.explanation ? `<div class="review-explanation">💡 ${item.explanation}</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function renderBreakdown(breakdown, names, color) {
+  if (!breakdown || !Object.keys(breakdown).length) return '<p class="text-muted">No data</p>';
+  return Object.entries(breakdown).map(([key, counts]) => {
+    const total = (counts.correct||0) + (counts.incorrect||0) + (counts.unanswered||0);
+    const pct = total > 0 ? Math.round(counts.correct/total*100) : 0;
+    return `<div style="margin-bottom:10px">
+      <div class="breakdown-row">
+        <span>${names[key]||key}</span>
+        <span><strong>${counts.correct||0}/${total}</strong> (${pct}%)</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function fmtTime(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+
+init();
+</script>
+</body>
+</html>

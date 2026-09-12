@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attempt Review — SAT Platform</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .report-header { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:28px; margin-bottom:20px; }
+    .report-title  { font-size:20px; font-weight:700; margin-bottom:16px; }
+    .info-grid     { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-bottom:20px; }
+    .info-block    { background:var(--gray-50); border-radius:8px; padding:14px; }
+    .info-block .lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-500); margin-bottom:4px; }
+    .info-block .val { font-size:20px; font-weight:700; color:var(--gray-900); }
+    .info-block .val.green  { color:var(--green); }
+    .info-block .val.red    { color:var(--red); }
+    .info-block .val.blue   { color:var(--blue); }
+    .info-block .val.muted  { color:var(--gray-500); }
+
+    .q-review-item { border:1px solid var(--gray-200); border-radius:10px; padding:20px; margin-bottom:12px; background:#fff; }
+    .q-review-item.correct   { border-left:5px solid var(--green); }
+    .q-review-item.incorrect { border-left:5px solid var(--red); }
+    .q-review-item.unanswered { border-left:5px solid var(--gray-300); }
+    .q-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:12px; }
+    .q-meta   { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+    .q-word   { font-size:17px; font-weight:700; color:var(--blue); margin-bottom:6px; }
+    .q-text   { font-size:15px; color:var(--gray-800); margin-bottom:12px; line-height:1.55; }
+    .passage  { background:var(--gray-50); border-left:3px solid var(--blue); padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:12px; font-size:14px; line-height:1.7; color:var(--gray-700); font-style:italic; }
+    .answer-row { display:flex; gap:24px; font-size:14px; margin-bottom:10px; }
+    .answer-student { color:var(--gray-700); }
+    .answer-correct { color:var(--green); font-weight:600; }
+    .explanation { background:var(--blue-light); border-radius:7px; padding:10px 14px; font-size:13px; color:var(--gray-700); }
+
+    .integrity-section { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:20px; margin-bottom:20px; }
+    .integrity-event { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--gray-100); font-size:13px; }
+    .integrity-event:last-child { border-bottom:none; }
+    .event-icon { font-size:18px; }
+
+    .breakdown-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px; }
+    .breakdown-card { background:#fff; border:1px solid var(--gray-200); border-radius:10px; padding:16px; }
+    .breakdown-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-500); margin-bottom:12px; }
+    .breakdown-row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+    .progress-bar-wrap { background:var(--gray-100); border-radius:99px; height:6px; }
+    .progress-bar-fill { height:100%; border-radius:99px; background:var(--blue); }
+
+    @media (max-width:640px) { .breakdown-grid { grid-template-columns:1fr; } .info-grid { grid-template-columns:repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">🎓 SAT Platform — Teacher</span>
+  <div class="user-info">
+    <a href="/teacher/dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="container page-wrap" id="main-content">
+  <div style="text-align:center;padding:60px;color:var(--gray-500)">Loading attempt…</div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const attemptId = params.get('attemptId');
+if (!attemptId) location.href = '/teacher/dashboard.html';
+
+const eventLabels = {
+  tab_switch:       { icon:'🔄', label:'Tab Switch / Window Blur' },
+  fullscreen_exit:  { icon:'⬛', label:'Exited Full-Screen Mode' },
+  visibility_hidden:{ icon:'👁', label:'Page Hidden' }
+};
+
+async function init() {
+  const me = await fetch('/api/auth/me').then(r => r.json());
+  if (!me.authenticated || me.user.role !== 'teacher') { location.href='/'; return; }
+
+  const r = await fetch(`/api/teacher/attempts/${attemptId}`);
+  const d = await r.json();
+  if (!r.ok) { document.getElementById('main-content').innerHTML = `<div class="alert alert-error">${d.error}</div>`; return; }
+
+  render(d);
+}
+
+function render({ attempt, result, answers, integrityEvents }) {
+  const typeNames = { definition:'Definition', 'isolated-word':'Word Knowledge', 'passage-in-context':'Passage in Context' };
+  const diffColor  = { easy:'var(--green)', medium:'var(--orange)', hard:'var(--red)' };
+
+  let html = `
+    <!-- ── Report Header ── -->
+    <div class="report-header">
+      <div class="flex-between mb-2">
+        <div>
+          <div class="report-title">📋 Attempt Review</div>
+          <div style="font-size:14px;color:var(--gray-500)">
+            <strong>${attempt.studentName}</strong>
+            ${attempt.studentId ? `<span class="badge badge-blue" style="margin-left:6px">${attempt.studentId}</span>` : ''}
+            &nbsp;•&nbsp; ${attempt.testTitle}
+          </div>
+        </div>
+        <a href="/teacher/student.html?studentId=${encodeURIComponent(attempt.studentEmail ? '' : '')}" class="btn btn-ghost btn-sm">← Student Profile</a>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-block"><div class="lbl">Score</div><div class="val blue">${result?.score ?? '—'} / 40</div></div>
+        <div class="info-block"><div class="lbl">Correct</div><div class="val green">${result?.correct_count ?? '—'}</div></div>
+        <div class="info-block"><div class="lbl">Incorrect</div><div class="val red">${result?.incorrect_count ?? '—'}</div></div>
+        <div class="info-block"><div class="lbl">Unanswered</div><div class="val muted">${result?.unanswered_count ?? '—'}</div></div>
+        <div class="info-block"><div class="lbl">Accuracy</div><div class="val blue">${result?.accuracy ?? '—'}%</div></div>
+        <div class="info-block"><div class="lbl">Time Used</div><div class="val">${result ? fmtTime(result.time_used) : '—'}</div></div>
+        <div class="info-block"><div class="lbl">Date</div><div class="val" style="font-size:14px">${fmtDate(attempt.submittedAt)}</div></div>
+        <div class="info-block"><div class="lbl">Integrity Events</div><div class="val ${integrityEvents.length > 0 ? 'red' : 'green'}">${integrityEvents.length}</div></div>
+      </div>
+    </div>`;
+
+  // Breakdowns
+  if (result) {
+    html += `<div class="breakdown-grid">
+      ${renderBreakdown('By Section', result.questionTypeBreakdown, typeNames)}
+      ${renderBreakdown('By Difficulty', result.difficultyBreakdown, {easy:'Easy',medium:'Medium',hard:'Hard'})}
+      ${renderBreakdown('By Category', result.categoryBreakdown, {vocabulary:'Vocabulary'})}
+    </div>`;
+  }
+
+  // Integrity events
+  if (integrityEvents.length > 0) {
+    html += `<div class="integrity-section">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--red)">⚠️ Integrity Events (${integrityEvents.length})</div>`;
+    html += integrityEvents.map(ev => {
+      const info = eventLabels[ev.event_type] || { icon:'❗', label: ev.event_type };
+      return `<div class="integrity-event">
+        <span class="event-icon">${info.icon}</span>
+        <span style="font-weight:600;color:var(--red)">${info.label}</span>
+        <span class="text-muted">at ${fmtDateTime(ev.timestamp)}</span>
+        ${ev.question_number ? `<span class="badge badge-orange">Q${ev.question_number}</span>` : ''}
+      </div>`;
+    }).join('');
+    html += `</div>`;
+  }
+
+  // Per-question review
+  html += `<div class="card">
+    <div class="card-title">Question-by-Question Review</div>`;
+
+  answers.forEach((a, i) => {
+    const status = a.is_correct === 1 ? 'correct' : a.selected_answer ? 'incorrect' : 'unanswered';
+    const icon   = { correct:'✓ Correct', incorrect:'✗ Incorrect', unanswered:'— Unanswered' }[status];
+    const badgeCls = { correct:'badge-green', incorrect:'badge-red', unanswered:'badge-gray' }[status];
+
+    html += `<div class="q-review-item ${status}">
+      <div class="q-header">
+        <div>
+          <div class="q-word">Q${i+1} — ${a.word}</div>
+          <div class="q-meta">
+            <span class="badge badge-blue">${typeNames[a.question_type] || a.question_type}</span>
+            <span class="badge" style="background:${a.difficulty==='easy'?'var(--green-bg)':a.difficulty==='hard'?'var(--red-bg)':'var(--orange-bg)'}; color:${a.difficulty==='easy'?'var(--green)':a.difficulty==='hard'?'var(--red)':'var(--orange)'}">${a.difficulty}</span>
+            <span class="badge badge-gray">${a.category}</span>
+          </div>
+        </div>
+        <span class="badge ${badgeCls}" style="white-space:nowrap">${icon}</span>
+      </div>
+      ${a.context ? `<div class="passage">${a.context}</div>` : ''}
+      <div class="q-text">${a.question}</div>
+      <div class="answer-row">
+        <span class="answer-student">Student answered: <strong style="color:${status==='correct'?'var(--green)':status==='incorrect'?'var(--red)':'var(--gray-500)'}">${a.selected_answer || '—'}</strong></span>
+        <span class="answer-correct">Correct answer: <strong>${a.correct_answer}</strong></span>
+      </div>
+      ${a.explanation ? `<div class="explanation">💡 ${a.explanation}</div>` : ''}
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function renderBreakdown(title, breakdown, names) {
+  if (!breakdown || !Object.keys(breakdown).length) return `<div class="breakdown-card"><div class="breakdown-title">${title}</div><p class="text-muted" style="font-size:13px">No data</p></div>`;
+  let rows = '';
+  for (const [key, counts] of Object.entries(breakdown)) {
+    const total = (counts.correct||0)+(counts.incorrect||0)+(counts.unanswered||0);
+    const pct = total ? Math.round(counts.correct/total*100) : 0;
+    rows += `<div style="margin-bottom:8px">
+      <div class="breakdown-row"><span>${names[key]||key}</span><span><strong>${counts.correct||0}/${total}</strong> (${pct}%)</span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+  return `<div class="breakdown-card"><div class="breakdown-title">${title}</div>${rows}</div>`;
+}
+
+function fmtTime(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function fmtDateTime(iso) { if (!iso) return '—'; return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+async function logout() { await fetch('/api/auth/logout',{method:'POST'}); location.href='/'; }
+
+init();
+</script>
+</body>
+</html>

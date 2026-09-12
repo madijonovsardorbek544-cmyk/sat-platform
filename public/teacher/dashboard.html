@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard — SAT Platform</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .nav-links { display:flex; gap:4px; }
+    .nav-links a { padding:6px 14px; border-radius:7px; font-size:13px; font-weight:500; color:var(--gray-600); text-decoration:none; transition:all .15s; }
+    .nav-links a:hover, .nav-links a.active { background:var(--blue-light); color:var(--blue); }
+    .progress-sparkline { display:flex; align-items:flex-end; gap:3px; height:40px; }
+    .spark-bar { background:var(--blue); border-radius:2px 2px 0 0; min-width:10px; transition:height .3s; }
+    .integrity-pill { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:600; }
+    .integrity-ok   { background:var(--green-bg); color:var(--green); }
+    .integrity-warn { background:var(--orange-bg); color:var(--orange); }
+    .integrity-bad  { background:var(--red-bg); color:var(--red); }
+    .section-tabs { display:flex; border-bottom:2px solid var(--gray-200); margin-bottom:24px; gap:0; }
+    .section-tab { padding:10px 20px; cursor:pointer; font-size:14px; font-weight:500; color:var(--gray-500); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s; }
+    .section-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+    .section-panel { display:none; }
+    .section-panel.active { display:block; }
+    .student-row { cursor:pointer; }
+    .student-row:hover td { background:var(--blue-light)!important; }
+    .empty-state { text-align:center; padding:48px; color:var(--gray-500); }
+    .empty-state .icon { font-size:48px; margin-bottom:12px; }
+    .add-student-form { display:none; background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:20px; margin-bottom:20px; }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="logo">🎓 SAT Platform — Teacher</span>
+  <div class="user-info">
+    <div class="nav-links">
+      <a href="#" class="active" onclick="showTab('students'); return false">Students</a>
+      <a href="/teacher/questions.html">Question Bank</a>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="container page-wrap">
+
+  <!-- Stats -->
+  <div class="stat-grid" id="stats-row">
+    <div class="stat-card"><div class="stat-val" id="stat-students">—</div><div class="stat-lbl">Students</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-attempts">—</div><div class="stat-lbl">Tests Taken</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-avg">—</div><div class="stat-lbl">Avg Accuracy</div></div>
+  </div>
+
+  <!-- Recent attempts -->
+  <div class="card mb-2" id="recent-card">
+    <div class="flex-between mb-2">
+      <div class="card-title mb-0">Recent Submissions</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Student</th><th>Test</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Unanswered</th><th>Accuracy</th><th>Date</th><th></th>
+        </tr></thead>
+        <tbody id="recent-body"><tr><td colspan="9" class="text-muted" style="text-align:center;padding:24px">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Students tab -->
+  <div class="card">
+    <div class="flex-between mb-2">
+      <div class="card-title mb-0">All Students</div>
+      <button class="btn btn-primary btn-sm" onclick="toggleAddStudent()">+ Add Student</button>
+    </div>
+
+    <!-- Add student inline form -->
+    <div class="add-student-form" id="add-student-form">
+      <div style="font-weight:600;margin-bottom:14px">Add New Student</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group mb-0"><label>Full Name</label><input type="text" id="new-name" placeholder="Student name" /></div>
+        <div class="form-group mb-0"><label>Email</label><input type="email" id="new-email" placeholder="student@email.com" /></div>
+        <div class="form-group mb-0"><label>Password</label><input type="password" id="new-pass" placeholder="Temporary password" /></div>
+        <div class="form-group mb-0"><label>Username <span class="text-muted">(optional)</span></label><input type="text" id="new-username" placeholder="e.g. john_d" /></div>
+      </div>
+      <div id="add-student-error" class="alert alert-error hidden mt-2"></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-success btn-sm" onclick="addStudent()">Create Account</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleAddStudent()">Cancel</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search by name, username, or email…" oninput="searchStudents()" />
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Student</th><th>ID</th><th>Email</th><th>Tests</th><th>Last Activity</th><th></th>
+        </tr></thead>
+        <tbody id="students-body"><tr><td colspan="6" class="text-muted" style="text-align:center;padding:24px">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+let searchTimeout = null;
+
+async function init() {
+  const me = await fetch('/api/auth/me').then(r => r.json());
+  if (!me.authenticated || me.user.role !== 'teacher') { location.href='/'; return; }
+
+  loadStats();
+  loadStudents('');
+}
+
+async function loadStats() {
+  const d = await fetch('/api/teacher/stats').then(r => r.json());
+  document.getElementById('stat-students').textContent = d.totalStudents;
+  document.getElementById('stat-attempts').textContent = d.totalAttempts;
+  document.getElementById('stat-avg').textContent = d.avgAccuracy + '%';
+
+  const tbody = document.getElementById('recent-body');
+  if (!d.recentAttempts.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-muted" style="text-align:center;padding:24px">No submissions yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.recentAttempts.map(a => `
+    <tr class="student-row" onclick="location.href='/teacher/attempt.html?attemptId=${a.id}'">
+      <td><strong>${a.student_name}</strong></td>
+      <td>${a.title}</td>
+      <td><strong>${a.score ?? '—'}/40</strong></td>
+      <td style="color:var(--green)">${a.correct_count ?? '—'}</td>
+      <td style="color:var(--red)">${a.incorrect_count ?? '—'}</td>
+      <td style="color:var(--gray-500)">${a.unanswered_count ?? '—'}</td>
+      <td>${a.accuracy != null ? a.accuracy+'%' : '—'}</td>
+      <td>${fmtDate(a.submitted_at)}</td>
+      <td><a href="/teacher/attempt.html?attemptId=${a.id}" class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">View</a></td>
+    </tr>`).join('');
+}
+
+async function loadStudents(q) {
+  const url = q ? `/api/teacher/students?search=${encodeURIComponent(q)}` : '/api/teacher/students';
+  const d = await fetch(url).then(r => r.json());
+  const tbody = document.getElementById('students-body');
+  if (!d.students.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">👥</div><div>No students found</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.students.map(s => `
+    <tr class="student-row" onclick="location.href='/teacher/student.html?studentId=${s.id}'">
+      <td><strong>${s.name}</strong>${s.username ? `<span class="text-muted" style="margin-left:6px">@${s.username}</span>` : ''}</td>
+      <td><span class="badge badge-blue">${s.student_id || '—'}</span></td>
+      <td>${s.email}</td>
+      <td>${s.attempt_count}</td>
+      <td>${s.last_attempt_at ? fmtDate(s.last_attempt_at) : '<span class="text-muted">Never</span>'}</td>
+      <td><a href="/teacher/student.html?studentId=${s.id}" class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">View</a></td>
+    </tr>`).join('');
+}
+
+function searchStudents() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => loadStudents(document.getElementById('search-input').value), 300);
+}
+
+function toggleAddStudent() {
+  const form = document.getElementById('add-student-form');
+  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function addStudent() {
+  const name = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const password = document.getElementById('new-pass').value;
+  const username = document.getElementById('new-username').value.trim();
+  const errEl = document.getElementById('add-student-error');
+  errEl.classList.add('hidden');
+
+  if (!name || !email || !password) { errEl.textContent='Name, email, and password are required.'; errEl.classList.remove('hidden'); return; }
+
+  const r = await fetch('/api/teacher/students', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name,email,password,username}) });
+  const d = await r.json();
+  if (!r.ok) { errEl.textContent = d.error || 'Failed to create student'; errEl.classList.remove('hidden'); return; }
+  toggleAddStudent();
+  loadStudents('');
+  loadStats();
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+}
+
+async function logout() {
+  await fetch('/api/auth/logout', { method:'POST' });
+  location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>

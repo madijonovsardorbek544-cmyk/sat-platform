@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Question Bank — SAT Platform</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .filter-bar { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+    .filter-bar select { min-width:140px; }
+    .q-card { background:#fff; border:1px solid var(--gray-200); border-radius:10px; padding:18px; margin-bottom:10px; }
+    .q-card.inactive { opacity:.55; }
+    .q-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+    .q-word  { font-weight:700; color:var(--blue); font-size:15px; }
+    .q-text  { font-size:14px; color:var(--gray-700); margin-bottom:6px; }
+    .q-passage { font-size:13px; color:var(--gray-600); font-style:italic; background:var(--gray-50); padding:8px 12px; border-radius:6px; margin-bottom:8px; border-left:3px solid var(--blue); }
+    .q-options { display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:13px; margin-bottom:8px; }
+    .q-option  { padding:4px 8px; border-radius:5px; }
+    .q-option.correct { background:var(--green-bg); color:var(--green); font-weight:600; }
+    .q-explanation { font-size:12px; color:var(--gray-500); }
+    .q-actions { display:flex; gap:6px; }
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:#fff;border-radius:14px;padding:28px;width:90%;max-width:660px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25); }
+    .modal-title { font-size:18px;font-weight:700;margin-bottom:20px; }
+    .option-inputs { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+    .options-count { font-size:12px;color:var(--gray-500);margin-bottom:8px; }
+  </style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">🎓 SAT Platform — Teacher</span>
+  <div class="user-info">
+    <a href="/teacher/dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="container page-wrap">
+  <div class="flex-between mb-2">
+    <h1 class="section-heading mb-0">Question Bank</h1>
+    <button class="btn btn-primary" onclick="openModal()">+ Add Question</button>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="q-search" placeholder="Search by word or question…" style="flex:1;min-width:200px" oninput="applyFilters()" />
+    <select id="f-type" onchange="applyFilters()">
+      <option value="">All Types</option>
+      <option value="definition">Definition</option>
+      <option value="isolated-word">Word Knowledge</option>
+      <option value="passage-in-context">Passage in Context</option>
+    </select>
+    <select id="f-diff" onchange="applyFilters()">
+      <option value="">All Difficulties</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <select id="f-active" onchange="applyFilters()">
+      <option value="">Active + Inactive</option>
+      <option value="1">Active Only</option>
+      <option value="0">Inactive Only</option>
+    </select>
+  </div>
+
+  <div id="q-count" class="text-muted mb-2"></div>
+  <div id="questions-list">Loading…</div>
+</div>
+
+<!-- ── Add / Edit Modal ── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalIfBg(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add Question</div>
+    <input type="hidden" id="edit-id" />
+
+    <div class="form-group">
+      <label>Vocabulary Word *</label>
+      <input type="text" id="f-word" placeholder="e.g. ephemeral" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>Question Type *</label>
+        <select id="f-qtype">
+          <option value="definition">Definition</option>
+          <option value="isolated-word">Word Knowledge (Isolated)</option>
+          <option value="passage-in-context">Passage in Context</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Difficulty *</label>
+        <select id="f-qdiff">
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Question Text *</label>
+      <textarea id="f-question" rows="2" placeholder="The question prompt shown to students"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Passage / Context <span class="text-muted">(leave blank if not applicable)</span></label>
+      <textarea id="f-context" rows="3" placeholder="Passage text for passage-in-context questions. Use ______ for the blank."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Answer Choices * <span class="text-muted">(A–D)</span></label>
+      <div class="option-inputs">
+        <div><label style="font-size:12px;color:var(--blue);font-weight:700">A</label><input type="text" id="opt-a" placeholder="Choice A" /></div>
+        <div><label style="font-size:12px;color:var(--blue);font-weight:700">B</label><input type="text" id="opt-b" placeholder="Choice B" /></div>
+        <div><label style="font-size:12px;color:var(--blue);font-weight:700">C</label><input type="text" id="opt-c" placeholder="Choice C" /></div>
+        <div><label style="font-size:12px;color:var(--blue);font-weight:700">D</label><input type="text" id="opt-d" placeholder="Choice D" /></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Correct Answer *</label>
+      <select id="f-correct">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Explanation *</label>
+      <textarea id="f-explanation" rows="3" placeholder="Why is this the correct answer?"></textarea>
+    </div>
+
+    <div id="modal-error" class="alert alert-error hidden"></div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveQuestion()" id="btn-save">Save Question</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let allQuestions = [];
+
+async function init() {
+  const me = await fetch('/api/auth/me').then(r => r.json());
+  if (!me.authenticated || me.user.role !== 'teacher') { location.href='/'; return; }
+  await loadQuestions();
+}
+
+async function loadQuestions() {
+  const d = await fetch('/api/teacher/questions').then(r => r.json());
+  allQuestions = d.questions || [];
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('q-search').value.toLowerCase();
+  const type   = document.getElementById('f-type').value;
+  const diff   = document.getElementById('f-diff').value;
+  const active = document.getElementById('f-active').value;
+
+  const filtered = allQuestions.filter(q => {
+    if (search && !q.word.toLowerCase().includes(search) && !q.question.toLowerCase().includes(search)) return false;
+    if (type   && q.question_type !== type)  return false;
+    if (diff   && q.difficulty !== diff)     return false;
+    if (active !== '' && String(q.is_active) !== active) return false;
+    return true;
+  });
+
+  document.getElementById('q-count').textContent = `Showing ${filtered.length} of ${allQuestions.length} questions`;
+  renderList(filtered);
+}
+
+function renderList(questions) {
+  const letters = ['A','B','C','D'];
+  const typeLabels = { definition:'Definition', 'isolated-word':'Word Knowledge', 'passage-in-context':'Passage in Context' };
+  const container = document.getElementById('questions-list');
+
+  if (!questions.length) {
+    container.innerHTML = '<div style="text-align:center;padding:48px;color:var(--gray-500)"><div style="font-size:36px;margin-bottom:12px">📭</div><div>No questions match your filters</div></div>';
+    return;
+  }
+
+  container.innerHTML = questions.map(q => {
+    const diffBadge = { easy:'badge-green', medium:'badge-orange', hard:'badge-red' }[q.difficulty] || 'badge-gray';
+    return `<div class="q-card ${q.is_active ? '' : 'inactive'}" id="qcard-${q.id}">
+      <div class="q-card-header">
+        <div>
+          <div class="q-word">${q.word} ${!q.is_active ? '<span class="badge badge-gray" style="font-size:10px;vertical-align:middle">Inactive</span>' : ''}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="badge badge-blue" style="font-size:11px">${typeLabels[q.question_type]||q.question_type}</span>
+            <span class="badge ${diffBadge}" style="font-size:11px">${q.difficulty}</span>
+          </div>
+        </div>
+        <div class="q-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editQuestion('${q.id}')">Edit</button>
+          <button class="btn ${q.is_active ? 'btn-ghost' : 'btn-success'} btn-sm" onclick="toggleActive('${q.id}',${q.is_active})">${q.is_active ? 'Deactivate' : 'Activate'}</button>
+        </div>
+      </div>
+      ${q.context ? `<div class="q-passage">${q.context.substring(0,200)}${q.context.length>200?'…':''}</div>` : ''}
+      <div class="q-text">${q.question}</div>
+      <div class="q-options">
+        ${q.options.map((opt,i) => `<div class="q-option ${letters[i]===q.correct_answer?'correct':''}"><strong>${letters[i]}.</strong> ${opt}</div>`).join('')}
+      </div>
+      <div class="q-explanation">💡 ${q.explanation}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Modal ──────────────────────────────────────────────────
+function openModal(q = null) {
+  document.getElementById('modal-title').textContent = q ? 'Edit Question' : 'Add Question';
+  document.getElementById('edit-id').value = q?.id || '';
+  document.getElementById('f-word').value = q?.word || '';
+  document.getElementById('f-qtype').value = q?.question_type || 'definition';
+  document.getElementById('f-qdiff').value = q?.difficulty || 'medium';
+  document.getElementById('f-question').value = q?.question || '';
+  document.getElementById('f-context').value = q?.context || '';
+  document.getElementById('opt-a').value = q?.options?.[0] || '';
+  document.getElementById('opt-b').value = q?.options?.[1] || '';
+  document.getElementById('opt-c').value = q?.options?.[2] || '';
+  document.getElementById('opt-d').value = q?.options?.[3] || '';
+  document.getElementById('f-correct').value = q?.correct_answer || 'A';
+  document.getElementById('f-explanation').value = q?.explanation || '';
+  document.getElementById('modal-error').classList.add('hidden');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalIfBg(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+function editQuestion(id) {
+  const q = allQuestions.find(q => q.id === id);
+  if (q) openModal(q);
+}
+
+async function toggleActive(id, currentlyActive) {
+  const r = await fetch(`/api/teacher/questions/${id}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ ...allQuestions.find(q=>q.id===id), is_active: !currentlyActive })
+  });
+  if (r.ok) await loadQuestions();
+}
+
+async function saveQuestion() {
+  const id = document.getElementById('edit-id').value;
+  const errEl = document.getElementById('modal-error');
+  errEl.classList.add('hidden');
+
+  const body = {
+    word:          document.getElementById('f-word').value.trim(),
+    question_type: document.getElementById('f-qtype').value,
+    difficulty:    document.getElementById('f-qdiff').value,
+    question:      document.getElementById('f-question').value.trim(),
+    context:       document.getElementById('f-context').value.trim() || null,
+    options: [
+      document.getElementById('opt-a').value.trim(),
+      document.getElementById('opt-b').value.trim(),
+      document.getElementById('opt-c').value.trim(),
+      document.getElementById('opt-d').value.trim()
+    ],
+    correct_answer: document.getElementById('f-correct').value,
+    explanation:   document.getElementById('f-explanation').value.trim(),
+    category:      'vocabulary',
+    is_active:     1
+  };
+
+  if (!body.word || !body.question || !body.explanation || body.options.some(o => !o)) {
+    errEl.textContent = 'Please fill in all required fields.'; errEl.classList.remove('hidden'); return;
+  }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const url = id ? `/api/teacher/questions/${id}` : '/api/teacher/questions';
+    const method = id ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok) { errEl.textContent = d.error || 'Save failed'; errEl.classList.remove('hidden'); return; }
+    closeModal();
+    await loadQuestions();
+  } catch(e) { errEl.textContent = 'Network error'; errEl.classList.remove('hidden'); }
+  finally { btn.disabled=false; btn.textContent='Save Question'; }
+}
+
+async function logout() { await fetch('/api/auth/logout',{method:'POST'}); location.href='/'; }
+
+init();
+</script>
+</body>
+</html>
