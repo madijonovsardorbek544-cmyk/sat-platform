@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inequalities — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:22px 22px 20px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    display:flex; gap:22px; align-items:center; flex-wrap:wrap;
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .titletext{ flex:1 1 320px; min-width:0; }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px; gap:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  /* Signature element: divide/multiply by negative -> flip the sign */
+  .machine{ flex:0 0 auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; }
+  .machine .node{
+    border:1px solid var(--line-strong); border-radius:2px; padding:8px 10px;
+    font-size:12.5px; color:var(--muted); background:var(--surface); white-space:nowrap;
+  }
+  .machine .box{
+    border:1px solid var(--amber-dim); border-radius:2px; padding:10px 14px;
+    font-size:15px; color:var(--amber); background:rgba(242,184,75,0.08); font-weight:600;
+    white-space:nowrap;
+  }
+  .machine .arrow{ color:var(--cyan); font-size:15px; }
+  @media (max-width:660px){ .machine{ display:none; } }
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard.warn{ border-color: rgba(242,109,109,0.35); }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard.warn::before{ color:var(--bad); border-color:var(--bad-dim); }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; }
+  .fcard .fmath{ font-size:15.5px; color:#fff; margin-bottom:8px; min-height:26px; line-height:1.4; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; line-height:1.4; }
+  .fcard.warn .fexample{ color:var(--bad); opacity:0.9; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:700px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .diff-row{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .diff-pill{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    padding:5px 10px; border-radius:20px; border:1px solid var(--line-strong); color:var(--muted);
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em;
+    padding:2px 7px; border-radius:10px; border:1px solid var(--line-strong); color:var(--muted);
+    text-transform:uppercase;
+  }
+  .qdiff.easy{ color:var(--good); border-color:var(--good-dim); }
+  .qdiff.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); }
+  .qdiff.hard{ color:var(--amber); border-color:var(--amber-dim); }
+  .qdiff.extreme{ color:var(--bad); border-color:var(--bad-dim); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  .trapnote{
+    border:1px dashed var(--bad-dim); background:rgba(242,109,109,0.06);
+    border-radius:3px; padding:12px 14px; margin:18px 0 0; font-size:13.5px;
+    color:var(--muted); line-height:1.55;
+  }
+  .trapnote b{ color:var(--bad); font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:2px; }
+    .titleblock{ padding:20px 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="titletext">
+      <div class="eyebrow-row">
+        <span>SAT MATH · CHAPTER 14</span>
+        <span>REV. 01</span>
+      </div>
+      <h1 class="maintitle">Inequalities</h1>
+      <div class="subtitle-en">Solving · Graphing · Systems · Min &amp; Max Word Problems</div>
+      <p class="desc">Formulas first, then step-by-step worked examples, and finally 10 practice questions ranked Easy → Extreme with instant feedback.</p>
+    </div>
+    <div class="machine" aria-hidden="true">
+      <div class="node">÷ or × by a negative</div>
+      <span class="arrow">⟶</span>
+      <div class="box">flip the sign</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid">
+    <div class="fcard warn" data-tag="RULE 01"><div class="flabel">The one rule that matters most</div><div class="fmath">flip the sign ONLY when you multiply or divide both sides by a negative number</div><div class="fexample">seeing a negative number is not enough — you must actually multiply/divide by it</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Graphing y &gt; or y &lt; a line</div><div class="fmath">y &gt; line → shade above &nbsp;·&nbsp; y &lt; line → shade below</div><div class="fexample">think of y as "the point must be higher/lower than the line"</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">Solid vs. dashed line</div><div class="fmath">strict (\(<,>\)) → dashed &nbsp;·&nbsp; non-strict (\(\leq,\geq\)) → solid</div><div class="fexample">dashed = points on the line are NOT solutions</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">Testing a point</div><div class="fmath">plug \((x,y)\) directly into the inequality</div><div class="fexample">true statement → it's a solution &nbsp;·&nbsp; false → it isn't</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Compound (3-part) inequalities</div><div class="fmath">\(a < \text{expression} < b\)</div><div class="fexample">do the same operation to all three parts at once</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">Systems of inequalities</div><div class="fmath">solution region = where ALL shaded regions overlap</div><div class="fexample">a point must satisfy every inequality in the system, not just one</div></div>
+    <div class="fcard" data-tag="RULE 07"><div class="flabel">Word-problem keywords</div><div class="fmath">"no more than / at most" → \(\leq\)</div><div class="fexample">"at least / no less than" → \(\geq\)</div></div>
+    <div class="fcard" data-tag="RULE 08"><div class="flabel">Equation + inequality combo</div><div class="fmath">isolate a variable in the equation</div><div class="fexample">substitute it into the inequality to get one inequality in one variable</div></div>
+    <div class="fcard" data-tag="RULE 09"><div class="flabel">Rounding for min/max</div><div class="fmath">minimum → round UP &nbsp;·&nbsp; maximum → round DOWN</div><div class="fexample">whole-number answers can't be a fraction of an item</div></div>
+    <div class="fcard" data-tag="RULE 10"><div class="flabel">Limiting resource</div><div class="fmath">check each resource separately</div><div class="fexample">the SMALLER max is the real limit — that resource runs out first</div></div>
+    <div class="fcard" data-tag="RULE 11"><div class="flabel">Two-inequality systems</div><div class="fmath">substitute the boundary of one variable into the other</div><div class="fexample">to maximize one variable, use the extreme (boundary) value of the other</div></div>
+    <div class="fcard" data-tag="RULE 12"><div class="flabel">Adding inequalities</div><div class="fmath">only ADD inequalities — never subtract</div><div class="fexample">scale one first if needed so a variable's coefficients line up, just like elimination</div></div>
+  </div>
+
+  <div class="trapnote"><b>WATCH OUT —</b> Working with a negative number is not the trigger. Only the act of multiplying or dividing both sides by a negative number flips the sign. Subtracting a negative, or having a negative constant sit on one side, changes nothing.</div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diff-row">
+    <span class="diff-pill" style="color:var(--good);border-color:var(--good-dim)">● 3 EASY</span>
+    <span class="diff-pill" style="color:var(--cyan);border-color:rgba(111,227,214,0.35)">● 3 MEDIUM</span>
+    <span class="diff-pill" style="color:var(--amber);border-color:var(--amber-dim)">● 3 HARD</span>
+    <span class="diff-pill" style="color:var(--bad);border-color:var(--bad-dim)">● 1 EXTREME</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — The sign-flip rule",
+    prompt: "Solve for x: 5 - 3x > 11.",
+    steps: [
+      "Subtract 5 from both sides: \\(-3x > 6\\)",
+      "Now divide both sides by \\(-3\\) — since we're dividing by a negative number, flip the sign",
+      "\\(x < -2\\)"
+    ],
+    answer: "x < -2."
+  },
+  {
+    title: "Example 2 — Testing a point",
+    prompt: "Which point (x, y) is a solution to the inequality y < -2x + 3: (2, -2), (-1, 6), or (0, 3)?",
+    steps: [
+      "Test (2, -2): is \\(-2 < -2(2)+3 = -1\\)? Yes, \\(-2 < -1\\) is true ✓",
+      "Test (-1, 6): is \\(6 < -2(-1)+3 = 5\\)? No, false",
+      "Test (0, 3): is \\(3 < -2(0)+3 = 3\\)? No — 3 is not less than 3 (the inequality is strict)"
+    ],
+    answer: "(2, -2) is the only solution."
+  },
+  {
+    title: "Example 3 — Compound inequality",
+    prompt: "If -5 ≤ 3 - 4x < 7, what is the range of possible values of x?",
+    steps: [
+      "Subtract 3 from all three parts: \\(-8 \\leq -4x < 4\\)",
+      "Divide everything by \\(-4\\) — flip BOTH signs and reverse the order: \\(2 \\geq x > -1\\)",
+      "Rewrite left-to-right: \\(-1 < x \\leq 2\\)"
+    ],
+    answer: "-1 < x ≤ 2."
+  },
+  {
+    title: "Example 4 — Equation + inequality combo",
+    prompt: "A caterer needs 50 total place settings, using gold-rimmed plates (g) at $4 each and plain plates (p) at $2 each. If the total cost must be no more than $160, what is the minimum number of plain plates needed?",
+    steps: [
+      "Set up the system: \\(g + p = 50\\) and \\(4g + 2p \\leq 160\\)",
+      "Isolate g in the equation: \\(g = 50 - p\\), then substitute into the inequality: \\(4(50-p) + 2p \\leq 160\\)",
+      "Simplify: \\(200 - 4p + 2p \\leq 160 \\Rightarrow -2p \\leq -40 \\Rightarrow p \\geq 20\\) (dividing by \\(-2\\) flips the sign)"
+    ],
+    answer: "Minimum 20 plain plates."
+  },
+  {
+    title: "Example 5 — Limiting resource",
+    prompt: "One batch of granola bars requires 3 cups of oats and 2 cups of honey. A baker has 27 cups of oats and 16 cups of honey. What is the maximum number of whole batches the baker can make?",
+    steps: [
+      "Check each resource separately. Oats allow: \\(27 \\div 3 = 9\\) batches",
+      "Honey allows: \\(16 \\div 2 = 8\\) batches",
+      "Honey runs out first (8 < 9), so honey is the limiting resource"
+    ],
+    answer: "Maximum 8 batches."
+  },
+  {
+    title: "Example 6 — Two-inequality system",
+    prompt: "A system is given: y ≤ -x + 12 and y ≥ 2x - 3. What is the value of y at the point where the two boundary lines intersect?",
+    steps: [
+      "Set the two boundary expressions equal to find where they cross: \\(-x+12 = 2x-3\\)",
+      "Solve for x: \\(15 = 3x \\Rightarrow x = 5\\)",
+      "Substitute back: \\(y = -5+12 = 7\\)"
+    ],
+    answer: "y = 7 (at the point (5, 7))."
+  }
+];
+
+const quiz = [
+  { level: "easy", q: "Solve for x: 7 - 2x ≤ 15.", opts: ["x≤4","x≤-4","x≥-4","x≥4"], correct: 2, exp: "Subtract 7 from both sides: -2x ≤ 8. Divide by -2 and flip the sign: x ≥ -4." },
+  { level: "easy", q: "Which point (x, y) is a solution to y > 3x - 4: (1, 0), (2, 1), or (0, -5)?", opts: ["(1, 0)","(2, 1)","(0, -5)","(3, -2)"], correct: 0, exp: "Test each point. (1,0): 0 > 3(1)-4 = -1, true ✓. (2,1): 1 > 3(2)-4 = 2, false. (0,-5): -5 > 0-4 = -4, false. Only (1,0) satisfies the inequality." },
+  { level: "easy", q: "If -3 < x + 2 < 6, what is the range of x?", opts: ["-1<x<8","-5<x<8","1<x<4","-5<x<4"], correct: 3, exp: "Subtract 2 from all three parts of the compound inequality: -3-2 < x < 6-2 → -5 < x < 4." },
+  { level: "medium", q: "Solve the compound inequality: -4 ≤ 6 - 5x < 11.", opts: ["-2≤x<1","-1<x≤2","-1≤x<2","2<x≤-1"], correct: 1, exp: "Subtract 6 from all three parts: -10 ≤ -5x < 5. Divide everything by -5, which flips both signs and reverses their order: 2 ≥ x > -1, the same as -1 < x ≤ 2." },
+  { level: "medium", q: "In the xy-plane, the point (6, k) is a solution to the system y ≤ 20 and 3x - 2y ≥ 8. What is the maximum possible value of k?", opts: ["20","-5","5","9"], correct: 2, exp: "Substitute x=6 into the binding inequality: 3(6) - 2k ≥ 8 → 18 - 2k ≥ 8 → -2k ≥ -10 → k ≤ 5 (dividing by -2 flips the sign). Since 5 is well under the y ≤ 20 cap, the maximum value of k is 5." },
+  { level: "medium", q: "A moving company charges a $75 flat fee plus $0.60 per mile. If a customer wants to spend no more than $315 total, which inequality represents the possible number of miles m for the move?", opts: ["75+0.60m≤315","75+0.60m≥315","0.60+75m≤315","75-0.60m≤315"], correct: 0, exp: "The flat fee ($75) plus the per-mile charge (0.60 times m miles) must total no more than $315: 75 + 0.60m ≤ 315." },
+  { level: "hard", q: "A student council is buying a total of 50 items — pens and notebooks — for a fundraiser. Pens cost $2 each and notebooks cost $5 each. If the total spent must be no more than $175, what is the minimum number of pens that must be purchased?", opts: ["20","30","35","25"], correct: 3, exp: "Since p + n = 50, n = 50 - p. Substitute into the cost inequality: 2p + 5(50-p) ≤ 175 → 2p + 250 - 5p ≤ 175 → -3p ≤ -75 → p ≥ 25 (dividing by -3 flips the sign). The minimum number of pens is 25." },
+  { level: "hard", q: "A furniture maker uses 4 boards and 6 screws for each chair, and has 52 boards and 90 screws available. What is the maximum number of whole chairs that can be made?", opts: ["15","13","14","12"], correct: 1, exp: "Check each resource separately: boards allow 52 ÷ 4 = 13 chairs; screws allow 90 ÷ 6 = 15 chairs. Since boards run out first, boards are the limiting resource, so the maximum is 13 whole chairs." },
+  { level: "hard", q: "A system is given: 2x + 3y ≤ 18 and 4x - 3y ≤ 12. What is the maximum possible value of x?", opts: ["6","4","5","3"], correct: 2, exp: "Both inequalities point the same direction (≤), so they can be added directly: (2x+3y) + (4x-3y) ≤ 18+12 → 6x ≤ 30 → x ≤ 5." },
+  { level: "extreme", q: "A landscaper is planting tulip bulbs (t) and daffodil bulbs (d). She needs to plant at least 60 bulbs total, and her budget allows at most $150, where tulip bulbs cost $2 each and daffodil bulbs cost $3 each. What is the maximum possible number of daffodil bulbs she could plant?", opts: ["25","30","37.5","45"], correct: 1, exp: "To maximize daffodils (d), minimize tulips (t) at the boundary: t = 60 - d. Substitute into the budget inequality: 2(60-d) + 3d ≤ 150 → 120 - 2d + 3d ≤ 150 → 120 + d ≤ 150 → d ≤ 30. The maximum number of daffodil bulbs is 30." }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+const levelLabel = { easy: "Easy", medium: "Medium", hard: "Hard", extreme: "Extreme" };
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff ${item.level}">${levelLabel[item.level]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
