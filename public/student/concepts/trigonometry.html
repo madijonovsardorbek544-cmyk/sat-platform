@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trigonometry — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --violet: #B79CF2;
+    --violet-dim: #4A3B7A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(24px, 6vw, 38px); margin:0 0 4px; line-height:1.08;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:64ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  /* GRAPH PANEL */
+  .graph-panel{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+    padding:18px 18px 14px;
+    margin-bottom:18px;
+  }
+  .graph-panel::before{
+    content: attr(data-fig);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .graph-svg-wrap{ width:100%; max-width:360px; margin:8px auto 4px; }
+  .graph-svg-wrap svg{ width:100%; height:auto; display:block; }
+  .graph-caption{
+    text-align:center; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    color:var(--muted); margin-top:6px;
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard.bonus::before{ color:var(--violet); border-color:var(--violet-dim); }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; min-height:32px; }
+  .fcard .fmath{ font-size:14.5px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:760px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .diffkey{
+    display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);
+  }
+  .diffkey span{ display:flex; align-items:center; gap:6px; }
+  .diffkey i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .difftag{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.07em;
+    padding:2px 7px; border-radius:2px; border:1px solid; text-transform:uppercase;
+    flex-shrink:0; align-self:center;
+  }
+  .difftag.easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .difftag.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); background:rgba(111,227,214,0.08); }
+  .difftag.hard{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .difftag.extreme{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.1); }
+  .qtext{ font-size:15px; color:#fff; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 21</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Trigonometry</h1>
+    <div class="subtitle-en">SOH-CAH-TOA · Complementary Angles · The Unit Circle</div>
+    <p class="desc">Sine, cosine, and tangent as right-triangle ratios; the complementary angle shortcut that skips finding the actual angle; and the unit circle, which extends trig functions to any angle using reference angles and the ASTC sign rule. Diagrams and rules first, then worked examples and a 10-question practice set (3 easy · 3 medium · 3 hard · 1 extreme).</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS / TECHNIQUES -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Techniques</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="graph-panel" data-fig="FIG. 1 — SOH-CAH-TOA">
+    <div class="graph-svg-wrap">
+      <svg viewBox="0 0 220 165" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 30,25 L 30,135 L 170,135 Z" fill="none" stroke="#EAF2FF" stroke-width="2.2"/>
+        <rect x="30" y="121" width="14" height="14" fill="none" stroke="#86A2C9" stroke-width="1"/>
+        <path d="M 148,135 A 22,22 0 0,0 138.7,116.8" fill="none" stroke="#F2B84B" stroke-width="1.5"/>
+        <text x="150" y="126" font-family="IBM Plex Mono, monospace" font-size="12" fill="#F2B84B">x°</text>
+        <text x="8" y="83" font-family="IBM Plex Mono, monospace" font-size="11" fill="#6FE3D6">opposite</text>
+        <text x="82" y="152" font-family="IBM Plex Mono, monospace" font-size="11" fill="#B79CF2">adjacent</text>
+        <text x="55" y="72" font-family="IBM Plex Mono, monospace" font-size="11" fill="#F2B84B" transform="rotate(-38 55 72)">hypotenuse</text>
+      </svg>
+    </div>
+    <div class="graph-caption">sin x° = opposite ⁄ hypotenuse · cos x° = adjacent ⁄ hypotenuse · tan x° = opposite ⁄ adjacent</div>
+  </div>
+
+  <div class="graph-panel" data-fig="FIG. 2 — THE UNIT CIRCLE, REFERENCE ANGLE &amp; ASTC">
+    <div class="graph-svg-wrap">
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(153,190,255,0.35)" stroke-width="1.5"/>
+        <line x1="30" y1="150" x2="270" y2="150" stroke="rgba(153,190,255,0.35)" stroke-width="1"/>
+        <line x1="150" y1="30" x2="150" y2="270" stroke="rgba(153,190,255,0.35)" stroke-width="1"/>
+        <!-- quadrant sign labels -->
+        <text x="205" y="95" font-family="IBM Plex Mono, monospace" font-size="11" fill="#57D08A">QI: all +</text>
+        <text x="60" y="95" font-family="IBM Plex Mono, monospace" font-size="11" fill="#6FE3D6">QII: sin +</text>
+        <text x="55" y="215" font-family="IBM Plex Mono, monospace" font-size="11" fill="#B79CF2">QIII: tan +</text>
+        <text x="192" y="215" font-family="IBM Plex Mono, monospace" font-size="11" fill="#F2B84B">QIV: cos +</text>
+        <!-- 135 deg example -->
+        <line x1="150" y1="150" x2="79.3" y2="79.3" stroke="#EAF2FF" stroke-width="2.2"/>
+        <line x1="79.3" y1="79.3" x2="79.3" y2="150" stroke-dasharray="3 3" stroke="#86A2C9" stroke-width="1.2"/>
+        <path d="M 124.0,150.0 A 26,26 0 0,1 131.6,131.6" fill="none" stroke="#F2B84B" stroke-width="1.6"/>
+        <text x="104" y="145" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#F2B84B">45°</text>
+        <circle cx="150" cy="150" r="2.2" fill="#EAF2FF"/>
+        <circle cx="79.3" cy="79.3" r="2.8" fill="#EAF2FF"/>
+        <text x="52" y="72" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#EAF2FF">135°</text>
+      </svg>
+    </div>
+    <div class="graph-caption">135° terminates in QII, so sine is positive · reference angle to the x-axis is 180°−135°=45°</div>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">SOH-CAH-TOA — the basic right-triangle ratios</div><div class="fmath">\(\sin=\dfrac{opp}{hyp},\ \cos=\dfrac{adj}{hyp},\ \tan=\dfrac{opp}{adj}\)</div><div class="fexample">5-12-13 triangle → \(\sin x°=\tfrac{5}{13},\ \cos x°=\tfrac{12}{13},\ \tan x°=\tfrac{5}{12}\)</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Complementary angle shortcut</div><div class="fmath">\(\sin(x°)=\cos(90°-x°), \quad \cos(x°)=\sin(90°-x°)\)</div><div class="fexample">\(\sin(50°)=\cos(40°)\)</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">Unit circle definitions — work for ANY angle</div><div class="fmath">\(\cos\theta=x, \quad \sin\theta=y, \quad \tan\theta=\dfrac{y}{x}\)</div><div class="fexample">the point where the angle terminates has coordinates \((\cos\theta,\sin\theta)\)</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">Reference angle — the angle's distance from the x-axis</div><div class="fmath">\(\text{ref. angle} = \text{shortest angle to nearest x-axis}\)</div><div class="fexample">330° → \(360°-330°=30°\); 135° → \(180°-135°=45°\)</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">ASTC — sign of each function by quadrant</div><div class="fmath">\(\text{QI: All +}, \ \text{QII: Sin +}, \ \text{QIII: Tan +}, \ \text{QIV: Cos +}\)</div><div class="fexample">"All Students Take Calculus"</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">Coterminal angles land on the same point</div><div class="fmath">\(\theta \pm 360°k \ (\text{or} \pm 2\pi k)\)</div><div class="fexample">\(1{,}575° - 4(360°) = 135°\)</div></div>
+    <div class="fcard" data-tag="RULE 07"><div class="flabel">Quadrantal angles have obvious coordinates</div><div class="fmath">\(0°\!=\!(1,0),\ 90°\!=\!(0,1),\ 180°\!=\!(-1,0),\ 270°\!=\!(0,-1)\)</div><div class="fexample">\(\sin(270°)=-1,\ \cos(270°)=0\)</div></div>
+    <div class="fcard bonus" data-tag="EXTRA · CROSS-REFERENCE"><div class="flabel">Special right triangle ratios (needed for reference angles)</div><div class="fmath">\(30\text{-}60\text{-}90: 1:\sqrt3:2 \qquad 45\text{-}45\text{-}90: 1:1:\sqrt2\)</div><div class="fexample">hypotenuse = 1 (unit circle) → legs \(\tfrac12\) and \(\tfrac{\sqrt3}{2}\)</div></div>
+    <div class="fcard bonus" data-tag="EXTRA · SAT STRATEGY"><div class="flabel">On the real test, use your calculator</div><div class="fmath">\(\text{compare Desmos' decimal to each answer choice}\)</div><div class="fexample">even for "exact" answers like \(\tfrac{\sqrt3}{2}\), decimals are faster</div></div>
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diffkey">
+    <span><i style="background:var(--good)"></i>Easy ×3</span>
+    <span><i style="background:var(--cyan)"></i>Medium ×3</span>
+    <span><i style="background:var(--amber)"></i>Hard ×3</span>
+    <span><i style="background:var(--bad)"></i>Extreme ×1</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Basic SOH-CAH-TOA",
+    prompt: "In a right triangle, one leg has length 8 and the hypotenuse has length 17. For the angle θ opposite the length-8 leg, what is sin(θ)?",
+    steps: [
+      "Sine is opposite over hypotenuse: \\(\\sin\\theta = \\dfrac{opp}{hyp}\\)",
+      "The leg opposite θ is 8, and the hypotenuse is 17: \\(\\sin\\theta=\\dfrac{8}{17}\\)"
+    ],
+    answer: "8/17"
+  },
+  {
+    title: "Example 2 — Complementary angle shortcut",
+    prompt: "If sin(70°) = k, what is cos(20°) in terms of k?",
+    steps: [
+      "Use the complementary angle rule: \\(\\cos(x°)=\\sin(90°-x°)\\)",
+      "Here \\(x=20\\), so \\(90°-20°=70°\\): \\(\\cos(20°)=\\sin(70°)\\)",
+      "Since \\(\\sin(70°)=k\\), substitute directly"
+    ],
+    answer: "cos(20°) = k"
+  },
+  {
+    title: "Example 3 — Finding a side length",
+    prompt: "In triangle ABC, angle B is a right angle, angle A measures 35°, and AB = 10. What is the length of BC, in terms of a trig function of 35°?",
+    steps: [
+      "Relative to angle A, AB is the adjacent side and BC is the opposite side",
+      "Tangent relates opposite and adjacent: \\(\\tan(35°)=\\dfrac{BC}{AB}\\)",
+      "Solve for BC: \\(BC = AB\\times\\tan(35°) = 10\\tan(35°)\\)"
+    ],
+    answer: "BC = 10 tan(35°)"
+  },
+  {
+    title: "Example 4 — Complementary angle without knowing the angle",
+    prompt: "In triangle DEF, angle E is a right angle, and sin(D) = 5/13. What is the value of cos(F)?",
+    steps: [
+      "Since angle E is 90°, angles D and F are complementary: \\(D+F=90°\\)",
+      "Use the complementary rule: \\(\\cos(F)=\\sin(90°-F)\\)",
+      "Since \\(90°-F=D\\), this becomes \\(\\cos(F)=\\sin(D)\\)",
+      "Substitute the given value"
+    ],
+    answer: "cos(F) = 5/13"
+  },
+  {
+    title: "Example 5 — Unit circle, quadrantal angle",
+    prompt: "What are the values of sin(180°) and cos(180°)?",
+    steps: [
+      "On the unit circle, 180° terminates at the point (-1, 0)",
+      "Sine is the y-coordinate: \\(\\sin(180°)=0\\)",
+      "Cosine is the x-coordinate: \\(\\cos(180°)=-1\\)"
+    ],
+    answer: "sin(180°) = 0, cos(180°) = -1"
+  },
+  {
+    title: "Example 6 — Unit circle with a reference angle",
+    prompt: "What are the values of sin(210°) and cos(210°)?",
+    steps: [
+      "210° terminates in Quadrant III (between 180° and 270°)",
+      "Reference angle: \\(210°-180°=30°\\)",
+      "A 30-60-90 triangle with hypotenuse 1 has legs \\(\\tfrac12\\) and \\(\\tfrac{\\sqrt3}{2}\\); the shorter leg (opposite the 30°) gives the y-distance, the longer leg gives the x-distance",
+      "In Quadrant III both coordinates are negative, so the point is \\(\\left(-\\tfrac{\\sqrt3}{2}, -\\tfrac12\\right)\\)"
+    ],
+    answer: "sin(210°) = -1/2, cos(210°) = -√3/2"
+  }
+];
+
+const quiz = [
+  {
+    diff: "easy",
+    q: "In a right triangle, the side opposite angle θ has length 9 and the hypotenuse has length 41. What is sin(θ)?",
+    opts: ["9/41","40/41","9/40","41/9"], correct: 0,
+    exp: "\\(\\sin\\theta=\\dfrac{opp}{hyp}=\\dfrac{9}{41}\\)."
+  },
+  {
+    diff: "easy",
+    q: "If sin(35°) ≈ 0.574, what is cos(55°)?",
+    opts: ["0.574","0.819","0.700","1.428"], correct: 0,
+    exp: "\\(\\cos(55°)=\\sin(90°-55°)=\\sin(35°)\\approx0.574\\)."
+  },
+  {
+    diff: "easy",
+    q: "What is the value of cos(90°)?",
+    opts: ["-1","0","1","undefined"], correct: 1,
+    exp: "The point at 90° on the unit circle is (0,1). Cosine is the x-coordinate: 0."
+  },
+  {
+    diff: "medium",
+    q: "In triangle PQR, angle Q is a right angle, angle P measures 28°, and PQ = 12. Which expression represents the length of QR?",
+    opts: ["12 tan 28°","12 sin 28°","12 / cos 28°","12 cos 28°"], correct: 0,
+    exp: "Relative to angle P, PQ is adjacent and QR is opposite, so \\(\\tan(28°)=\\dfrac{QR}{12}\\), giving \\(QR=12\\tan28°\\)."
+  },
+  {
+    diff: "medium",
+    q: "In triangle XYZ, angle Y is a right angle, and cos(X) = 7/25. What is the value of sin(Z)?",
+    opts: ["7/25","24/25","25/7","18/25"], correct: 0,
+    exp: "Since X and Z are complementary, \\(\\sin(Z)=\\sin(90°-X)=\\cos(X)=\\dfrac{7}{25}\\)."
+  },
+  {
+    diff: "medium",
+    q: "What are the values of sin(270°) and cos(270°)?",
+    opts: ["sin = -1, cos = 0","sin = 0, cos = -1","sin = 1, cos = 0","sin = 0, cos = 1"], correct: 0,
+    exp: "The point at 270° on the unit circle is (0,-1), so \\(\\sin(270°)=-1\\) (y-coordinate) and \\(\\cos(270°)=0\\) (x-coordinate)."
+  },
+  {
+    diff: "hard",
+    q: "What is the value of sin(150°)?",
+    opts: ["1/2","√3/2","-1/2","√2/2"], correct: 0,
+    exp: "150° is in QII (reference angle 30°), where sine is positive. From the 30-60-90 triangle, the y-coordinate is \\(\\tfrac12\\), so \\(\\sin(150°)=\\tfrac12\\)."
+  },
+  {
+    diff: "hard",
+    q: "In triangle ABC, angle C is a right angle, and tan(A) = 5/12. What is the value of cos(B)?",
+    opts: ["5/13","12/13","5/12","12/5"], correct: 0,
+    exp: "\\(\\tan(A)=5/12\\) corresponds to a 5-12-13 triangle, so \\(\\sin(A)=5/13\\). Since A and B are complementary, \\(\\cos(B)=\\sin(A)=5/13\\)."
+  },
+  {
+    diff: "hard",
+    q: "An angle θ terminates in the third quadrant, and cos(θ) = -3/5. What is the value of sin(θ)?",
+    opts: ["-4/5","4/5","-3/5","3/4"], correct: 0,
+    exp: "With \\(|\\cos\\theta|=3/5\\), the 3-4-5 triangle gives \\(|\\sin\\theta|=4/5\\). In Quadrant III, sine is negative, so \\(\\sin\\theta=-4/5\\)."
+  },
+  {
+    diff: "extreme",
+    q: "What is the value of cos(1,305°)?",
+    opts: ["-√2/2","√2/2","-1/2","1/2"], correct: 0,
+    exp: "Subtract full rotations: \\(1{,}305°-3(360°)=225°\\). This is in QIII with reference angle \\(225°-180°=45°\\). QIII has cosine negative, and the 45-45-90 triangle gives \\(\\tfrac{\\sqrt2}{2}\\), so \\(\\cos(1{,}305°)=-\\tfrac{\\sqrt2}{2}\\)."
+  }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="difftag ${item.diff}">${item.diff}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+      if(window.renderMathInElement){ renderMathInElement(explain); }
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
