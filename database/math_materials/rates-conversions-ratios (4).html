@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rates, Conversions, &amp; Ratios — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --violet: #B79CF2;
+    --violet-dim: #4A3B7A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(24px, 6vw, 38px); margin:0 0 4px; line-height:1.08;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:64ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard.bonus::before{ color:var(--violet); border-color:var(--violet-dim); }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; min-height:32px; }
+  .fcard .fmath{ font-size:14.5px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:760px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .diffkey{
+    display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);
+  }
+  .diffkey span{ display:flex; align-items:center; gap:6px; }
+  .diffkey i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .difftag{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.07em;
+    padding:2px 7px; border-radius:2px; border:1px solid; text-transform:uppercase;
+    flex-shrink:0; align-self:center;
+  }
+  .difftag.easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .difftag.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); background:rgba(111,227,214,0.08); }
+  .difftag.hard{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .difftag.extreme{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.1); }
+  .qtext{ font-size:15px; color:#fff; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 10</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Rates, Conversions, &amp; Ratios</h1>
+    <div class="subtitle-en">Conversion Factors · Area &amp; Speed · Average Rate · Ratios</div>
+    <p class="desc">The conversion-factor method for turning any rate into a unit-canceling multiplier, squaring factors for area conversions, handling two units at once for speed, computing average rate of change, and setting up and combining ratios. Techniques first, then worked examples and a 10-question practice set (3 easy · 3 medium · 3 hard · 1 extreme).</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS / TECHNIQUES -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Techniques</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">Set up conversion factors so units cancel</div><div class="fmath">\(\text{qty} \times \dfrac{\text{new unit}}{\text{old unit}} = \text{converted qty}\)</div><div class="fexample">\(320 \text{ bikes} \times \dfrac{1\text{ hr}}{20\text{ bikes}} = 16\text{ hr}\)</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">A rate IS a conversion factor — use it or its reciprocal</div><div class="fmath">\(\dfrac{A}{B} \text{ or } \dfrac{B}{A}\), whichever cancels the unit you have</div><div class="fexample">50 mi/hr → use \(\dfrac{1\text{hr}}{50\text{mi}}\) to convert miles to hours</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">Square the factor to convert area units</div><div class="fmath">\(1\text{u}_1=k\cdot\text{u}_2 \Rightarrow 1\text{u}_1^2=k^2\cdot\text{u}_2^2\)</div><div class="fexample">\(1\text{m}=3.28\text{ft} \Rightarrow 1\text{m}^2=(3.28)^2\text{ft}^2\)</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">Convert speeds one unit at a time — length, then time</div><div class="fmath">\(\dfrac{\text{len}_1}{\text{time}_1}\times\dfrac{\text{len}_2}{\text{len}_1}\times\dfrac{\text{time}_1}{\text{time}_2}\)</div><div class="fexample">\(210\tfrac{\text{in}}{\text{s}} \to \tfrac{\text{ft}}{\text{s}} \to \tfrac{\text{ft}}{\text{min}} = 1{,}050\tfrac{\text{ft}}{\text{min}}\)</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Average rate of change = change in quantity ÷ elapsed time</div><div class="fmath">\(\text{rate}=\dfrac{Q_2-Q_1}{t_2-t_1}\)</div><div class="fexample">\(\dfrac{360-100}{6-2}=\dfrac{260}{4}=65\)</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">A ratio is a fraction — cross-multiply to solve</div><div class="fmath">\(a:b = c:d \Rightarrow \dfrac{a}{b}=\dfrac{c}{d} \Rightarrow ad=bc\)</div><div class="fexample">\(y:2.4 = 2.7:3.6 \Rightarrow y=\dfrac{(2.4)(2.7)}{3.6}\)</div></div>
+    <div class="fcard" data-tag="RULE 07"><div class="flabel">Combine two ratios through their shared term</div><div class="fmath">\(a{:}b \text{ and } b{:}c \to \text{scale to match } b \to a{:}b{:}c\)</div><div class="fexample">\(1{:}2\) and \(4{:}3\) share pepper → scale to \(2{:}4\) → \(2{:}4{:}3\)</div></div>
+    <div class="fcard" data-tag="RULE 08"><div class="flabel">Part-to-whole from a ratio</div><div class="fmath">\(\text{in } a{:}b,\ \text{share of } a = \dfrac{a}{a+b}\times\text{total}\)</div><div class="fexample">ratio \(2{:}4{:}3\) → third part is \(\tfrac{3}{9}\) of the total</div></div>
+    <div class="fcard bonus" data-tag="EXTRA · NOT IN TEXT"><div class="flabel">"Per" always means divide</div><div class="fmath">\(\text{"A per B"} = \dfrac{A}{B}\)</div><div class="fexample">150 miles in 3 hours \(=\dfrac{150}{3}=50\) mph</div></div>
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diffkey">
+    <span><i style="background:var(--good)"></i>Easy ×3</span>
+    <span><i style="background:var(--cyan)"></i>Medium ×3</span>
+    <span><i style="background:var(--amber)"></i>Hard ×3</span>
+    <span><i style="background:var(--bad)"></i>Extreme ×1</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Basic conversion factor",
+    prompt: "A factory can assemble 15 toy robots per hour. How many hours will it take to assemble 480 toy robots?",
+    steps: [
+      "Use the rate as a conversion factor, arranged so 'robots' cancels: \\(480 \\text{ robots} \\times \\dfrac{1\\text{ hour}}{15\\text{ robots}}\\)",
+      "The robots unit cancels, leaving hours: \\(\\dfrac{480}{15}\\) hours",
+      "Divide: \\(480 \\div 15 = 32\\)"
+    ],
+    answer: "32 hours"
+  },
+  {
+    title: "Example 2 — Multi-step conversion (budget to boxes)",
+    prompt: "A bakery sells muffins in boxes of 8. Each muffin costs 75 cents. If the bakery has a budget of $270 to buy muffins, how many full boxes can it buy?",
+    steps: [
+      "Chain the conversion factors so every unit cancels except 'boxes': \\(270\\text{ dollars} \\times \\dfrac{100\\text{ cents}}{1\\text{ dollar}} \\times \\dfrac{1\\text{ muffin}}{75\\text{ cents}} \\times \\dfrac{1\\text{ box}}{8\\text{ muffins}}\\)",
+      "Dollars, cents, and muffins all cancel in sequence, leaving boxes: \\(\\dfrac{270 \\times 100}{75 \\times 8}\\) boxes",
+      "Compute: \\(\\dfrac{27{,}000}{600} = 45\\)"
+    ],
+    answer: "45 boxes"
+  },
+  {
+    title: "Example 3 — Converting area units",
+    prompt: "A garden has an area of 2,952 square feet. What is the area, in square yards? (1 yard = 3 feet.)",
+    steps: [
+      "Since we're converting a squared unit, the conversion factor must be applied twice (squared): \\(2{,}952\\text{ ft}^2 \\times \\left(\\dfrac{1\\text{ yd}}{3\\text{ ft}}\\right)^2\\)",
+      "This is the same as dividing by \\(3^2 = 9\\): \\(\\dfrac{2{,}952}{9}\\)",
+      "Compute: \\(2{,}952 \\div 9 = 328\\)"
+    ],
+    answer: "328 square yards"
+  },
+  {
+    title: "Example 4 — Converting a speed (two units at once)",
+    prompt: "A snail moves at a speed of 15 feet per hour. What is this speed in inches per minute? (1 foot = 12 inches.)",
+    steps: [
+      "Convert the length unit first: \\(\\dfrac{15\\text{ ft}}{1\\text{ hr}} \\times \\dfrac{12\\text{ in}}{1\\text{ ft}} = \\dfrac{180\\text{ in}}{1\\text{ hr}}\\)",
+      "Then convert the time unit: \\(\\dfrac{180\\text{ in}}{1\\text{ hr}} \\times \\dfrac{1\\text{ hr}}{60\\text{ min}}\\)",
+      "Compute: \\(\\dfrac{180}{60} = 3\\)"
+    ],
+    answer: "3 inches per minute"
+  },
+  {
+    title: "Example 5 — Average rate of change",
+    prompt: "A water tank had 850 liters of water at 9:00 AM. By 1:00 PM the same day, it had 210 liters left. What was the average rate at which water left the tank, in liters per hour?",
+    steps: [
+      "Find the elapsed time: from 9:00 AM to 1:00 PM is 4 hours",
+      "Find the change in quantity: \\(850 - 210 = 640\\) liters left the tank",
+      "Average rate \\(= \\dfrac{\\text{change}}{\\text{time}} = \\dfrac{640}{4}\\)"
+    ],
+    answer: "160 liters per hour"
+  },
+  {
+    title: "Example 6 — Combining two ratios",
+    prompt: "A trail mix recipe combines raisins, peanuts, and chocolate chips. The ratio of raisins to peanuts is 3:2, and the ratio of peanuts to chocolate chips is 4:5. If a 300-gram batch of trail mix is made using this recipe, how many grams of chocolate chips does it contain?",
+    steps: [
+      "Peanuts appear in both ratios (2 and 4) — scale the first ratio so the peanut terms match: multiply \\(3:2\\) by 2 to get \\(6:4\\)",
+      "Now combine: raisins : peanuts : chocolate \\(= 6:4:5\\)",
+      "Total parts \\(= 6+4+5 = 15\\), so chocolate's share is \\(\\dfrac{5}{15} = \\dfrac{1}{3}\\) of the batch",
+      "Compute: \\(\\dfrac{1}{3} \\times 300\\)"
+    ],
+    answer: "100 grams"
+  }
+];
+
+const quiz = [
+  {
+    diff: "easy",
+    q: "A printer can print 45 pages per minute. How many minutes will it take to print 630 pages?",
+    opts: ["12","14","15","18"], correct: 1,
+    exp: "\\(630 \\div 45 = 14\\) minutes."
+  },
+  {
+    diff: "easy",
+    q: "The ratio of red marbles to blue marbles in a jar is 5:3. If there are 45 red marbles, how many blue marbles are there?",
+    opts: ["21","24","27","30"], correct: 2,
+    exp: "Each 'part' represents \\(45\\div5=9\\) marbles. Blue marbles \\(=3\\times9=27\\)."
+  },
+  {
+    diff: "easy",
+    q: "A plant was 8 cm tall on day 1 and 32 cm tall on day 9. What was its average rate of growth, in cm per day?",
+    opts: ["2","3","4","6"], correct: 1,
+    exp: "Elapsed time \\(=9-1=8\\) days. Growth \\(=32-8=24\\) cm. Rate \\(=24\\div8=3\\) cm/day."
+  },
+  {
+    diff: "medium",
+    q: "A vendor sells pretzels in bags of 6. Each pretzel costs 45 cents. If the vendor has a budget of $162, how many full bags of pretzels can be bought?",
+    opts: ["45","54","60","72"], correct: 2,
+    exp: "\\(162\\) dollars \\(=16{,}200\\) cents. \\(16{,}200 \\div 45 = 360\\) pretzels, and \\(360 \\div 6 = 60\\) bags."
+  },
+  {
+    diff: "medium",
+    q: "A cyclist travels at 44 feet per second. What is this speed in miles per hour? (1 mile = 5,280 feet.)",
+    opts: ["15","20","30","40"], correct: 2,
+    exp: "\\(44 \\tfrac{\\text{ft}}{\\text{s}} \\times \\dfrac{3{,}600\\text{ s}}{1\\text{ hr}} \\times \\dfrac{1\\text{ mi}}{5{,}280\\text{ ft}} = \\dfrac{44\\times3{,}600}{5{,}280}=30\\) mph."
+  },
+  {
+    diff: "medium",
+    q: "A rectangular field has an area of 5,400 square feet. What is its area in square yards? (1 yard = 3 feet.)",
+    opts: ["200","450","600","1,800"], correct: 2,
+    exp: "Divide by \\(3^2=9\\): \\(5{,}400 \\div 9 = 600\\) square yards."
+  },
+  {
+    diff: "hard",
+    q: "The ratio of cats to dogs at a shelter is 3:4, and the ratio of dogs to birds is 2:5. If the shelter has 100 birds, how many cats are there?",
+    opts: ["24","28","30","32"], correct: 2,
+    exp: "Dogs \\(=\\dfrac{2}{5}\\times100=40\\). Cats \\(=\\dfrac{3}{4}\\times40=30\\)."
+  },
+  {
+    diff: "hard",
+    q: "A water tank contains w liters at time \\(t=0\\) minutes and drains at a constant rate. After 15 minutes it contains \\(w-450\\) liters. In terms of w, how many minutes will it take the tank to go from full (w liters) to completely empty?",
+    opts: ["\\(\\dfrac{w}{30}\\)","\\(\\dfrac{30}{w}\\)","\\(w-30\\)","\\(30w\\)"], correct: 0,
+    exp: "The drain rate is \\(450\\div15=30\\) liters per minute. Emptying w liters at 30 L/min takes \\(\\dfrac{w}{30}\\) minutes."
+  },
+  {
+    diff: "hard",
+    q: "A copier prints p pages every m minutes. At this rate, which expression represents the number of pages it can print in h hours?",
+    opts: ["\\(\\dfrac{60ph}{m}\\)","\\(\\dfrac{ph}{60m}\\)","\\(\\dfrac{60pm}{h}\\)","\\(\\dfrac{ph}{m}\\)"], correct: 0,
+    exp: "The rate is \\(\\dfrac{p\\text{ pages}}{m\\text{ min}}\\), and h hours \\(=60h\\) minutes. Pages \\(=\\dfrac{p}{m}\\times60h=\\dfrac{60ph}{m}\\)."
+  },
+  {
+    diff: "extreme",
+    q: "Machine A produces widgets at a constant rate and can make 720 widgets in 6 hours. The ratio of Machine A's rate to Machine B's rate is 4:3. Working together, how many minutes will it take both machines to produce 1,050 widgets?",
+    opts: ["200","250","300","350"], correct: 2,
+    exp: "Machine A's rate \\(=720\\div6=120\\) widgets/hr. Since A:B\\(=4:3\\), B's rate \\(=120\\times\\tfrac{3}{4}=90\\) widgets/hr. Combined rate \\(=210\\) widgets/hr. Time \\(=1{,}050\\div210=5\\) hours \\(=300\\) minutes."
+  }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="difftag ${item.diff}">${item.diff}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+      if(window.renderMathInElement){ renderMathInElement(explain); }
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
