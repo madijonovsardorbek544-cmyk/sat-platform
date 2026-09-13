@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Functions — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:22px 22px 20px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    display:flex; gap:22px; align-items:center; flex-wrap:wrap;
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .titletext{ flex:1 1 320px; min-width:0; }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px; gap:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  /* Signature element: a small "function machine" schematic — input -> f -> output */
+  .machine{ flex:0 0 auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; }
+  .machine .node{
+    border:1px solid var(--line-strong); border-radius:2px; padding:8px 10px;
+    font-size:12.5px; color:var(--muted); background:var(--surface); white-space:nowrap;
+  }
+  .machine .box{
+    border:1px solid var(--amber-dim); border-radius:2px; padding:10px 14px;
+    font-size:15px; color:var(--amber); background:rgba(242,184,75,0.08); font-weight:600;
+  }
+  .machine .arrow{ color:var(--cyan); font-size:15px; }
+  @media (max-width:620px){ .machine{ display:none; } }
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-sub{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted); margin-left:-2px; }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard.bonus{ border-color: rgba(242,184,75,0.35); }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; }
+  .fcard .fmath{ font-size:16.5px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:700px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .diff-row{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .diff-pill{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    padding:5px 10px; border-radius:20px; border:1px solid var(--line-strong); color:var(--muted);
+  }
+  .diff-pill.active{ color:var(--bg); background:var(--amber); border-color:var(--amber); font-weight:600; }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em;
+    padding:2px 7px; border-radius:10px; border:1px solid var(--line-strong); color:var(--muted);
+    text-transform:uppercase;
+  }
+  .qdiff.easy{ color:var(--good); border-color:var(--good-dim); }
+  .qdiff.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); }
+  .qdiff.hard{ color:var(--amber); border-color:var(--amber-dim); }
+  .qdiff.extreme{ color:var(--bad); border-color:var(--bad-dim); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:2px; }
+    .titleblock{ padding:20px 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="titletext">
+      <div class="eyebrow-row">
+        <span>SAT MATH · CHAPTER 5</span>
+        <span>REV. 01</span>
+      </div>
+      <h1 class="maintitle">Functions</h1>
+      <div class="subtitle-en">Notation · Domain &amp; Range · Composition · Rate of Change</div>
+      <p class="desc">Formulas first, then step-by-step worked examples, and finally 10 practice questions ranked Easy → Extreme with instant feedback.</p>
+    </div>
+    <div class="machine" aria-hidden="true">
+      <div class="node">input <span style="color:#fff">x</span></div>
+      <span class="arrow">→</span>
+      <div class="box">f</div>
+      <span class="arrow">→</span>
+      <div class="node">output <span style="color:#fff">f(x)</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">Function notation</div><div class="fmath">\(y = f(x)\)</div><div class="fexample">\(f(x)\) means "the output when the input is \(x\)"</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Evaluating a function</div><div class="fmath">substitute the input for every \(x\)</div><div class="fexample">If \(f(x)=x^2+1\), then \(f(3)=3^2+1=10\)</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">y-intercept</div><div class="fmath">y-intercept \(= f(0)\)</div><div class="fexample">If \(f(x)=5x-2\), the y-intercept is \((0,-2)\)</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">x-intercept (zero / root)</div><div class="fmath">solve \(f(x) = 0\)</div><div class="fexample">If \(f(x)=(x-3)(x+1)\), the zeros are \(x=3\) and \(x=-1\)</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Domain</div><div class="fmath">the set of allowed inputs \(x\)</div><div class="fexample">\(f(x)=\dfrac{1}{x-2}\) has domain \(x \neq 2\)</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">Domain red flags</div><div class="fmath">denominator \(\neq 0\)&nbsp;&nbsp;·&nbsp;&nbsp;even root \(\geq 0\)</div><div class="fexample">\(\sqrt{x-5}\) requires \(x \geq 5\)</div></div>
+    <div class="fcard" data-tag="RULE 07"><div class="flabel">Range</div><div class="fmath">the set of possible outputs \(f(x)\)</div><div class="fexample">\(f(x)=x^2\) has range \(y \geq 0\)</div></div>
+    <div class="fcard" data-tag="RULE 08"><div class="flabel">Composite functions</div><div class="fmath">\((f \circ g)(x) = f(g(x))\)</div><div class="fexample">Always work from the inside out</div></div>
+    <div class="fcard" data-tag="RULE 09"><div class="flabel">Order matters</div><div class="fmath">\(f(g(x)) \neq g(f(x))\)</div><div class="fexample">in general — check which function is "inside"</div></div>
+    <div class="fcard" data-tag="RULE 10"><div class="flabel">Unknown constants</div><div class="fmath">plug in a known point to solve</div><div class="fexample">If \(f(x)=ax+5\) and \(f(2)=13\), then \(a=4\)</div></div>
+    <div class="fcard" data-tag="RULE 11"><div class="flabel">Average rate of change</div><div class="fmath">\(\dfrac{f(b)-f(a)}{b-a}\)</div><div class="fexample">equals the slope of the line between the two points</div></div>
+    <div class="fcard bonus" data-tag="SAT+ 12"><div class="flabel">Vertical shift</div><div class="fmath">\(f(x) + k\)</div><div class="fexample">shifts the graph up \(k\) units (down if \(k<0\))</div></div>
+    <div class="fcard bonus" data-tag="SAT+ 13"><div class="flabel">Horizontal shift</div><div class="fmath">\(f(x - h)\)</div><div class="fexample">shifts the graph right \(h\) units (left if \(h<0\))</div></div>
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diff-row">
+    <span class="diff-pill" style="color:var(--good);border-color:var(--good-dim)">● 3 EASY</span>
+    <span class="diff-pill" style="color:var(--cyan);border-color:rgba(111,227,214,0.35)">● 3 MEDIUM</span>
+    <span class="diff-pill" style="color:var(--amber);border-color:var(--amber-dim)">● 3 HARD</span>
+    <span class="diff-pill" style="color:var(--bad);border-color:var(--bad-dim)">● 1 EXTREME</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Evaluating a function",
+    prompt: "The function f is defined by \\(f(x) = x^2 - 3x + 5\\). What is \\(f(6)\\)?",
+    steps: [
+      "Substitute 6 for every \\(x\\): \\(f(6) = 6^2 - 3(6) + 5\\)",
+      "Compute the power and product: \\(= 36 - 18 + 5\\)",
+      "Combine: \\(= 23\\)"
+    ],
+    answer: "\\(f(6) = 23\\)"
+  },
+  {
+    title: "Example 2 — Composite functions",
+    prompt: "Functions f and g are defined by \\(f(x) = 2x+1\\) and \\(g(x) = x^2 - 4\\). What is the value of \\(g(f(3))\\)?",
+    steps: [
+      "Work from the inside out — find \\(f(3)\\) first: \\(f(3) = 2(3)+1 = 7\\)",
+      "Substitute that result into g: \\(g(7) = 7^2 - 4\\)",
+      "Compute: \\(= 49 - 4 = 45\\)"
+    ],
+    answer: "\\(g(f(3)) = 45\\)"
+  },
+  {
+    title: "Example 3 — Domain with a square root",
+    prompt: "What is the domain of \\(f(x) = \\sqrt{x-4}\\)?",
+    steps: [
+      "A square root is only defined when the radicand is non-negative",
+      "Set up the inequality: \\(x - 4 \\geq 0\\)",
+      "Solve: \\(x \\geq 4\\)"
+    ],
+    answer: "\\(x \\geq 4\\)"
+  },
+  {
+    title: "Example 4 — Unknown constant (with a shortcut)",
+    prompt: "The function h is defined by \\(h(x) = 2x^2 + c\\), where c is a constant. If \\(h(3) = 25\\), what is \\(h(-3)\\)?",
+    steps: [
+      "Notice that \\(x\\) is squared, so \\(x=3\\) and \\(x=-3\\) give the exact same value of \\(x^2\\): \\((3)^2 = (-3)^2 = 9\\)",
+      "Since \\(h(x)\\) only depends on \\(x^2\\) and c (both unchanged), \\(h(-3)\\) must equal \\(h(3)\\)",
+      "So \\(h(-3) = h(3) = 25\\) — no need to even solve for c!"
+    ],
+    answer: "\\(h(-3) = 25\\)"
+  },
+  {
+    title: "Example 5 — Average rate of change from a table",
+    prompt: "For the function f, \\(f(2) = 10\\) and \\(f(6) = 22\\). What is the average rate of change of f over this interval?",
+    steps: [
+      "Use the average rate of change formula: \\(\\dfrac{f(b)-f(a)}{b-a}\\)",
+      "Substitute the values: \\(\\dfrac{22 - 10}{6 - 2} = \\dfrac{12}{4}\\)",
+      "Simplify: \\(= 3\\)"
+    ],
+    answer: "\\(3\\)"
+  }
+];
+
+const quiz = [
+  { level: "easy", q: "If \\(f(x) = 2x - 5\\), what is \\(f(4)\\)?", opts: ["-3","3","8","13"], correct: 1, exp: "Substitute \\(x=4\\): \\(f(4) = 2(4) - 5 = 8 - 5 = 3\\)." },
+  { level: "easy", q: "If \\(f(x) = x^2 + 3\\), what is \\(f(-2)\\)?", opts: ["-7","-1","1","7"], correct: 3, exp: "Substitute \\(x=-2\\): \\(f(-2) = (-2)^2 + 3 = 4 + 3 = 7\\). Remember to square the entire input, including the negative sign." },
+  { level: "easy", q: "What is the y-intercept of the graph of \\(y = f(x)\\) if \\(f(x) = 3x + 7\\)?", opts: ["(0, 7)","(7, 0)","(0, 3)","(3, 0)"], correct: 0, exp: "The y-intercept occurs where \\(x=0\\): \\(f(0) = 3(0)+7 = 7\\), giving the point \\((0,7)\\)." },
+  { level: "medium", q: "If \\(f(x) = x - 4\\) and \\(g(x) = x^2\\), what is \\(f(g(3))\\)?", opts: ["13","9","5","-1"], correct: 2, exp: "Work from the inside out: \\(g(3) = 3^2 = 9\\). Then \\(f(9) = 9 - 4 = 5\\)." },
+  { level: "medium", q: "The function f is defined by \\(f(x) = kx + 3\\), where k is a constant. If \\(f(2) = 11\\), what is the value of k?", opts: ["8","7","5.5","4"], correct: 3, exp: "Substitute the known values: \\(2k + 3 = 11 \\Rightarrow 2k = 8 \\Rightarrow k = 4\\)." },
+  { level: "medium", q: "For what value of x is \\(f(x) = \\dfrac{x+2}{x-5}\\) undefined?", opts: ["5","-2","0","-5"], correct: 0, exp: "A function is undefined when its denominator equals 0: \\(x - 5 = 0 \\Rightarrow x = 5\\)." },
+  { level: "hard", q: "If \\(f(x) = x^2 - 2x\\), what is the average rate of change of f from \\(x=1\\) to \\(x=4\\)?", opts: ["2","3","5","9"], correct: 1, exp: "Average rate of change \\(= \\dfrac{f(4)-f(1)}{4-1}\\). Since \\(f(4)=16-8=8\\) and \\(f(1)=1-2=-1\\), the rate is \\(\\dfrac{8-(-1)}{3} = \\dfrac{9}{3} = 3\\)." },
+  { level: "hard", q: "The function f is defined by \\(f(x) = ax+b\\), where a and b are constants. If \\(f(2)=9\\) and \\(f(5)=18\\), what is the value of \\(a - b\\)?", opts: ["-3","3","0","6"], correct: 2, exp: "The slope is \\(a = \\dfrac{18-9}{5-2} = 3\\). Substituting into \\(f(2)=9\\): \\(2(3)+b=9 \\Rightarrow b=3\\). So \\(a-b = 3-3=0\\)." },
+  { level: "hard", q: "The function f is defined by \\(f(x)=(x-1)(x+3)(x-k)\\), where k is a constant. If the graph of \\(y=f(x)\\) has exactly 2 distinct x-intercepts, what is one possible value of k?", opts: ["7","5","2","-3"], correct: 3, exp: "f has 3 factors, giving up to 3 distinct roots at \\(x=1, -3, k\\). For only 2 distinct x-intercepts, k must match one of the existing roots. Setting \\(k=-3\\) makes \\((x+3)\\) repeat, leaving just \\(x=1\\) and \\(x=-3\\) as distinct intercepts." },
+  { level: "extreme", q: "The function f is defined by \\(f(x)=ax+b\\), where \\(a>0\\). If \\(g(x) = f(f(x))\\) and \\(g(x) = 4x - 9\\) for all values of x, what is the value of \\(a+b\\)?", opts: ["-5","-1","1","5"], correct: 1, exp: "Compose the function: \\(f(f(x)) = a(ax+b)+b = a^2x + ab + b\\). Matching coefficients with \\(4x-9\\): \\(a^2=4\\), so \\(a=2\\) (since \\(a>0\\)). Then \\(ab+b = b(a+1) = 3b = -9\\), so \\(b=-3\\). Therefore \\(a+b = 2 + (-3) = -1\\)." }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+const levelLabel = { easy: "Easy", medium: "Medium", hard: "Hard", extreme: "Extreme" };
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff ${item.level}">${levelLabel[item.level]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+      if(window.renderMathInElement){ renderMathInElement(explain); }
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
