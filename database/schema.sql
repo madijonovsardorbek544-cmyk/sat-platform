@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS questions (
   explanation   TEXT NOT NULL,
   difficulty    TEXT NOT NULL DEFAULT 'medium' CHECK (difficulty IN ('easy','medium','hard')),
   category      TEXT NOT NULL DEFAULT 'vocabulary',
-  question_type TEXT NOT NULL CHECK (question_type IN ('definition','isolated-word','passage-in-context')),
+  question_type TEXT NOT NULL CHECK (question_type IN ('definition','isolated-word','passage-in-context','math-multiple-choice','math-grid-in')),
   is_active     INTEGER NOT NULL DEFAULT 1,
   created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
   updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
