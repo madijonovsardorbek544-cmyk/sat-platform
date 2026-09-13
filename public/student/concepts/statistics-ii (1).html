@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistics II — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --cyan-dim: rgba(111,227,214,0.4);
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --geo: #7C93BE;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+  .fdiagram{ width:100%; height:auto; display:block; margin-bottom:8px; }
+  .fcard .fmath{ font-size:14.5px; color:#fff; margin-bottom:8px; min-height:22px; line-height:1.4; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.9; line-height:1.5; }
+
+  .fcard.bonus{ border-color: rgba(111,227,214,0.3); }
+  .fcard.bonus::before{ color:var(--cyan); border-color: var(--cyan-dim); }
+  .fcard-extra{ margin-top:9px; font-size:10.5px; color:var(--cyan); font-style:italic; opacity:0.8; letter-spacing:0.02em; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:900px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .exdiagram{ width:100%; max-width:300px; height:auto; display:block; margin:4px auto 16px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.09em;
+    padding:2px 8px; border-radius:2px; border:1px solid; text-transform:uppercase;
+    flex-shrink:0;
+  }
+  .qdiff.diff-easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .qdiff.diff-medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); background:rgba(111,227,214,0.08); }
+  .qdiff.diff-hard{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .qdiff.diff-extreme{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.08); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  .grid-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .grid-input{
+    font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--text);
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; width:140px;
+  }
+  .grid-input:focus{ outline:none; border-color:var(--cyan); }
+  .grid-input.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .grid-input.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); }
+  .btn-check{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--bg2);
+    background:var(--amber); border:none; border-radius:3px; padding:11px 18px; cursor:pointer; font-weight:600;
+    letter-spacing:0.04em;
+  }
+  .btn-check:hover{ filter:brightness(1.08); }
+  .btn-check:disabled{ opacity:0.5; cursor:default; }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:6px; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 26</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Statistics II</h1>
+    <div class="subtitle-en">Sampling · Margin of Error · Causation</div>
+    <p class="desc">This chapter is mostly conceptual — knowing exactly what a result does and doesn't let you conclude is the real skill. Formulas and principles first — including two SAT shortcuts not spelled out in this chapter — then worked examples, and finally practice questions from easy to extreme.</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas &amp; Principles</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+
+    <div class="fcard" data-tag="RULE 01">
+      <div class="flabel">Estimating a population total</div>
+      <svg class="fdiagram" viewBox="0 0 220 120">
+        <circle cx="30" cy="25" r="3" fill="var(--geo)"/>
+        <circle cx="50" cy="35" r="3" fill="var(--geo)"/>
+        <circle cx="20" cy="50" r="3" fill="var(--geo)"/>
+        <circle cx="45" cy="60" r="3" fill="var(--geo)"/>
+        <circle cx="65" cy="25" r="3" fill="var(--geo)"/>
+        <circle cx="35" cy="80" r="3" fill="var(--geo)"/>
+        <circle cx="60" cy="70" r="3" fill="var(--geo)"/>
+        <circle cx="75" cy="50" r="3" fill="var(--geo)"/>
+        <circle cx="25" cy="95" r="3" fill="var(--geo)"/>
+        <circle cx="55" cy="95" r="3" fill="var(--geo)"/>
+        <circle cx="40" cy="45" r="3" fill="var(--amber)"/>
+        <circle cx="55" cy="55" r="3" fill="var(--amber)"/>
+        <circle cx="30" cy="65" r="3" fill="var(--amber)"/>
+        <ellipse cx="42" cy="55" rx="26" ry="24" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <text x="6" y="115" font-family="IBM Plex Mono" font-size="9.5" fill="var(--muted)">population</text>
+        <text x="140" y="55" font-family="IBM Plex Mono" font-size="10.5" fill="var(--amber)">random sample</text>
+        <text x="140" y="69" font-family="IBM Plex Mono" font-size="10.5" fill="var(--amber)">→ estimate the</text>
+        <text x="140" y="83" font-family="IBM Plex Mono" font-size="10.5" fill="var(--amber)">whole population</text>
+      </svg>
+      <div class="fmath">\(\text{estimate}=\dfrac{\text{sample count}}{\text{sample size}}\times\text{population size}\)</div>
+      <div class="fexample">200 of 1,000 sampled → \(\frac{200}{1000}\times18{,}000=3{,}600\)</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 02">
+      <div class="flabel">Margin of error → plausible range</div>
+      <svg class="fdiagram" viewBox="0 0 240 90">
+        <line x1="20" y1="55" x2="220" y2="55" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="70" y1="45" x2="70" y2="65" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="170" y1="45" x2="170" y2="65" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="70" y1="55" x2="170" y2="55" stroke="var(--cyan)" stroke-width="3"/>
+        <line x1="120" y1="30" x2="120" y2="65" stroke="var(--amber)" stroke-width="2.5"/>
+        <text x="98" y="22" font-family="IBM Plex Mono" font-size="10.5" fill="var(--amber)">estimate</text>
+        <text x="38" y="80" font-family="IBM Plex Mono" font-size="9" fill="var(--cyan)">estimate−MOE</text>
+        <text x="132" y="80" font-family="IBM Plex Mono" font-size="9" fill="var(--cyan)">estimate+MOE</text>
+      </svg>
+      <div class="fmath">\(\text{plausible range}=\text{estimate}\pm\text{margin of error}\)</div>
+      <div class="fexample">\(0.35\pm0.06\) → plausible proportion is between \(0.29\) and \(0.41\)</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 03">
+      <div class="flabel">What margin of error applies to</div>
+      <div class="fmath">It describes the population parameter — not individual members</div>
+      <div class="fexample">Mean weight \(145\pm5\) lbs doesn't mean any one person is close to 145</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 04">
+      <div class="flabel">Generalizability</div>
+      <div class="fmath">Results generalize only to the population the sample was drawn FROM</div>
+      <div class="fexample">A sample of pilots over 45 → conclusions apply only to pilots over 45</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 05">
+      <div class="flabel">What affects margin of error</div>
+      <div class="fmath">↑ variability → ↑ margin of error &nbsp;&nbsp; ↑ sample size → ↓ margin of error</div>
+      <div class="fexample">A bigger, more consistent sample gives a tighter, more trustworthy estimate</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 06">
+      <div class="flabel">Sampling vs. assignment</div>
+      <div class="fmath">Random <u>sampling</u> → generalizability &nbsp; Random <u>assignment</u> → causation</div>
+      <div class="fexample">Only a true experiment (random assignment to groups) can prove cause and effect</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 07">
+      <div class="flabel">Association vs. causation</div>
+      <div class="fmath">Association \(\neq\) Causation</div>
+      <div class="fexample">Exercise linked to better grades \(\neq\) exercise <i>causes</i> better grades</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 08">
+      <div class="flabel">Confounding variable</div>
+      <div class="fmath">A hidden third variable that could explain the association</div>
+      <div class="fexample">Age could explain an exercise–grades link if students weren't randomly assigned</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 09">
+      <div class="flabel">Reading a line of best fit</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="40" cy="100" r="4" fill="var(--cyan)"/>
+        <circle cx="65" cy="80" r="4" fill="var(--cyan)"/>
+        <circle cx="95" cy="85" r="4" fill="var(--cyan)"/>
+        <circle cx="120" cy="55" r="4" fill="var(--cyan)"/>
+        <circle cx="150" cy="45" r="4" fill="var(--cyan)"/>
+        <circle cx="180" cy="30" r="4" fill="var(--cyan)"/>
+        <line x1="25" y1="108" x2="195" y2="20" stroke="var(--amber)" stroke-width="2"/>
+      </svg>
+      <div class="fmath">\(y=mx+b\) — estimate \(m\) and \(b\) from the line itself</div>
+      <div class="fexample">Use the line's predicted value, not the nearest actual data point</div>
+    </div>
+
+    <div class="fcard bonus" data-tag="BONUS 01">
+      <div class="flabel">Association direction ↔ slope sign</div>
+      <div class="fmath">Positive association \(\leftrightarrow\) positive slope; negative \(\leftrightarrow\) negative slope</div>
+      <div class="fexample">A quick way to match a described trend to an equation's sign</div>
+      <div class="fcard-extra">SAT shortcut — not spelled out as its own rule in this chapter</div>
+    </div>
+
+    <div class="fcard bonus" data-tag="BONUS 02">
+      <div class="flabel">Residual (actual − predicted)</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="40" cy="100" r="4" fill="var(--cyan)"/>
+        <circle cx="65" cy="80" r="4" fill="var(--cyan)"/>
+        <circle cx="95" cy="85" r="4" fill="var(--cyan)"/>
+        <circle cx="120" cy="55" r="4" fill="var(--cyan)"/>
+        <circle cx="150" cy="45" r="4" fill="var(--cyan)"/>
+        <circle cx="180" cy="30" r="4" fill="var(--cyan)"/>
+        <line x1="25" y1="108" x2="195" y2="20" stroke="var(--amber)" stroke-width="2"/>
+        <line x1="95" y1="85" x2="95" y2="66" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <circle cx="95" cy="66" r="2.5" fill="var(--bad)"/>
+      </svg>
+      <div class="fmath">\(\text{residual}=y_{\text{actual}}-y_{\text{predicted}}\)</div>
+      <div class="fexample">The book never names it, but "actual vs. predicted" questions are exactly this</div>
+      <div class="fcard-extra">SAT shortcut — the formal term isn't used in this chapter</div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1",
+    prompt: "A school has 2,400 students. A random sample of 150 students was surveyed about their favorite lunch option, and 45 of them chose pizza. Based on the survey, what is the best estimate of the total number of students at the school who prefer pizza?",
+    steps: [
+      "Find the sample proportion: \\(\\dfrac{45}{150}=0.3\\)",
+      "Apply that proportion to the whole population: \\(0.3\\times2{,}400\\)"
+    ],
+    answer: "720 students"
+  },
+  {
+    title: "Example 2",
+    prompt: "A random sample of hikers was surveyed, and it is estimated that the mean length of a certain trail hiked is 4.2 miles, with an associated margin of error of 0.5 miles. What is the most appropriate conclusion?",
+    steps: [
+      "The margin of error applies to the mean, not to any individual hiker",
+      "Plausible range: \\(4.2-0.5=3.7\\) to \\(4.2+0.5=4.7\\)"
+    ],
+    answer: "It is plausible that the mean trail length hiked is between 3.7 and 4.7 miles"
+  },
+  {
+    title: "Example 3",
+    prompt: "For a study, researchers randomly selected 80 nurses working in pediatric hospitals across the country. What is the largest group to which the results of this study can be generalized?",
+    steps: [
+      "The sample was drawn specifically from nurses in pediatric hospitals, not all nurses",
+      "Results can't be extended to a broader group, but they do apply to the full group actually sampled from"
+    ],
+    answer: "All nurses working in pediatric hospitals"
+  },
+  {
+    title: "Example 4",
+    prompt: "A researcher wants to reduce the margin of error in an estimate about residents of a specific city, while keeping the estimate generalizable to that same city. Her original sample had 60 randomly selected residents from that city. What should she do?",
+    steps: [
+      "Changing the population sampled from (a different or broader area) would break generalizability",
+      "The margin of error shrinks when the sample size grows, so keep the same city but sample more people"
+    ],
+    answer: "Randomly select a larger sample (more than 60) from the same city"
+  },
+  {
+    title: "Example 5",
+    prompt: "Researchers observed that people who regularly drink green tea tend to have lower rates of heart disease than people who don't. Can researchers conclude that green tea causes a reduction in heart disease risk?",
+    steps: [
+      "This is an observational study — participants were not randomly assigned to \"tea\" and \"no tea\" groups",
+      "A confounding variable (like an overall healthier lifestyle) could explain the link instead"
+    ],
+    answer: "No — only an association can be concluded, not causation"
+  },
+  {
+    title: "Example 6",
+    prompt: "A line of best fit for a scatterplot passes through the points \\((2,10)\\) and \\((6,18)\\). What y-value does the line predict at \\(x=4\\)? If the actual data point at \\(x=4\\) has a y-value of 12, what is the residual?",
+    steps: [
+      "Find the slope: \\(m=\\dfrac{18-10}{6-2}=\\dfrac{8}{4}=2\\)",
+      "Build the line: \\(y-10=2(x-2) \\Rightarrow y=2x+6\\)",
+      "Predicted value at \\(x=4\\): \\(y=2(4)+6=14\\). Residual: \\(12-14\\)"
+    ],
+    answer: "Predicted \\(=14\\); residual \\(=-2\\)"
+  }
+];
+
+const quiz = [
+  { diff:"easy", q: "A company has 5,000 employees. A random sample of 200 employees was surveyed, and 60 said they work remotely. What is the best estimate of the total number of employees who work remotely?", opts: ["\\(1{,}500\\)","\\(1{,}200\\)","\\(1{,}000\\)","\\(600\\)"], correct: 0, exp: "\\(\\dfrac{60}{200}=0.3\\), and \\(0.3\\times5{,}000=1{,}500\\)." },
+  { diff:"easy", q: "A study estimates the mean commute time for a population is 32 minutes, with a margin of error of 4 minutes. Which range is plausible for the true mean commute time?", opts: ["28 to 36 minutes","24 to 40 minutes","30 to 34 minutes","32 to 36 minutes"], correct: 0, exp: "Plausible range \\(=32\\pm4\\), which is 28 to 36 minutes." },
+  { diff:"easy", q: "Which of the following best describes a negative association between two variables?", opts: ["As one variable increases, the other tends to decrease","As one variable increases, the other tends to increase","The two variables are unrelated","Both variables always increase together"], correct: 0, exp: "A negative association means the variables move in opposite directions." },
+  { diff:"medium", q: "For a poll, 60 members of a university's chess club were randomly selected and surveyed about a proposed rule change. What is the largest group to which the results can be generalized?", opts: ["All members of that university's chess club","All students at the university","Chess players nationally","Only the 60 members surveyed"], correct: 0, exp: "The sample was drawn from the chess club specifically, so results generalize only to that club's full membership." },
+  { diff:"medium", q: "A researcher estimates a population proportion to be 0.42, with a margin of error of 0.05. Which value is NOT plausible for the true population proportion?", opts: ["\\(0.50\\)","\\(0.44\\)","\\(0.39\\)","\\(0.46\\)"], correct: 0, exp: "The plausible range is \\(0.42\\pm0.05=[0.37,\\,0.47]\\). \\(0.50\\) falls outside this range." },
+  { diff:"medium", q: "A study found that neighborhoods with more streetlights tend to have lower crime rates. A researcher concludes that installing streetlights causes crime rates to drop. What is the flaw in this conclusion?", opts: ["The study shows only an association — a confounding variable could explain the link","The sample size was too small to draw any conclusion","The margin of error was not given","There is no flaw; the conclusion is valid"], correct: 0, exp: "Without random assignment, this observational link cannot establish causation; something else (like neighborhood wealth) could explain both." },
+  { diff:"hard", q: "A researcher wants to reduce the margin of error of an estimate about the mean age of residents in a county, while keeping the estimate generalizable to that same county. Her original sample had 80 randomly selected residents from the county. Which change would most likely achieve her goal?", opts: ["Randomly selecting 200 residents from the same county","Randomly selecting 80 residents from a neighboring county","Randomly selecting 40 residents from the same county","Selecting the 80 oldest residents from the same county"], correct: 0, exp: "A larger random sample from the same population reduces the margin of error without harming generalizability." },
+  { diff:"hard", q: "A line of best fit is given by \\(y=1.8x+5\\). At \\(x=10\\), the actual data point has a y-value of 20. What is the residual (actual \\(-\\) predicted) at \\(x=10\\)?", opts: ["\\(-3\\)","\\(3\\)","\\(-23\\)","\\(43\\)"], correct: 0, exp: "Predicted: \\(1.8(10)+5=23\\). Residual: \\(20-23=-3\\)." },
+  { diff:"hard", q: "To test whether a new fertilizer increases plant growth, researchers randomly assigned 100 plants to two groups: 50 received the fertilizer, 50 did not, with all other conditions identical. The fertilized plants grew significantly more. What can researchers conclude?", opts: ["The new fertilizer likely causes increased plant growth","There is only an association between fertilizer and growth","A confounding variable is likely responsible","No conclusion can be drawn from this design"], correct: 0, exp: "Because the plants were randomly assigned to groups (a true experiment), a causal conclusion is appropriate here." },
+  { diff:"extreme", type:"grid", q: "A random sample of 250 shoppers at a mall was surveyed about which of three stores they visited most: Store A: 85, Store B: 70, Store C: 95. The mall has 12,000 total shoppers per month. Based on the sample, what is the estimated difference between the number of monthly shoppers who visit Store C most and the number who visit Store B most?", correctValue:"1200", exp: "Store C estimate: \\(\\dfrac{95}{250}\\times12{,}000=4{,}560\\). Store B estimate: \\(\\dfrac{70}{250}\\times12{,}000=3{,}360\\). Difference: \\(4{,}560-3{,}360=1{,}200\\)." }
+];
+
+const diffLabel = { easy:"EASY", medium:"MEDIUM", hard:"HARD", extreme:"EXTREME" };
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.diagram || ''}
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+function lockAndStamp(card, isCorrect){
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+  stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+  stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+  explain.classList.add('show');
+  if(isCorrect) score++;
+  answered++;
+  renderScore();
+  if(window.renderMathInElement){ renderMathInElement(explain); }
+}
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  const isGrid = item.type === 'grid';
+
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff diff-${item.diff}">${diffLabel[item.diff]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    ${isGrid ? `
+      <div class="grid-row">
+        <input type="text" inputmode="numeric" class="grid-input" placeholder="Type your answer" id="gridin-${qi}">
+        <button class="btn-check" id="gridbtn-${qi}">CHECK</button>
+      </div>
+    ` : `
+      <div class="options">
+        ${item.opts.map((o, oi) => `
+          <button class="opt" data-i="${oi}">
+            <span class="optletter">${letters[oi]}</span>
+            <span>${o}</span>
+          </button>
+        `).join('')}
+      </div>
+    `}
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+
+  if(isGrid){
+    const input = card.querySelector(`#gridin-${qi}`);
+    const btn = card.querySelector(`#gridbtn-${qi}`);
+    const submit = () => {
+      if(input.disabled || !input.value.trim()) return;
+      const isCorrect = input.value.trim() === item.correctValue;
+      input.disabled = true;
+      btn.disabled = true;
+      input.classList.add(isCorrect ? 'correct' : 'wrong');
+      lockAndStamp(card, isCorrect);
+    };
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', (e) => { if(e.key === 'Enter') submit(); });
+  } else {
+    const buttons = card.querySelectorAll('.opt');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosen = parseInt(btn.dataset.i);
+        const isCorrect = chosen === item.correct;
+        buttons.forEach(b => b.disabled = true);
+        buttons[item.correct].classList.add('correct');
+        if(!isCorrect){ btn.classList.add('wrong'); }
+        lockAndStamp(card, isCorrect);
+      });
+    });
+  }
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
