@@ -308,25 +308,19 @@ function importChapters(db) {
 // ─────────────────────────────────────────────────────────────────
 const db = getDb();
 
-(function forceCleanCorruptedTables() {
-  // SQLite's ALTER TABLE RENAME can silently corrupt foreign keys in child tables.
-  // To guarantee the schema is clean, we will drop the child tables and let schema.sql recreate them.
-  console.log('⚠  Running pre-flight schema repair...');
+(function cleanStaleMigrationArtifacts() {
+  // Only drop leftover backup tables from failed migrations.
+  // Do NOT drop test_questions or answers — seed.js already populated them with vocab data.
+  console.log('⚠  Checking for stale migration artifacts...');
   db.exec('PRAGMA foreign_keys = OFF;');
-  
   db.exec(`
-    DROP TABLE IF EXISTS answers;
-    DROP TABLE IF EXISTS test_questions;
     DROP TABLE IF EXISTS questions_bak;
     DROP TABLE IF EXISTS questions_old;
+    DROP TABLE IF EXISTS test_questions_bak;
+    DROP TABLE IF EXISTS answers_bak;
   `);
-  
-  const schemaPath = path.join(__dirname, 'schema.sql');
-  const schema = fs.readFileSync(schemaPath, 'utf8');
-  db.exec(schema);
-  
   db.exec('PRAGMA foreign_keys = ON;');
-  console.log('   Schema repair complete.\n');
+  console.log('   Done.\n');
 })();
 
 migrateSchema(db);
