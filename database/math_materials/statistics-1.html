@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistics I — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --violet: #B79CF2;
+    --violet-dim: #4A3B7A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(24px, 6vw, 38px); margin:0 0 4px; line-height:1.08;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:64ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  /* GRAPH PANEL */
+  .graph-panel{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+    padding:18px 18px 14px;
+    margin-bottom:18px;
+  }
+  .graph-panel::before{
+    content: attr(data-fig);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .graph-svg-wrap{ width:100%; max-width:400px; margin:8px auto 4px; }
+  .graph-svg-wrap svg{ width:100%; height:auto; display:block; }
+  .graph-caption{
+    text-align:center; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    color:var(--muted); margin-top:6px;
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard.bonus::before{ color:var(--violet); border-color:var(--violet-dim); }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; min-height:32px; }
+  .fcard .fmath{ font-size:14.5px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:760px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .diffkey{
+    display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);
+  }
+  .diffkey span{ display:flex; align-items:center; gap:6px; }
+  .diffkey i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .difftag{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.07em;
+    padding:2px 7px; border-radius:2px; border:1px solid; text-transform:uppercase;
+    flex-shrink:0; align-self:center;
+  }
+  .difftag.easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .difftag.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); background:rgba(111,227,214,0.08); }
+  .difftag.hard{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .difftag.extreme{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.1); }
+  .qtext{ font-size:15px; color:#fff; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 25</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Statistics I</h1>
+    <div class="subtitle-en">Mean · Median · Mode · Standard Deviation · Reading Data Displays</div>
+    <p class="desc">The center of a data set (mean, median, mode), how spread out it is (range and standard deviation — conceptual, never hand-calculated on the SAT), and how to read the same information off frequency tables, dot plots, box plots, and histograms. Diagrams and rules first, then worked examples and a 10-question practice set (3 easy · 3 medium · 3 hard · 1 extreme).</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS / TECHNIQUES -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Techniques</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="graph-panel" data-fig="FIG. 1 — DOT PLOT: {2, 2, 2, 5, 6, 7}">
+    <div class="graph-svg-wrap">
+      <svg viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg">
+        <line x1="15" y1="150" x2="285" y2="150" stroke="rgba(153,190,255,0.5)" stroke-width="1.3"/>
+        <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#86A2C9" text-anchor="middle">
+          <line x1="30" y1="146" x2="30" y2="154" stroke="rgba(153,190,255,0.5)"/><text x="30" y="166">2</text>
+          <line x1="78" y1="146" x2="78" y2="154" stroke="rgba(153,190,255,0.5)"/><text x="78" y="166">3</text>
+          <line x1="126" y1="146" x2="126" y2="154" stroke="rgba(153,190,255,0.5)"/><text x="126" y="166">4</text>
+          <line x1="174" y1="146" x2="174" y2="154" stroke="rgba(153,190,255,0.5)"/><text x="174" y="166">5</text>
+          <line x1="222" y1="146" x2="222" y2="154" stroke="rgba(153,190,255,0.5)"/><text x="222" y="166">6</text>
+          <line x1="270" y1="146" x2="270" y2="154" stroke="rgba(153,190,255,0.5)"/><text x="270" y="166">7</text>
+        </g>
+        <circle cx="30" cy="140" r="8" fill="#6FE3D6"/>
+        <circle cx="30" cy="121" r="8" fill="#6FE3D6"/>
+        <circle cx="30" cy="102" r="8" fill="#6FE3D6"/>
+        <circle cx="174" cy="140" r="8" fill="#F2B84B"/>
+        <circle cx="222" cy="140" r="8" fill="#F2B84B"/>
+        <circle cx="270" cy="140" r="8" fill="#F2B84B"/>
+        <text x="30" y="80" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6FE3D6">mode (freq. 3)</text>
+      </svg>
+    </div>
+    <div class="graph-caption">stacked dots = frequency · mean = 4 · median = 3.5 · mode = 2 · range = 5</div>
+  </div>
+
+  <div class="graph-panel" data-fig="FIG. 2 — BOX PLOT ANATOMY (THE FIVE-NUMBER SUMMARY)">
+    <div class="graph-svg-wrap">
+      <svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
+        <line x1="30" y1="65" x2="110" y2="65" stroke="#EAF2FF" stroke-width="2"/>
+        <line x1="220" y1="65" x2="270" y2="65" stroke="#EAF2FF" stroke-width="2"/>
+        <line x1="30" y1="50" x2="30" y2="80" stroke="#EAF2FF" stroke-width="2"/>
+        <line x1="270" y1="50" x2="270" y2="80" stroke="#EAF2FF" stroke-width="2"/>
+        <rect x="110" y="42" width="110" height="46" fill="rgba(111,227,214,0.12)" stroke="#6FE3D6" stroke-width="2"/>
+        <line x1="170" y1="42" x2="170" y2="88" stroke="#F2B84B" stroke-width="2.5"/>
+        <g font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#86A2C9" text-anchor="middle">
+          <text x="30" y="108">min</text>
+          <text x="110" y="108">Q1</text>
+          <text x="170" y="120" fill="#F2B84B">median</text>
+          <text x="220" y="108">Q3</text>
+          <text x="270" y="108">max</text>
+        </g>
+        <text x="150" y="20" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#6FE3D6">middle 50% of the data (Q1 to Q3)</text>
+      </svg>
+    </div>
+    <div class="graph-caption">whiskers reach the min and max · the box spans Q1 to Q3 · the line inside is the median</div>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">Mean (average)</div><div class="fmath">\(\text{mean}=\dfrac{\text{sum of values}}{\text{number of values}}\)</div><div class="fexample">\(\{5,6,2,2,2,7\} \to \dfrac{24}{6}=4\)</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Median</div><div class="fmath">\(\text{the middle value once data is ordered}\)</div><div class="fexample">\(\{2,2,2,5,6,7\} \to \dfrac{2+5}{2}=3.5\)</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">Mode</div><div class="fmath">\(\text{the value that appears most often}\)</div><div class="fexample">\(\{2,2,2,5,6,7\} \to \text{mode}=2\)</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">Range</div><div class="fmath">\(\text{range}=\text{max}-\text{min}\)</div><div class="fexample">\(\{2,2,2,5,6,7\} \to 7-2=5\)</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Standard deviation — spread from the mean (conceptual only)</div><div class="fmath">\(\text{closer to the mean} \to \text{smaller SD}; \ \text{more spread out} \to \text{bigger SD}\)</div><div class="fexample">you will never calculate SD by hand on the SAT — only compare it</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">Adding a value pulls the mean toward it</div><div class="fmath">\(\text{new mean}=\dfrac{\text{old sum}+\text{new value}}{\text{old count}+1}\)</div><div class="fexample">a much heavier panda joins → the average weight rises</div></div>
+    <div class="fcard" data-tag="RULE 07"><div class="flabel">Frequency table: frequency = how many times a value occurs</div><div class="fmath">\(\text{frequency}=\text{count of a value in the data set}\)</div><div class="fexample">read the table like a compressed list of the data</div></div>
+    <div class="fcard" data-tag="RULE 08"><div class="flabel">Dot plot: stack height = frequency</div><div class="fmath">\(\text{number of dots above a value} = \text{its frequency}\)</div><div class="fexample">the tallest stack of dots is the mode</div></div>
+    <div class="fcard" data-tag="RULE 09"><div class="flabel">Box plot: the five-number summary</div><div class="fmath">\(\text{min},\ Q_1 \text{ (25th \%ile)},\ \text{median (50th \%ile)},\ Q_3 \text{ (75th \%ile)},\ \text{max}\)</div><div class="fexample">the box itself (Q1 to Q3) always holds the middle 50%</div></div>
+    <div class="fcard" data-tag="RULE 10"><div class="flabel">Histogram: bars group data into intervals</div><div class="fmath">\(\text{bar height}=\text{frequency within that interval}\)</div><div class="fexample">the sum of all bar heights = total number of data points</div></div>
+    <div class="fcard bonus" data-tag="EXTRA · SAT FAVORITE"><div class="flabel">Outliers barely move the median but can swing the mean</div><div class="fmath">\(\text{median: resistant to outliers} \quad \text{mean: sensitive to outliers}\)</div><div class="fexample">replacing the max with an even bigger value changes the mean, not the median</div></div>
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diffkey">
+    <span><i style="background:var(--good)"></i>Easy ×3</span>
+    <span><i style="background:var(--cyan)"></i>Medium ×3</span>
+    <span><i style="background:var(--amber)"></i>Hard ×3</span>
+    <span><i style="background:var(--bad)"></i>Extreme ×1</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Mean, median, and mode",
+    prompt: "A data set consists of the values {3, 7, 3, 9, 3, 5}. What are the mean, median, and mode of this data set?",
+    steps: [
+      "Mean: add all values and divide by 6: \\(\\dfrac{3+7+3+9+3+5}{6}=\\dfrac{30}{6}\\)",
+      "Median: order the values (3, 3, 3, 5, 7, 9) and average the two middle values: \\(\\dfrac{3+5}{2}\\)",
+      "Mode: the most frequent value — 3 appears three times, more than any other value"
+    ],
+    answer: "mean = 5, median = 4, mode = 3"
+  },
+  {
+    title: "Example 2 — How a new value shifts the mean",
+    prompt: "The mean weight of a group of 15 dogs is 40 pounds. A new dog weighing 72 pounds joins the group. What is the new mean weight, in pounds, of all 16 dogs?",
+    steps: [
+      "Recover the original total: \\(15 \\times 40 = 600\\) pounds",
+      "Add the new dog's weight: \\(600+72=672\\) pounds",
+      "Divide by the new count of 16 dogs: \\(\\dfrac{672}{16}\\)"
+    ],
+    answer: "42 pounds"
+  },
+  {
+    title: "Example 3 — Reading a frequency table",
+    prompt: "A frequency table shows that in a class, 4 students scored 70, 6 students scored 80, and 10 students scored 90 on a test. What is the mean score of the class?",
+    steps: [
+      "Total number of students: \\(4+6+10=20\\)",
+      "Total of all scores: \\(4(70)+6(80)+10(90)=280+480+900\\)",
+      "Divide the total by the number of students: \\(\\dfrac{1{,}660}{20}\\)"
+    ],
+    answer: "83"
+  },
+  {
+    title: "Example 4 — Reading a dot plot",
+    prompt: "A dot plot shows the number of books read by 9 students: 1 student read 2 books, 3 students read 3 books, 2 students read 4 books, 2 students read 5 books, and 1 student read 6 books. What is the median number of books read?",
+    steps: [
+      "List all 9 values in order: 2, 3, 3, 3, 4, 4, 5, 5, 6",
+      "With 9 values, the median is the 5th value (there are 4 values on each side of it)",
+      "Counting to the 5th value gives 4"
+    ],
+    answer: "4 books"
+  },
+  {
+    title: "Example 5 — Reading a box plot",
+    prompt: "A box plot summarizes the test scores of 40 students: minimum 55, first quartile 70, median 82, third quartile 91, maximum 100. What percent of students scored between 70 and 91?",
+    steps: [
+      "70 is the first quartile (Q1), the 25th percentile",
+      "91 is the third quartile (Q3), the 75th percentile",
+      "The interval from Q1 to Q3 always contains the middle 50% of the data, by definition"
+    ],
+    answer: "50%"
+  },
+  {
+    title: "Example 6 — Outliers: mean vs. median",
+    prompt: "A data set consists of the values {12, 14, 15, 16, 18}. If the value 18 is replaced with 118, what happens to the mean and median of the data set?",
+    steps: [
+      "Original data set: mean \\(=\\dfrac{12+14+15+16+18}{5}=\\dfrac{75}{5}=15\\); median \\(=15\\) (the middle value)",
+      "New data set {12, 14, 15, 16, 118}: the middle value is still 15, so the median is unchanged",
+      "New mean: \\(\\dfrac{12+14+15+16+118}{5}=\\dfrac{175}{5}=35\\) — a big jump"
+    ],
+    answer: "The median stays 15; the mean rises from 15 to 35"
+  }
+];
+
+const quiz = [
+  {
+    diff: "easy",
+    q: "A data set consists of the values {4, 8, 6, 4, 8}. What is the mean of this data set?",
+    opts: ["4","6","8","30"], correct: 1,
+    exp: "\\(\\dfrac{4+8+6+4+8}{5}=\\dfrac{30}{5}=6\\)."
+  },
+  {
+    diff: "easy",
+    q: "A data set consists of the values {10, 3, 7, 15, 5}. What is the median of this data set?",
+    opts: ["5","7","8","10"], correct: 1,
+    exp: "Ordered: 3, 5, 7, 10, 15. The middle value is 7."
+  },
+  {
+    diff: "easy",
+    q: "A box plot shows a minimum of 20, a first quartile of 35, a median of 50, a third quartile of 65, and a maximum of 90. What is the range of the data set?",
+    opts: ["45","55","70","90"], correct: 2,
+    exp: "Range = max − min = 90 − 20 = 70."
+  },
+  {
+    diff: "medium",
+    q: "The mean of 8 numbers is 12. If a 9th number, 30, is added to the set, what is the new mean?",
+    opts: ["13","14","15","16"], correct: 1,
+    exp: "Original sum = \\(8\\times12=96\\). New sum = \\(96+30=126\\). New mean = \\(126\\div9=14\\)."
+  },
+  {
+    diff: "medium",
+    q: "A dot plot shows that 2 students scored 60, 5 students scored 70, and 3 students scored 80 on a quiz. What is the mode of the scores?",
+    opts: ["60","70","75","80"], correct: 1,
+    exp: "70 has the tallest stack of dots (frequency 5), so it's the mode."
+  },
+  {
+    diff: "medium",
+    q: "Data set A: {10, 20, 30, 40, 50}. Data set B: {28, 29, 30, 31, 32}. Both have a mean of 30. Which data set has the larger standard deviation?",
+    opts: ["Data set A","Data set B","They are equal","Cannot be determined"], correct: 0,
+    exp: "Data set A's values are much farther from the mean (30) than data set B's tightly clustered values, so A has more spread and a larger standard deviation."
+  },
+  {
+    diff: "hard",
+    q: "A data set consists of 7 test scores with a mean of 85. If the sum of 6 of the scores is 500, what is the value of the 7th score?",
+    opts: ["85","90","95","100"], correct: 2,
+    exp: "Total sum = \\(7\\times85=595\\). The 7th score = \\(595-500=95\\)."
+  },
+  {
+    diff: "hard",
+    q: "A box plot summarizes 60 data values. The first quartile is 40 and the third quartile is 64. Approximately how many data values lie between 40 and 64?",
+    opts: ["15","20","30","45"], correct: 2,
+    exp: "Q1 to Q3 always spans the middle 50% of the data: \\(0.5\\times60=30\\)."
+  },
+  {
+    diff: "hard",
+    q: "A data set has the values {5, 5, 5, 5, 20}. What is the positive difference between the mean and the median of this data set?",
+    opts: ["0","3","5","15"], correct: 1,
+    exp: "Mean \\(=\\dfrac{5+5+5+5+20}{5}=\\dfrac{40}{5}=8\\). Median \\(=5\\) (the middle value). Difference \\(=8-5=3\\)."
+  },
+  {
+    diff: "extreme",
+    q: "A data set consists of 5 positive integers with a mean of 20, a median of 18, and a maximum value of 35. What is the greatest possible value of the smallest number in the data set?",
+    opts: ["10","12","14","16"], correct: 2,
+    exp: "The sum of all 5 values is \\(5\\times20=100\\). With median (3rd value) = 18 and max (5th value) = 35, the remaining three values a≤b≤18 and d (with 18≤d≤35) must satisfy \\(a+b+d=100-18-35=47\\). To maximize a, set b=a, giving \\(2a+d=47\\) with \\(d\\geq18\\), so \\(2a\\leq29\\), meaning \\(a\\leq14.5\\). The greatest integer value is a=14 (with b=14, d=19), which checks out: 14+14+18+19+35=100."
+  }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="difftag ${item.diff}">${item.diff}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+      if(window.renderMathInElement){ renderMathInElement(explain); }
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
