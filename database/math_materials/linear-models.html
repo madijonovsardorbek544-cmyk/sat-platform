@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interpreting Linear Models — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:22px 22px 20px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    display:flex; gap:22px; align-items:center; flex-wrap:wrap;
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .titletext{ flex:1 1 320px; min-width:0; }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px; gap:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(26px, 5.4vw, 40px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  /* Signature element: y = mx + b broken into rate / start / total */
+  .machine{ flex:0 0 auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; }
+  .machine .node{
+    border:1px solid var(--line-strong); border-radius:2px; padding:8px 10px;
+    font-size:12.5px; color:var(--muted); background:var(--surface); white-space:nowrap;
+  }
+  .machine .box{
+    border:1px solid var(--amber-dim); border-radius:2px; padding:10px 14px;
+    font-size:15px; color:var(--amber); background:rgba(242,184,75,0.08); font-weight:600;
+  }
+  .machine .arrow{ color:var(--cyan); font-size:15px; }
+  @media (max-width:660px){ .machine{ display:none; } }
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; }
+  .fcard .fmath{ font-size:16px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:700px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .diff-row{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .diff-pill{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    padding:5px 10px; border-radius:20px; border:1px solid var(--line-strong); color:var(--muted);
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em;
+    padding:2px 7px; border-radius:10px; border:1px solid var(--line-strong); color:var(--muted);
+    text-transform:uppercase;
+  }
+  .qdiff.easy{ color:var(--good); border-color:var(--good-dim); }
+  .qdiff.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); }
+  .qdiff.hard{ color:var(--amber); border-color:var(--amber-dim); }
+  .qdiff.extreme{ color:var(--bad); border-color:var(--bad-dim); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  .trapnote{
+    border:1px dashed var(--bad-dim); background:rgba(242,109,109,0.06);
+    border-radius:3px; padding:12px 14px; margin:18px 0 0; font-size:13.5px;
+    color:var(--muted); line-height:1.55;
+  }
+  .trapnote b{ color:var(--bad); font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:2px; }
+    .titleblock{ padding:20px 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="titletext">
+      <div class="eyebrow-row">
+        <span>SAT MATH · CHAPTER 7</span>
+        <span>REV. 01</span>
+      </div>
+      <h1 class="maintitle">Interpreting Linear Models</h1>
+      <div class="subtitle-en">y = mx + b in the Real World · Slope · Intercept · Context</div>
+      <p class="desc">Formulas first, then step-by-step worked examples, and finally 10 practice questions ranked Easy → Extreme with instant feedback.</p>
+    </div>
+    <div class="machine" aria-hidden="true">
+      <div class="node">rate <span style="color:#fff">m</span> · x</div>
+      <span class="arrow">+</span>
+      <div class="box">start b</div>
+      <span class="arrow">=</span>
+      <div class="node">model <span style="color:#fff">y</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">Linear model form</div><div class="fmath">\(y = mx + b\)</div><div class="fexample">m = rate of change &nbsp;·&nbsp; b = starting value</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Meaning of the y-intercept</div><div class="fmath">\(b\) = value of \(y\) when \(x = 0\)</div><div class="fexample">the initial amount — before any time has passed, before anything is sold, etc.</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">Meaning of the slope</div><div class="fmath">\(m\) = change in \(y\) per 1 unit of \(x\)</div><div class="fexample">a rate — dollars per year, gallons per minute, miles per hour...</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">Interpreting f(a) = b</div><div class="fmath">describe the input <i>and</i> output together</div><div class="fexample">"when [input] is a [units], [output] is b [units]"</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Change over an interval</div><div class="fmath">\(\Delta y = m \times \Delta x\)</div><div class="fexample">multiply the rate by however much x actually changes</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">Reverse interpretation</div><div class="fmath">\(\Delta x = \dfrac{\Delta y}{m}\)</div><div class="fexample">take the reciprocal of the slope to go from a Δy to a Δx</div></div>
+    <div class="fcard" data-tag="RULE 07"><div class="flabel">Two-variable models</div><div class="fmath">\(ax + by = c\)</div><div class="fexample">check units: each term must match the units of c</div></div>
+    <div class="fcard" data-tag="RULE 08"><div class="flabel">Reading a model from a graph</div><div class="fmath">intercept = where the line crosses the axis</div><div class="fexample">slope = rise / run between any two points on the line</div></div>
+    <div class="fcard" data-tag="RULE 09"><div class="flabel">Interpreting an ordered pair</div><div class="fmath">\((a, b)\) on the model</div><div class="fexample">"when the input quantity is a, the output quantity is b"</div></div>
+    <div class="fcard" data-tag="RULE 10"><div class="flabel">Combination / budget models</div><div class="fmath">intercepts = max of one item when the other is 0</div><div class="fexample">e.g. entire budget spent on just one product</div></div>
+    <div class="fcard" data-tag="RULE 11"><div class="flabel">Avoid context traps</div><div class="fmath">match the variable's actual definition</div><div class="fexample">a plausible-sounding unit is wrong if it wasn't how the variable was defined</div></div>
+  </div>
+
+  <div class="trapnote"><b>WATCH OUT —</b> The most common wrong answer on these questions "sounds right" but describes the wrong variable or the wrong units. Always re-read exactly how each letter was defined in the problem before picking an interpretation.</div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diff-row">
+    <span class="diff-pill" style="color:var(--good);border-color:var(--good-dim)">● 3 EASY</span>
+    <span class="diff-pill" style="color:var(--cyan);border-color:rgba(111,227,214,0.35)">● 3 MEDIUM</span>
+    <span class="diff-pill" style="color:var(--amber);border-color:var(--amber-dim)">● 3 HARD</span>
+    <span class="diff-pill" style="color:var(--bad);border-color:var(--bad-dim)">● 1 EXTREME</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Interpreting the y-intercept",
+    prompt: "The function C(t) = 45,000 + 1,200t models the number of cars, C, produced by a factory t months after a new assembly line was installed. What is the best interpretation of 45,000 in this context?",
+    steps: [
+      "Compare to the general form \\(y = mx + b\\): here 45,000 plays the role of \\(b\\), the y-intercept",
+      "The y-intercept is the value of the model when \\(t = 0\\) — the very starting point",
+      "So 45,000 describes the factory's output right when the timer starts (t = 0)"
+    ],
+    answer: "45,000 is the number of cars the factory produced in the month the new assembly line was installed."
+  },
+  {
+    title: "Example 2 — Interpreting the slope",
+    prompt: "A tank contains V(t) = 800 - 20t gallons of water t minutes after a drain is opened. What is the best interpretation of the number 20?",
+    steps: [
+      "Compare to \\(y = mx + b\\): \\(-20\\) is the slope, \\(m\\)",
+      "The slope is the rate of change — how much V changes for each 1-minute increase in t",
+      "The negative sign tells us the volume is decreasing, not increasing"
+    ],
+    answer: "The water drains at a rate of 20 gallons per minute."
+  },
+  {
+    title: "Example 3 — Unit-consistency technique",
+    prompt: "A charity collected a total of $640 from selling x raffle tickets and y sponsorship packages. The equation 8x + 40y = 640 represents this situation. What is the best interpretation of 40?",
+    steps: [
+      "The right side, 640, is in dollars — so the left side must also work out to dollars: \\(8x\\text{ dollars} + 40y\\text{ dollars} = 640\\text{ dollars}\\)",
+      "Since y counts sponsorship packages, the term \\(40y\\) must be a dollar amount tied to packages",
+      "The only way the units work out is if 40 is a dollar-per-package rate"
+    ],
+    answer: "40 is the price, in dollars, of each sponsorship package."
+  },
+  {
+    title: "Example 4 — Reverse interpretation (reciprocal of slope)",
+    prompt: "The function g(x) = (2/5)x + 3 models the length, in cm, of a vine x days after being planted. Based on the model, how many days does it take for the vine's length to increase by 6 cm?",
+    steps: [
+      "The slope, \\(\\dfrac{2}{5}\\), tells us the vine grows \\(\\dfrac{2}{5}\\) cm per day",
+      "To go from a desired change in output to a change in input, divide by the slope: \\(\\Delta x = 6 \\div \\dfrac{2}{5}\\)",
+      "\\(6 \\times \\dfrac{5}{2} = 15\\)"
+    ],
+    answer: "15 days."
+  },
+  {
+    title: "Example 5 — Interpreting a function value",
+    prompt: "The equation P(x) = 2,400 + 350x gives the number of members, P, of a gym x months after it opened. What is the best interpretation of P(6) = 4,500?",
+    steps: [
+      "The input, \\(x = 6\\), represents 6 months after the gym opened",
+      "The output, \\(P(6) = 4{,}500\\), represents the number of members at that time",
+      "Combine both halves into one sentence describing the real-world meaning"
+    ],
+    answer: "6 months after the gym opened, it had 4,500 members."
+  }
+];
+
+const quiz = [
+  { level: "easy", q: "The function W(t) = 12,000 - 250t models the amount of water, in gallons, in a pool t minutes after draining begins. What is the best interpretation of 250 in this context?", opts: ["The pool drains at a rate of 250 gallons per minute","The pool initially contains 250 gallons","The pool contains 12,000 gallons after 250 minutes","The pool takes 250 minutes to drain completely"], correct: 0, exp: "The slope of the model is -250, meaning the volume decreases by 250 gallons for every 1-minute increase in t. So 250 is the draining rate in gallons per minute." },
+  { level: "easy", q: "A company's profit is modeled by P(x) = 45x - 900, where x is the number of items sold. What is the best interpretation of -900 in this context?", opts: ["The company loses 900 dollars for every item sold","The company has fixed costs of 900 dollars before any items are sold","The company must sell 900 items to break even","The company earns 900 dollars in profit initially"], correct: 1, exp: "In the form P(x)=mx+b, the constant -900 is the value of P when x=0 — the profit (really a loss) before any items are sold, i.e. fixed costs of $900." },
+  { level: "easy", q: "The equation y = 15x + 200 models the total cost, in dollars, of a catering package for x guests. What is the best interpretation of the number 15 in this context?", opts: ["The flat fee for the catering package","The minimum number of guests required","The total number of guests","The cost, in dollars, per guest"], correct: 3, exp: "In y=15x+200, 200 is the flat fee (paid regardless of guest count) and 15 is the slope — the additional cost added per guest." },
+  { level: "medium", q: "A student spent a total of $84 buying x notebooks and y pens. The equation 4x + 2y = 84 represents this situation. What is the best interpretation of the number 2 in this context?", opts: ["The price, in dollars, of each pen","The price, in dollars, of each notebook","The number of pens purchased","The total amount spent on pens"], correct: 0, exp: "Since the equation totals to dollars, each term must be in dollars: 4x dollars + 2y dollars = 84 dollars. Since y is the number of pens, the coefficient 2 must be the price, in dollars, of one pen." },
+  { level: "medium", q: "The function M(t) = 3,200 + 45t gives the number of magazine subscribers t months after a marketing campaign began. What is the best interpretation of M(8) = 3,560?", opts: ["8 months after the campaign began, there were 3,560 subscribers","The campaign gained 3,560 subscribers in 8 months","The company had 3,560 subscribers before the campaign began","The campaign needs 8 more months to reach 3,560 subscribers"], correct: 0, exp: "M(8) means the input (months after the campaign began) is 8, and the output (subscribers) is 3,560. Combine both halves: 8 months after the campaign began, there were 3,560 subscribers." },
+  { level: "medium", q: "The graph of a line models the distance, in miles, a cyclist is from home t hours after starting a ride. The line crosses the vertical axis at 5 and has a slope of 12. What is the best interpretation of the slope in this context?", opts: ["The cyclist started 12 miles from home","The total distance of the ride is 12 miles","The cyclist will arrive home in 12 hours","The cyclist is riding at a speed of 12 miles per hour"], correct: 3, exp: "The slope of a distance-vs-time graph represents speed — the change in distance per hour. A slope of 12 means the cyclist travels 12 miles every hour." },
+  { level: "hard", q: "The function h(x) = (5/6)x + 20 models the height, in cm, of a sunflower x days after it sprouts. Based on this model, how many days does it take for the sunflower's height to increase by 15 cm?", opts: ["12","18","15","25"], correct: 1, exp: "The slope is 5/6 cm per day. To find the change in x for a desired change in height, divide: Δx = 15 ÷ (5/6) = 15 × 6/5 = 18 days." },
+  { level: "hard", q: "A community center has a $3,000 budget to buy chairs and tables for an event, split entirely between the two items. The equation representing possible combinations has an x-intercept at 150 (chairs) when no tables are bought. What is the cost, in dollars, of each chair?", opts: ["15","30","20","150"], correct: 2, exp: "The x-intercept represents spending the entire budget on chairs alone: 150 chairs for $3,000. So each chair costs 3,000 ÷ 150 = $20." },
+  { level: "hard", q: "A community center has a $960 budget to buy chairs ($15 each) and tables ($60 each) for an event, spending the full budget. If the center buys 8 tables, how many chairs can it buy with the remaining budget?", opts: ["32","24","40","64"], correct: 0, exp: "Tables use 60(8) = $480 of the budget, leaving 960 - 480 = $480 for chairs. At $15 each, that's 480 ÷ 15 = 32 chairs." },
+  { level: "extreme", q: "A tech company's monthly server cost is modeled by a linear function C(x) = a + bx, where x is the number of servers running. The company states that every additional 5 servers increases the monthly cost by $750, and running 10 servers costs $2,300 per month. What is the fixed monthly cost, a, that the company pays even with zero servers running?", opts: ["750","1500","2300","800"], correct: 3, exp: "Every additional 5 servers costs $750, so the rate is 750 ÷ 5 = $150 per server. Using C(10) = 2,300: a + 150(10) = 2,300 → a = 2,300 - 1,500 = 800." }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+const levelLabel = { easy: "Easy", medium: "Medium", hard: "Hard", extreme: "Extreme" };
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff ${item.level}">${levelLabel[item.level]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
