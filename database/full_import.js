@@ -15,7 +15,7 @@ const path = require('path');
 const { randomUUID } = require('crypto');
 const { getDb } = require('./db.js');
 
-const SOURCE_DIR = "c:\\Users\\Madijonov Sardorbek.DESKTOP-108GLPM\\Downloads\\Telegram Desktop";
+const SOURCE_DIR = path.join(__dirname, 'math_materials');
 
 const CHAPTERS = [
   { file: "exponents-and-radicals.html",             n:  1, title: "Exponents & Radicals" },
