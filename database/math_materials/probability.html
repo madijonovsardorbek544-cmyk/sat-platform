@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Probability — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:22px 22px 20px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    display:flex; gap:22px; align-items:center; flex-wrap:wrap;
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .titletext{ flex:1 1 320px; min-width:0; }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px; gap:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  /* Signature element: target / total = probability */
+  .machine{ flex:0 0 auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; }
+  .machine .node{
+    border:1px solid var(--line-strong); border-radius:2px; padding:8px 10px;
+    font-size:12.5px; color:var(--muted); background:var(--surface); white-space:nowrap;
+  }
+  .machine .box{
+    border:1px solid var(--amber-dim); border-radius:2px; padding:10px 14px;
+    font-size:15px; color:var(--amber); background:rgba(242,184,75,0.08); font-weight:600;
+  }
+  .machine .arrow{ color:var(--cyan); font-size:15px; }
+  @media (max-width:660px){ .machine{ display:none; } }
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard.warn{ border-color: rgba(242,109,109,0.35); }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard.warn::before{ color:var(--bad); border-color:var(--bad-dim); }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; }
+  .fcard .fmath{ font-size:15.5px; color:#fff; margin-bottom:8px; min-height:26px; line-height:1.4; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; line-height:1.4; }
+  .fcard.warn .fexample{ color:var(--bad); opacity:0.9; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:700px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .diff-row{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .diff-pill{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    padding:5px 10px; border-radius:20px; border:1px solid var(--line-strong); color:var(--muted);
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em;
+    padding:2px 7px; border-radius:10px; border:1px solid var(--line-strong); color:var(--muted);
+    text-transform:uppercase;
+  }
+  .qdiff.easy{ color:var(--good); border-color:var(--good-dim); }
+  .qdiff.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); }
+  .qdiff.hard{ color:var(--amber); border-color:var(--amber-dim); }
+  .qdiff.extreme{ color:var(--bad); border-color:var(--bad-dim); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  .trapnote{
+    border:1px dashed var(--bad-dim); background:rgba(242,109,109,0.06);
+    border-radius:3px; padding:12px 14px; margin:18px 0 0; font-size:13.5px;
+    color:var(--muted); line-height:1.55;
+  }
+  .trapnote b{ color:var(--bad); font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:2px; }
+    .titleblock{ padding:20px 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="titletext">
+      <div class="eyebrow-row">
+        <span>SAT MATH · CHAPTER 24</span>
+        <span>REV. 01</span>
+      </div>
+      <h1 class="maintitle">Probability</h1>
+      <div class="subtitle-en">Tables · Conditional Probability · Geometric Probability</div>
+      <p class="desc">Formulas first, then step-by-step worked examples, and finally 10 practice questions ranked Easy → Extreme with instant feedback.</p>
+    </div>
+    <div class="machine" aria-hidden="true">
+      <div class="node">target outcomes</div>
+      <span class="arrow">÷</span>
+      <div class="node">total outcomes</div>
+      <span class="arrow">=</span>
+      <div class="box">P</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">Basic probability</div><div class="fmath">\(P = \dfrac{\text{number of target outcomes}}{\text{number of total possible outcomes}}\)</div><div class="fexample">the foundation every other rule builds on</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Table probability</div><div class="fmath">\(P = \dfrac{\text{target count within the group}}{\text{count of the group being selected from}}\)</div><div class="fexample">always identify the exact group you're picking from first</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">"Given that" = conditional probability</div><div class="fmath">narrows the group you select from</div><div class="fexample">everything after "given that" becomes your new, smaller total</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">"Or" from a table</div><div class="fmath">add the two target counts together first</div><div class="fexample">P(A or B) = (count A + count B) ÷ total</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Complement rule</div><div class="fmath">\(P(\text{not } X) = 1 - P(X)\)</div><div class="fexample">useful whenever a question asks for "not," "neither," or "other than"</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">Geometric probability</div><div class="fmath">\(P = \dfrac{\text{area of target region}}{\text{total area}}\)</div><div class="fexample">points, darts, random locations — use area (or length) instead of counting</div></div>
+    <div class="fcard warn" data-tag="TRAP 07"><div class="flabel">Order matters in "given that"</div><div class="fmath">\(P(A \text{ given } B) \neq P(B \text{ given } A)\)</div><div class="fexample">always select FROM the group named right after "given that"</div></div>
+    <div class="fcard" data-tag="RULE 08"><div class="flabel">Combined categories (variables)</div><div class="fmath">P(A or B) = \(\dfrac{\text{count A} + \text{count B}}{\text{total}}\)</div><div class="fexample">works the same way even when counts are unknown letters, like g and r</div></div>
+    <div class="fcard" data-tag="RULE 09"><div class="flabel">Backtracking from a known probability</div><div class="fmath">probability × total = target count</div><div class="fexample">rearrange the basic formula to solve for a missing piece</div></div>
+    <div class="fcard" data-tag="RULE 10"><div class="flabel">Comparing two probabilities</div><div class="fmath">compute each one fully first</div><div class="fexample">then subtract or compare the actual decimals/fractions — never guess from the raw numbers</div></div>
+    <div class="fcard" data-tag="RULE 11"><div class="flabel">Unequal group sizes</div><div class="fmath">assign a variable to the smaller group</div><div class="fexample">"twice as many" → let one group be x and the other 2x</div></div>
+  </div>
+
+  <div class="trapnote"><b>WATCH OUT —</b> "The probability that a student is in Club A, given that they're in Club B" and "the probability that a student is in Club B, given that they're in Club A" are almost always different numbers. The phrase right after "given that" tells you which group is your new total — read it carefully.</div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diff-row">
+    <span class="diff-pill" style="color:var(--good);border-color:var(--good-dim)">● 3 EASY</span>
+    <span class="diff-pill" style="color:var(--cyan);border-color:rgba(111,227,214,0.35)">● 3 MEDIUM</span>
+    <span class="diff-pill" style="color:var(--amber);border-color:var(--amber-dim)">● 3 HARD</span>
+    <span class="diff-pill" style="color:var(--bad);border-color:var(--bad-dim)">● 1 EXTREME</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Basic table probability",
+    prompt: "A movie theater surveyed 150 moviegoers about their snack preference. Of the 90 moviegoers who bought popcorn, 54 also bought a drink. If a moviegoer who bought popcorn is selected at random, what is the probability that they also bought a drink?",
+    steps: [
+      "The group being selected from is moviegoers who bought popcorn: 90 people",
+      "The target group is those who ALSO bought a drink: 54 people",
+      "\\(P = \\dfrac{54}{90} = 0.6\\)"
+    ],
+    answer: "3/5 (or 0.6)."
+  },
+  {
+    title: "Example 2 — \"Or\" from a table",
+    prompt: "A parking garage has 500 total cars, of which 120 are red sedans and 45 are blue trucks. If a car is selected at random, what is the probability that it is either a red sedan or a blue truck?",
+    steps: [
+      "Add the two target counts together: \\(120 + 45 = 165\\)",
+      "Divide by the total number of cars: \\(\\dfrac{165}{500}\\)",
+      "Simplify: \\(= 0.33 = \\dfrac{33}{100}\\)"
+    ],
+    answer: "33/100 (or 0.33)."
+  },
+  {
+    title: "Example 3 — Conditional probability (\"given that\")",
+    prompt: "At a hospital, 300 patients were tested for a condition. Of the 80 patients who tested positive, 65 actually have the condition. If a patient who tested positive is selected at random, what is the probability that they actually have the condition?",
+    steps: [
+      "\"Given that\" narrows the group to just those who tested positive: 80 patients (not all 300!)",
+      "The target group is those who actually have the condition: 65",
+      "\\(P = \\dfrac{65}{80} = 0.8125\\)"
+    ],
+    answer: "13/16."
+  },
+  {
+    title: "Example 4 — Complement rule",
+    prompt: "A jar contains 45 marbles, of which 18 are blue. If a marble is selected at random, what is the probability that it is NOT blue?",
+    steps: [
+      "First find P(blue): \\(\\dfrac{18}{45} = \\dfrac{2}{5}\\)",
+      "Use the complement rule: \\(P(\\text{not blue}) = 1 - P(\\text{blue})\\)",
+      "\\(= 1 - \\dfrac{2}{5} = \\dfrac{3}{5}\\)"
+    ],
+    answer: "3/5."
+  },
+  {
+    title: "Example 5 — Geometric probability",
+    prompt: "A circular dartboard has a radius of 10 inches, with a smaller circular bullseye of radius 2 inches at its center. If a dart lands at a random point on the board, what is the probability that it lands in the bullseye?",
+    steps: [
+      "Geometric probability uses AREA, not radius, directly",
+      "Area ratio: \\(\\dfrac{\\pi (2)^2}{\\pi (10)^2} = \\dfrac{4}{100}\\)",
+      "Simplify: \\(= \\dfrac{1}{25}\\)"
+    ],
+    answer: "1/25 (or 0.04)."
+  },
+  {
+    title: "Example 6 — Order matters in conditional probability",
+    prompt: "Of 100 people surveyed, 40 own a cat, and 25 of those cat owners also own a dog. Separately, 50 of the 100 people surveyed own a dog. What is the probability that a person owns a dog, given that they own a cat? Is this the same as the probability that a person owns a cat, given that they own a dog?",
+    steps: [
+      "P(dog given cat): the group is cat owners (40), the target is those who also own a dog (25): \\(\\dfrac{25}{40} = \\dfrac{5}{8}\\)",
+      "P(cat given dog): the group is dog owners (50), the target is those who also own a cat (25): \\(\\dfrac{25}{50} = \\dfrac{1}{2}\\)",
+      "Compare: \\(\\dfrac{5}{8} \\neq \\dfrac{1}{2}\\) — swapping the order changes which group you're selecting from, and gives a different answer"
+    ],
+    answer: "P(dog|cat) = 5/8, which is NOT equal to P(cat|dog) = 1/2."
+  }
+];
+
+const quiz = [
+  { level: "easy", q: "A bag contains 60 marbles, of which 24 are red. If a marble is selected at random, what is the probability that it is red?", opts: ["1/3","3/5","2/5","5/12"], correct: 2, exp: "Probability = target outcomes ÷ total outcomes = 24/60 = 2/5." },
+  { level: "easy", q: "A survey of 80 students found that 32 prefer online classes. If a student from this survey is selected at random, what is the probability that they do NOT prefer online classes?", opts: ["2/5","3/5","1/2","4/5"], correct: 1, exp: "P(prefers online) = 32/80 = 2/5. Using the complement rule, P(not online) = 1 - 2/5 = 3/5." },
+  { level: "easy", q: "A school has 500 students, 180 of whom play a sport. If a student is selected at random, what is the probability, expressed as a decimal, that the student plays a sport?", opts: ["0.64","0.18","0.72","0.36"], correct: 3, exp: "Probability = 180 ÷ 500 = 0.36." },
+  { level: "medium", q: "A parking lot has 250 total vehicles: 60 red cars, 45 blue trucks, and the rest are other vehicles. If a vehicle is selected at random, what is the probability that it is either a red car or a blue truck?", opts: ["21/50","2/5","3/25","27/50"], correct: 0, exp: "Add the two target counts together, then divide by the total: (60+45)/250 = 105/250 = 21/50." },
+  { level: "medium", q: "Of the 400 employees at a company, 150 work in sales. Of those in sales, 90 have been with the company more than 5 years. If an employee who works in sales is selected at random, what is the probability that they have been with the company more than 5 years?", opts: ["2/5","0.9","3/5","5/8"], correct: 2, exp: "'Given that' narrows the group to just those in sales (150 employees). Of those, 90 have 5+ years: 90/150 = 3/5." },
+  { level: "medium", q: "A square dartboard has a side length of 12 inches, with a smaller square target of side length 3 inches centered inside it. If a dart lands at a random point on the board, what is the probability it lands in the target?", opts: ["1/4","1/16","1/9","9/16"], correct: 1, exp: "Geometric probability uses area ratio, not side-length ratio: (3²)/(12²) = 9/144 = 1/16." },
+  { level: "hard", q: "A jar contains a total of 120 candies. If the probability of selecting a red candy at random is 0.35, how many red candies are in the jar?", opts: ["42","35","48","45"], correct: 0, exp: "Set probability × total = target count: 0.35 × 120 = 42 red candies." },
+  { level: "hard", q: "At Company X, 40% of the 250 employees have a graduate degree. At Company Y, 90 out of the 300 employees have a graduate degree. If one employee is randomly selected from each company, how much greater is the probability that Company X's selected employee has a graduate degree than the probability for Company Y's selected employee?", opts: ["0.70","0.30","0.40","0.10"], correct: 3, exp: "Company X: 40% = 0.40. Company Y: 90/300 = 0.30. The difference is 0.40 - 0.30 = 0.10." },
+  { level: "hard", q: "A drawer contains g green pens, b blue pens, and r red pens. If one pen is selected at random, which expression represents the probability of selecting either a green pen or a red pen?", opts: ["(g+r)/b","(g+r)/(g+b+r)","(g·r)/(g+b+r)","g/(g+b+r) + r/b"], correct: 1, exp: "The target group is green OR red pens (g+r), selected from the entire drawer (g+b+r): probability = (g+r)/(g+b+r)." },
+  { level: "extreme", q: "A vineyard has a north field and a south field. The south field has three times as many grapevines as the north field. In the north field, 25% of the vines are Merlot. In the south field, 15% of the vines are Merlot. If a Merlot vine is selected at random from the entire vineyard, what is the probability that it is from the north field?", opts: ["9/14","1/4","7/10","5/14"], correct: 3, exp: "Let the north field have x vines, so the south field has 3x. Merlot vines: north = 0.25x, south = 0.15(3x) = 0.45x. Total Merlot = 0.25x + 0.45x = 0.70x. Given that the vine is Merlot, the probability it's from the north field is 0.25x ÷ 0.70x = 25/70 = 5/14." }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+const levelLabel = { easy: "Easy", medium: "Medium", hard: "Hard", extreme: "Extreme" };
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff ${item.level}">${levelLabel[item.level]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
