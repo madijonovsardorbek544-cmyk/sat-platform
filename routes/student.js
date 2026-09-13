@@ -48,7 +48,36 @@ router.post('/test/:testId/start', (req, res) => {
     const now = new Date();
     const expires = new Date(existing.expires_at);
     if (now < expires) {
-      return res.json({ attemptId: existing.id, resumed: true, expiresAt: existing.expires_at });
+      // Fetch questions tied to this attempt
+      const attemptQs = db.prepare(`
+        SELECT q.id, q.word, q.question, q.context, q.options, q.difficulty, q.category, q.question_type, tq.section, tq.question_order
+        FROM answers a
+        JOIN questions q ON q.id = a.question_id
+        JOIN test_questions tq ON tq.question_id = q.id AND tq.test_id = ?
+        WHERE a.attempt_id = ?
+        ORDER BY tq.question_order ASC
+      `).all(test.id, existing.id);
+
+      const safeQuestions = attemptQs.map(q => ({
+        id: q.id, word: q.word, question: q.question, context: q.context,
+        options: JSON.parse(q.options), difficulty: q.difficulty,
+        category: q.category, question_type: q.question_type,
+        section: q.section, question_order: q.question_order
+      }));
+
+      const questionsWithShuffledOptions = safeQuestions.map(q => {
+        const { shuffledOptions, mapping } = shuffleOptions(q.options);
+        return { ...q, options: shuffledOptions, optionMapping: mapping };
+      });
+
+      return res.json({
+        attemptId: existing.id,
+        resumed: true,
+        expiresAt: existing.expires_at,
+        testTitle: test.title,
+        durationSeconds: test.duration_seconds,
+        questions: questionsWithShuffledOptions
+      });
     }
     // Mark as expired
     db.prepare("UPDATE test_attempts SET status = 'expired' WHERE id = ?").run(existing.id);
