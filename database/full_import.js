@@ -308,50 +308,25 @@ function importChapters(db) {
 // ─────────────────────────────────────────────────────────────────
 const db = getDb();
 
-// ── Pre-flight: clean up any stale migration artifacts ────────────
-// Previous failed deployments can leave a `questions_bak` table which
-// causes SQLite FK validation errors on subsequent runs.
-(function cleanupStaleTables() {
+(function forceCleanCorruptedTables() {
+  // SQLite's ALTER TABLE RENAME can silently corrupt foreign keys in child tables.
+  // To guarantee the schema is clean, we will drop the child tables and let schema.sql recreate them.
+  console.log('⚠  Running pre-flight schema repair...');
   db.exec('PRAGMA foreign_keys = OFF;');
   
-  // If questions_bak exists, the migration failed halfway.
-  // SQLite updated the foreign keys in test_questions and answers to point to questions_bak!
-  // If questions_bak was later dropped, the FK is left pointing to a missing table.
-  const tqSchema = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='test_questions'").get();
-  const isCorrupted = tqSchema && tqSchema.sql && tqSchema.sql.includes('questions_bak');
+  db.exec(`
+    DROP TABLE IF EXISTS answers;
+    DROP TABLE IF EXISTS test_questions;
+    DROP TABLE IF EXISTS questions_bak;
+    DROP TABLE IF EXISTS questions_old;
+  `);
   
-  if (isCorrupted) {
-    console.log('⚠  Detected corrupted foreign keys from failed migration. Cleaning up...');
-    
-    db.exec(`
-      DROP TABLE IF EXISTS answers;
-      DROP TABLE IF EXISTS test_questions;
-      DROP TABLE IF EXISTS test_results;
-      DROP TABLE IF EXISTS integrity_events;
-      DROP TABLE IF EXISTS test_attempts;
-      DROP TABLE IF EXISTS tests;
-      DROP TABLE IF EXISTS questions;
-      DROP TABLE IF EXISTS questions_bak;
-      DROP TABLE IF EXISTS questions_old;
-    `);
-    
-    // We dropped everything except users.
-    // Let's re-run initSchema here.
-    const schemaPath = path.join(__dirname, 'schema.sql');
-    const schema = fs.readFileSync(schemaPath, 'utf8');
-    db.exec(schema);
-    
-    console.log('   Recreated schema cleanly. Re-running seed to restore vocab...');
-    // We can just run seed as a child process or require it
-    try {
-      require('child_process').execSync('node ' + path.join(__dirname, 'seed.js'), { stdio: 'inherit' });
-    } catch (e) {
-      console.log('   Seed failed, but continuing...', e.message);
-    }
-    console.log('   Done.\n');
-  }
-
+  const schemaPath = path.join(__dirname, 'schema.sql');
+  const schema = fs.readFileSync(schemaPath, 'utf8');
+  db.exec(schema);
+  
   db.exec('PRAGMA foreign_keys = ON;');
+  console.log('   Schema repair complete.\n');
 })();
 
 migrateSchema(db);
