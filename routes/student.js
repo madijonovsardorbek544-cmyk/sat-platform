@@ -58,29 +58,36 @@ router.post('/test/:testId/start', (req, res) => {
         ORDER BY tq.question_order ASC
       `).all(test.id, existing.id);
 
-      const safeQuestions = attemptQs.map(q => ({
-        id: q.id, word: q.word, question: q.question, context: q.context,
-        options: JSON.parse(q.options), difficulty: q.difficulty,
-        category: q.category, question_type: q.question_type,
-        section: q.section, question_order: q.question_order
-      }));
+      if (attemptQs.length > 0) {
+        const safeQuestions = attemptQs.map(q => ({
+          id: q.id, word: q.word, question: q.question, context: q.context,
+          options: JSON.parse(q.options), difficulty: q.difficulty,
+          category: q.category, question_type: q.question_type,
+          section: q.section, question_order: q.question_order
+        }));
 
-      const questionsWithShuffledOptions = safeQuestions.map(q => {
-        const { shuffledOptions, mapping } = shuffleOptions(q.options);
-        return { ...q, options: shuffledOptions, optionMapping: mapping };
-      });
+        const questionsWithShuffledOptions = safeQuestions.map(q => {
+          const { shuffledOptions, mapping } = shuffleOptions(q.options);
+          return { ...q, options: shuffledOptions, optionMapping: mapping };
+        });
 
-      return res.json({
-        attemptId: existing.id,
-        resumed: true,
-        expiresAt: existing.expires_at,
-        testTitle: test.title,
-        durationSeconds: test.duration_seconds,
-        questions: questionsWithShuffledOptions
-      });
+        return res.json({
+          attemptId: existing.id,
+          resumed: true,
+          expiresAt: existing.expires_at,
+          testTitle: test.title,
+          durationSeconds: test.duration_seconds,
+          questions: questionsWithShuffledOptions
+        });
+      }
+      
+      // If attemptQs is empty, the answers were wiped out by a DB migration.
+      // Mark it as corrupted and fall through to create a new attempt.
+      db.prepare("UPDATE test_attempts SET status = 'corrupted' WHERE id = ?").run(existing.id);
+    } else {
+      // Mark as expired
+      db.prepare("UPDATE test_attempts SET status = 'expired' WHERE id = ?").run(existing.id);
     }
-    // Mark as expired
-    db.prepare("UPDATE test_attempts SET status = 'expired' WHERE id = ?").run(existing.id);
   }
 
   // Fetch questions for this test in defined order
