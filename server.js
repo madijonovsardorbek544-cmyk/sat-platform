@@ -26,8 +26,20 @@ app.get('/api/debug/db-state', (req, res) => {
     const testCount = db.prepare('SELECT COUNT(*) as c FROM tests').get().c;
     const vocabTest = db.prepare('SELECT * FROM tests WHERE id = ?').get('test-vocab-diagnostic-001');
     const vocabLinks = db.prepare('SELECT COUNT(*) as c FROM test_questions WHERE test_id = ?').get('test-vocab-diagnostic-001').c;
+    
+    // Check attempts for the vocab test
+    const attempts = db.prepare('SELECT * FROM test_attempts WHERE test_id = ?').all('test-vocab-diagnostic-001');
+    
+    // Get answers for those attempts
+    const attemptAnswers = {};
+    for (const a of attempts) {
+      attemptAnswers[a.id] = db.prepare('SELECT COUNT(*) as c FROM answers WHERE attempt_id = ?').get(a.id).c;
+    }
+    
+    // Check questions
     const vocabQs = db.prepare('SELECT COUNT(*) as c FROM questions WHERE category = "vocabulary"').get().c;
-    res.json({ testCount, vocabTest, vocabLinks, vocabQs });
+    
+    res.json({ testCount, vocabTest, vocabLinks, vocabQs, attempts, attemptAnswers });
   } catch (e) {
     res.json({ error: e.message });
   }
