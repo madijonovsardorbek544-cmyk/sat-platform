@@ -164,19 +164,23 @@ function renderVocab(tests) {
 /* ── Math — Learning Concepts (your beautiful HTML pages) */
 function renderMathConcepts() {
   const grid = document.getElementById('math-concepts-grid');
-  grid.innerHTML = MATH_CHAPTERS.map(ch => `
-    <div class="module-card" onclick="goToConcept('${encodeURIComponent(ch.file)}')">
+  grid.innerHTML = MATH_CHAPTERS.map(ch => {
+    const ef = encodeURIComponent(ch.file);
+    const et = encodeURIComponent(ch.title);
+    return `
+    <div class="module-card" onclick="goToConcept('${ef}', ${ch.n}, '${et}')">
       <div class="module-icon">💡</div>
       <div class="module-name" style="font-size:14px">Ch.${String(ch.n).padStart(2,'0')}: ${ch.title}</div>
       <div class="module-status" style="margin-bottom:12px">
         <span class="badge" style="background:#e0f2fe;color:#0369a1">Lesson</span>
       </div>
       <div style="margin-top:12px">
-        <button class="btn btn-primary btn-sm" onclick="goToConcept('${encodeURIComponent(ch.file)}'); event.stopPropagation()">
+        <button class="btn btn-primary btn-sm" onclick="goToConcept('${ef}', ${ch.n}, '${et}'); event.stopPropagation()">
           Learn Concept
         </button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* ── Math — Homework (database-driven tests) ─────────── */
@@ -209,8 +213,8 @@ function renderTestCard(test, icon) {
     </div>`;
 }
 
-function goToConcept(file) {
-  location.href = `/student/concepts/${file}`;
+function goToConcept(file, n, title) {
+  location.href = `/student/concept.html?chapter=${file}&n=${n}&title=${title}`;
 }
 
 function goToTest(testId, done) {
