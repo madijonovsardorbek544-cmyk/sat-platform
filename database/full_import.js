@@ -280,6 +280,35 @@ function importChapters(db) {
 // RUN
 // ─────────────────────────────────────────────────────────────────
 const db = getDb();
+
+// ── Pre-flight: clean up any stale migration artifacts ────────────
+// Previous failed deployments can leave a `questions_bak` table which
+// causes SQLite FK validation errors on subsequent runs.
+(function cleanupStaleTables() {
+  db.exec('PRAGMA foreign_keys = OFF;');
+
+  const stale = db.prepare(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('questions_bak','questions_old')"
+  ).all().map(r => r.name);
+
+  if (stale.length > 0) {
+    console.log('⚠  Cleaning up stale migration tables:', stale.join(', '));
+    // If questions itself is missing but questions_bak exists, restore it first
+    const hasQuestions = db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='questions'"
+    ).get();
+    if (!hasQuestions && stale.includes('questions_bak')) {
+      console.log('   Restoring questions table from backup...');
+      db.exec('ALTER TABLE questions_bak RENAME TO questions;');
+    } else {
+      for (const t of stale) db.exec(`DROP TABLE IF EXISTS "${t}";`);
+    }
+    console.log('   Done.\n');
+  }
+
+  db.exec('PRAGMA foreign_keys = ON;');
+})();
+
 migrateSchema(db);
 cleanMathTests(db);
 importChapters(db);
