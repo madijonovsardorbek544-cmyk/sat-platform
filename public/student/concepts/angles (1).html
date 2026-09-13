@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angles — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --cyan-dim: rgba(111,227,214,0.4);
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --geo: #7C93BE;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+  .fdiagram{ width:100%; height:auto; display:block; margin-bottom:8px; }
+  .fcard .fmath{ font-size:15.5px; color:#fff; margin-bottom:8px; min-height:22px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.9; line-height:1.5; }
+
+  .fcard.bonus{ border-color: rgba(111,227,214,0.3); }
+  .fcard.bonus::before{ color:var(--cyan); border-color: var(--cyan-dim); }
+  .fcard-extra{ margin-top:9px; font-size:10.5px; color:var(--cyan); font-style:italic; opacity:0.8; letter-spacing:0.02em; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:900px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .exdiagram{ width:100%; max-width:280px; height:auto; display:block; margin:4px auto 16px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.09em;
+    padding:2px 8px; border-radius:2px; border:1px solid; text-transform:uppercase;
+    flex-shrink:0;
+  }
+  .qdiff.diff-easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .qdiff.diff-medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); background:rgba(111,227,214,0.08); }
+  .qdiff.diff-hard{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .qdiff.diff-extreme{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.08); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  .grid-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .grid-input{
+    font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--text);
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; width:140px;
+  }
+  .grid-input:focus{ outline:none; border-color:var(--cyan); }
+  .grid-input.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .grid-input.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); }
+  .btn-check{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--bg2);
+    background:var(--amber); border:none; border-radius:3px; padding:11px 18px; cursor:pointer; font-weight:600;
+    letter-spacing:0.04em;
+  }
+  .btn-check:hover{ filter:brightness(1.08); }
+  .btn-check:disabled{ opacity:0.5; cursor:default; }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:6px; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 17</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Angles</h1>
+    <div class="subtitle-en">Triangles · Parallel Lines · Polygons</div>
+    <p class="desc">Every formula below comes with its own diagram, so the rule and the picture are learned together. Formulas first — including two SAT shortcuts not spelled out in this chapter — then worked examples, and finally practice questions from easy to extreme.</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+
+    <div class="fcard" data-tag="RULE 01">
+      <div class="flabel">Angles on a line</div>
+      <svg class="fdiagram" viewBox="0 0 240 110">
+        <line x1="20" y1="90" x2="220" y2="90" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="120" y1="90" x2="77" y2="34" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="120" cy="90" r="2.5" fill="var(--text)"/>
+        <text x="82" y="72" font-family="IBM Plex Mono" font-size="14" fill="var(--cyan)">a°</text>
+        <text x="140" y="60" font-family="IBM Plex Mono" font-size="14" fill="var(--amber)">b°</text>
+      </svg>
+      <div class="fmath">\(a+b=180°\)</div>
+      <div class="fexample">Angles on a straight line always sum to 180°</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 02">
+      <div class="flabel">Angles around a point</div>
+      <svg class="fdiagram" viewBox="0 0 240 130">
+        <line x1="120" y1="65" x2="205" y2="65" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="120" y1="65" x2="58" y2="18" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="120" y1="65" x2="70" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="120" cy="65" r="2.5" fill="var(--text)"/>
+        <text x="150" y="52" font-family="IBM Plex Mono" font-size="13" fill="var(--cyan)">a°</text>
+        <text x="80" y="45" font-family="IBM Plex Mono" font-size="13" fill="var(--amber)">b°</text>
+        <text x="95" y="95" font-family="IBM Plex Mono" font-size="13" fill="var(--good)">c°</text>
+      </svg>
+      <div class="fmath">\(a+b+c=360°\)</div>
+      <div class="fexample">All angles around a single point sum to 360°</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 03">
+      <div class="flabel">Vertical angles</div>
+      <svg class="fdiagram" viewBox="0 0 240 180">
+        <line x1="59" y1="133" x2="181" y2="47" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="59" y1="47" x2="181" y2="133" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="120" cy="90" r="2.5" fill="var(--text)"/>
+        <text x="112" y="48" font-family="IBM Plex Mono" font-size="13" fill="var(--cyan)">1</text>
+        <text x="150" y="94" font-family="IBM Plex Mono" font-size="13" fill="var(--amber)">2</text>
+        <text x="112" y="138" font-family="IBM Plex Mono" font-size="13" fill="var(--cyan)">3</text>
+        <text x="80" y="94" font-family="IBM Plex Mono" font-size="13" fill="var(--amber)">4</text>
+      </svg>
+      <div class="fmath">\(\angle1=\angle3,\ \ \angle2=\angle4\)</div>
+      <div class="fexample">Angles directly across from each other are congruent</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 04">
+      <div class="flabel">Triangle angle sum</div>
+      <svg class="fdiagram" viewBox="0 0 220 170">
+        <polygon points="30,140 110,30 190,140" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <text x="42" y="130" font-family="IBM Plex Mono" font-size="14" fill="var(--cyan)">a°</text>
+        <text x="100" y="50" font-family="IBM Plex Mono" font-size="14" fill="var(--amber)">b°</text>
+        <text x="160" y="130" font-family="IBM Plex Mono" font-size="14" fill="var(--good)">c°</text>
+      </svg>
+      <div class="fmath">\(a+b+c=180°\)</div>
+      <div class="fexample">The three interior angles of any triangle sum to 180°</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 05">
+      <div class="flabel">Exterior angle theorem</div>
+      <svg class="fdiagram" viewBox="0 0 250 170">
+        <line x1="30" y1="140" x2="230" y2="140" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="30" y1="140" x2="110" y2="30" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="160" y1="140" x2="110" y2="30" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="160" cy="140" r="2.5" fill="var(--text)"/>
+        <text x="45" y="130" font-family="IBM Plex Mono" font-size="14" fill="var(--cyan)">a°</text>
+        <text x="100" y="50" font-family="IBM Plex Mono" font-size="14" fill="var(--amber)">b°</text>
+        <text x="180" y="128" font-family="IBM Plex Mono" font-size="14" fill="var(--good)">x°</text>
+      </svg>
+      <div class="fmath">\(x=a+b\)</div>
+      <div class="fexample">An exterior angle equals the sum of the two remote interior angles</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 06">
+      <div class="flabel">Parallel lines &amp; a transversal</div>
+      <svg class="fdiagram" viewBox="0 0 240 190">
+        <line x1="15" y1="45" x2="225" y2="45" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="145" x2="225" y2="145" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="55" y1="10" x2="195" y2="175" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="85" cy="45" r="2.5" fill="var(--text)"/>
+        <circle cx="170" cy="145" r="2.5" fill="var(--text)"/>
+        <text x="60" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">1</text>
+        <text x="100" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">2</text>
+        <text x="100" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">3</text>
+        <text x="60" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">4</text>
+        <text x="145" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">5</text>
+        <text x="185" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">6</text>
+        <text x="185" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">7</text>
+        <text x="145" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">8</text>
+      </svg>
+      <div class="fmath">\(\angle3=\angle5,\ \ \angle4=\angle6\)</div>
+      <div class="fexample">Alternate interior angles (inside the parallel lines, opposite sides of the transversal) are congruent</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 07">
+      <div class="flabel">Alternate exterior angles</div>
+      <svg class="fdiagram" viewBox="0 0 240 190">
+        <line x1="15" y1="45" x2="225" y2="45" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="145" x2="225" y2="145" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="55" y1="10" x2="195" y2="175" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="85" cy="45" r="2.5" fill="var(--text)"/>
+        <circle cx="170" cy="145" r="2.5" fill="var(--text)"/>
+        <text x="60" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">1</text>
+        <text x="100" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">2</text>
+        <text x="100" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">3</text>
+        <text x="60" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">4</text>
+        <text x="145" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">5</text>
+        <text x="185" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">6</text>
+        <text x="185" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">7</text>
+        <text x="145" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">8</text>
+      </svg>
+      <div class="fmath">\(\angle1=\angle7,\ \ \angle2=\angle8\)</div>
+      <div class="fexample">Alternate exterior angles (outside the parallel lines, opposite sides) are congruent</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 08">
+      <div class="flabel">Corresponding angles</div>
+      <svg class="fdiagram" viewBox="0 0 240 190">
+        <line x1="15" y1="45" x2="225" y2="45" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="145" x2="225" y2="145" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="55" y1="10" x2="195" y2="175" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="85" cy="45" r="2.5" fill="var(--text)"/>
+        <circle cx="170" cy="145" r="2.5" fill="var(--text)"/>
+        <text x="60" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">1</text>
+        <text x="100" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">2</text>
+        <text x="100" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">3</text>
+        <text x="60" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">4</text>
+        <text x="145" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">5</text>
+        <text x="185" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">6</text>
+        <text x="185" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">7</text>
+        <text x="145" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">8</text>
+      </svg>
+      <div class="fmath">\(\angle1=\angle5,\ \ \angle2=\angle6,\ \ \angle3=\angle7,\ \ \angle4=\angle8\)</div>
+      <div class="fexample">Same relative position at each intersection — congruent</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 09">
+      <div class="flabel">Same-side interior angles</div>
+      <svg class="fdiagram" viewBox="0 0 240 190">
+        <line x1="15" y1="45" x2="225" y2="45" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="145" x2="225" y2="145" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="55" y1="10" x2="195" y2="175" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="85" cy="45" r="2.5" fill="var(--text)"/>
+        <circle cx="170" cy="145" r="2.5" fill="var(--text)"/>
+        <text x="60" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">1</text>
+        <text x="100" y="34" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">2</text>
+        <text x="100" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">3</text>
+        <text x="60" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">4</text>
+        <text x="145" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">5</text>
+        <text x="185" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">6</text>
+        <text x="185" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">7</text>
+        <text x="145" y="164" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">8</text>
+      </svg>
+      <div class="fmath">\(\angle4+\angle5=180°,\ \ \angle3+\angle6=180°\)</div>
+      <div class="fexample">Interior angles on the same side of the transversal are supplementary, not congruent</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 10">
+      <div class="flabel">Polygon interior angle sum</div>
+      <svg class="fdiagram" viewBox="0 0 220 195">
+        <polygon points="120,20 196.1,75.3 167,164.7 73,164.7 43.9,75.3" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="120" y1="20" x2="73" y2="164.7" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="120" y1="20" x2="167" y2="164.7" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      </svg>
+      <div class="fmath">\(\text{sum}=180(n-2)\)</div>
+      <div class="fexample">A pentagon (n=5) splits into 3 triangles: \(3\times180°=540°\)</div>
+    </div>
+
+    <div class="fcard bonus" data-tag="BONUS 01">
+      <div class="flabel">Exterior angles of any polygon</div>
+      <div class="fmath">\(\text{sum of exterior angles}=360°\)</div>
+      <div class="fexample">True for every convex polygon, no matter how many sides</div>
+      <div class="fcard-extra">SAT shortcut — not spelled out in this chapter</div>
+    </div>
+
+    <div class="fcard bonus" data-tag="BONUS 02">
+      <div class="flabel">Each interior/exterior angle (regular polygon)</div>
+      <div class="fmath">\(\text{interior}=\dfrac{180(n-2)}{n},\quad \text{exterior}=\dfrac{360}{n}\)</div>
+      <div class="fexample">Regular hexagon (n=6): interior \(=120°\), exterior \(=60°\)</div>
+      <div class="fcard-extra">SAT shortcut — the exterior-angle version isn't in this chapter</div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1",
+    prompt: "In the figure, side AC of triangle ABC is extended to point D. The exterior angle \\(\\angle BCD\\) measures 118°, and \\(\\angle A=62°\\). What is the measure of \\(\\angle B\\)?",
+    diagram: `<svg class="exdiagram" viewBox="0 0 250 170">
+        <line x1="30" y1="140" x2="230" y2="140" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="30" y1="140" x2="110" y2="30" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="160" y1="140" x2="110" y2="30" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="160" cy="140" r="2.5" fill="var(--text)"/>
+        <text x="45" y="130" font-family="IBM Plex Mono" font-size="14" fill="var(--text)">62°</text>
+        <text x="95" y="50" font-family="IBM Plex Mono" font-size="14" fill="var(--amber)">?</text>
+        <text x="178" y="128" font-family="IBM Plex Mono" font-size="14" fill="var(--text)">118°</text>
+      </svg>`,
+    steps: [
+      "By the exterior angle theorem, the exterior angle equals the sum of the two remote interior angles: \\(118=62+\\angle B\\)",
+      "Solve: \\(\\angle B=118-62\\)"
+    ],
+    answer: "\\(\\angle B=56°\\)"
+  },
+  {
+    title: "Example 2",
+    prompt: "In triangle DEF, \\(\\angle D=47°\\) and \\(\\angle E=85°\\). What is the measure of \\(\\angle F\\)?",
+    diagram: `<svg class="exdiagram" viewBox="0 0 220 170">
+        <polygon points="30,140 110,30 190,140" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <text x="42" y="130" font-family="IBM Plex Mono" font-size="14" fill="var(--text)">47°</text>
+        <text x="95" y="50" font-family="IBM Plex Mono" font-size="14" fill="var(--text)">85°</text>
+        <text x="160" y="130" font-family="IBM Plex Mono" font-size="14" fill="var(--amber)">?</text>
+      </svg>`,
+    steps: [
+      "The three angles of a triangle sum to 180°: \\(47+85+\\angle F=180\\)",
+      "Solve: \\(\\angle F=180-132\\)"
+    ],
+    answer: "\\(\\angle F=48°\\)"
+  },
+  {
+    title: "Example 3",
+    prompt: "Two lines intersect at point O, forming four angles that measure \\(x°\\), \\(3x°\\), \\(x°\\), and \\(3x°\\) in order around the point. What is the value of \\(x\\)?",
+    diagram: `<svg class="exdiagram" viewBox="0 0 240 180">
+        <line x1="59" y1="133" x2="181" y2="47" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="59" y1="47" x2="181" y2="133" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="120" cy="90" r="2.5" fill="var(--text)"/>
+        <text x="105" y="48" font-family="IBM Plex Mono" font-size="13" fill="var(--text)">x°</text>
+        <text x="150" y="94" font-family="IBM Plex Mono" font-size="13" fill="var(--text)">3x°</text>
+        <text x="105" y="138" font-family="IBM Plex Mono" font-size="13" fill="var(--text)">x°</text>
+        <text x="70" y="94" font-family="IBM Plex Mono" font-size="13" fill="var(--text)">3x°</text>
+      </svg>`,
+    steps: [
+      "Adjacent angles on a line are supplementary: \\(x+3x=180\\)",
+      "Solve: \\(4x=180\\)"
+    ],
+    answer: "\\(x=45\\)"
+  },
+  {
+    title: "Example 4",
+    prompt: "Line \\(p\\) is parallel to line \\(q\\). A transversal creates a 71° interior angle where it meets line \\(p\\). What is the measure of the alternate interior angle where the transversal meets line \\(q\\)?",
+    diagram: `<svg class="exdiagram" viewBox="0 0 240 190">
+        <line x1="15" y1="45" x2="225" y2="45" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="145" x2="225" y2="145" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="55" y1="10" x2="195" y2="175" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="85" cy="45" r="2.5" fill="var(--text)"/>
+        <circle cx="170" cy="145" r="2.5" fill="var(--text)"/>
+        <text x="55" y="64" font-family="IBM Plex Mono" font-size="13" fill="var(--text)">71°</text>
+        <text x="185" y="134" font-family="IBM Plex Mono" font-size="13" fill="var(--amber)">?</text>
+      </svg>`,
+    steps: [
+      "Alternate interior angles between two parallel lines are congruent",
+      "So the alternate interior angle also measures 71°"
+    ],
+    answer: "\\(71°\\)"
+  },
+  {
+    title: "Example 5",
+    prompt: "Line \\(p\\) is parallel to line \\(q\\). A transversal creates same-side interior angles measuring \\((2x+10)°\\) and \\((3x-30)°\\). What is the value of \\(x\\)?",
+    diagram: `<svg class="exdiagram" viewBox="0 0 240 190">
+        <line x1="15" y1="45" x2="225" y2="45" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="145" x2="225" y2="145" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="55" y1="10" x2="195" y2="175" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="85" cy="45" r="2.5" fill="var(--text)"/>
+        <circle cx="170" cy="145" r="2.5" fill="var(--text)"/>
+        <text x="40" y="64" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">(2x+10)°</text>
+        <text x="130" y="134" font-family="IBM Plex Mono" font-size="12" fill="var(--text)">(3x-30)°</text>
+      </svg>`,
+    steps: [
+      "Same-side interior angles are supplementary: \\((2x+10)+(3x-30)=180\\)",
+      "Simplify: \\(5x-20=180\\)"
+    ],
+    answer: "\\(x=40\\)"
+  },
+  {
+    title: "Example 6",
+    prompt: "A regular octagon has 8 sides. What is the measure of each interior angle?",
+    diagram: `<svg class="exdiagram" viewBox="0 0 220 195">
+        <polygon points="193.9,69.4 150.6,26.1 89.4,26.1 46.1,69.4 46.1,130.6 89.4,173.9 150.6,173.9 193.9,130.6" fill="none" stroke="var(--geo)" stroke-width="2"/>
+      </svg>`,
+    steps: [
+      "Sum of interior angles: \\(180(n-2)=180(8-2)=180\\times6=1080°\\)",
+      "Divide equally among the 8 angles: \\(1080\\div8\\)"
+    ],
+    answer: "\\(135°\\) per angle"
+  }
+];
+
+const quiz = [
+  { diff:"easy", q: "In the figure, three angles around a point measure 110°, 95°, and \\(x°\\). What is the value of \\(x\\)?", opts: ["\\(155\\)","\\(145\\)","\\(165\\)","\\(135\\)"], correct: 0, exp: "Angles around a point sum to 360°: \\(110+95+x=360 \\Rightarrow x=155\\)." },
+  { diff:"easy", q: "Two lines intersect, forming four angles. If one angle measures 72°, what is the measure of its vertical angle?", opts: ["\\(72°\\)","\\(108°\\)","\\(18°\\)","\\(144°\\)"], correct: 0, exp: "Vertical angles are always congruent, so the vertical angle also measures \\(72°\\)." },
+  { diff:"easy", q: "In a triangle, two of the angles measure 48° and 76°. What is the measure of the third angle?", opts: ["\\(56°\\)","\\(64°\\)","\\(48°\\)","\\(76°\\)"], correct: 0, exp: "The angles of a triangle sum to 180°: \\(180-48-76=56\\)." },
+  { diff:"medium", q: "An exterior angle of a triangle measures 140°. If one of the two remote interior angles measures 55°, what is the measure of the other remote interior angle?", opts: ["\\(85°\\)","\\(95°\\)","\\(75°\\)","\\(140°\\)"], correct: 0, exp: "By the exterior angle theorem: \\(140=55+b \\Rightarrow b=85\\)." },
+  { diff:"medium", q: "Line \\(p\\) is parallel to line \\(q\\). A transversal forms a pair of corresponding angles. If one measures 63°, what is the measure of the other?", opts: ["\\(63°\\)","\\(117°\\)","\\(27°\\)","\\(153°\\)"], correct: 0, exp: "Corresponding angles are congruent, so the other angle also measures \\(63°\\)." },
+  { diff:"medium", q: "Line \\(p\\) is parallel to line \\(q\\). A transversal creates a same-side interior angle pair measuring \\(4x°\\) and \\(2x°\\). What is the value of \\(x\\)?", opts: ["\\(30\\)","\\(45\\)","\\(60\\)","\\(20\\)"], correct: 0, exp: "Same-side interior angles are supplementary: \\(4x+2x=180 \\Rightarrow 6x=180 \\Rightarrow x=30\\)." },
+  { diff:"hard", q: "Two lines intersect at a point, forming four angles measuring \\((2x+10)°\\), \\((3x-5)°\\), \\((2x+10)°\\), and \\((3x-5)°\\) in order around the point. What is the value of \\(x\\)?", opts: ["\\(35\\)","\\(30\\)","\\(37\\)","\\(33\\)"], correct: 0, exp: "Adjacent angles on a line are supplementary: \\((2x+10)+(3x-5)=180 \\Rightarrow 5x+5=180 \\Rightarrow x=35\\)." },
+  { diff:"hard", q: "A regular polygon has interior angles that each measure 150°. How many sides does the polygon have?", opts: ["\\(12\\)","\\(10\\)","\\(9\\)","\\(15\\)"], correct: 0, exp: "Using \\(\\dfrac{180(n-2)}{n}=150\\): \\(180n-360=150n \\Rightarrow 30n=360 \\Rightarrow n=12\\)." },
+  { diff:"hard", q: "In triangle ABC, side BC is extended to point D. The exterior angle \\(\\angle ACD\\) measures \\((5x+10)°\\), \\(\\angle A\\) measures \\((2x+5)°\\), and \\(\\angle B\\) measures \\((x+25)°\\). What is the value of \\(x\\)?", opts: ["\\(10\\)","\\(15\\)","\\(20\\)","\\(8\\)"], correct: 0, exp: "By the exterior angle theorem: \\(5x+10=(2x+5)+(x+25)=3x+30\\). So \\(2x=20 \\Rightarrow x=10\\)." },
+  { diff:"extreme", type:"grid", q: "Lines \\(p\\) and \\(q\\) are parallel, cut by a transversal. The same-side interior angles measure \\((4x+y)°\\) and \\((2x+3y)°\\). If \\(x+y=38\\), what is the value of \\(x\\)?", correctValue:"14", exp: "Same-side interior angles are supplementary: \\((4x+y)+(2x+3y)=180 \\Rightarrow 6x+4y=180 \\Rightarrow 3x+2y=90\\). Since \\(y=38-x\\): \\(3x+2(38-x)=90 \\Rightarrow x+76=90 \\Rightarrow x=14\\)." }
+];
+
+const diffLabel = { easy:"EASY", medium:"MEDIUM", hard:"HARD", extreme:"EXTREME" };
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.diagram || ''}
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+function lockAndStamp(card, isCorrect){
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+  stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+  stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+  explain.classList.add('show');
+  if(isCorrect) score++;
+  answered++;
+  renderScore();
+  if(window.renderMathInElement){ renderMathInElement(explain); }
+}
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  const isGrid = item.type === 'grid';
+
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff diff-${item.diff}">${diffLabel[item.diff]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    ${isGrid ? `
+      <div class="grid-row">
+        <input type="text" inputmode="numeric" class="grid-input" placeholder="Type your answer" id="gridin-${qi}">
+        <button class="btn-check" id="gridbtn-${qi}">CHECK</button>
+      </div>
+    ` : `
+      <div class="options">
+        ${item.opts.map((o, oi) => `
+          <button class="opt" data-i="${oi}">
+            <span class="optletter">${letters[oi]}</span>
+            <span>${o}</span>
+          </button>
+        `).join('')}
+      </div>
+    `}
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+
+  if(isGrid){
+    const input = card.querySelector(`#gridin-${qi}`);
+    const btn = card.querySelector(`#gridbtn-${qi}`);
+    const submit = () => {
+      if(input.disabled || !input.value.trim()) return;
+      const isCorrect = input.value.trim() === item.correctValue;
+      input.disabled = true;
+      btn.disabled = true;
+      input.classList.add(isCorrect ? 'correct' : 'wrong');
+      lockAndStamp(card, isCorrect);
+    };
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', (e) => { if(e.key === 'Enter') submit(); });
+  } else {
+    const buttons = card.querySelectorAll('.opt');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosen = parseInt(btn.dataset.i);
+        const isCorrect = chosen === item.correct;
+        buttons.forEach(b => b.disabled = true);
+        buttons[item.correct].classList.add('correct');
+        if(!isCorrect){ btn.classList.add('wrong'); }
+        lockAndStamp(card, isCorrect);
+      });
+    });
+  }
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
