@@ -62,8 +62,15 @@ async function seed() {
       INSERT INTO tests (id, title, test_type, duration_seconds, question_count, status, show_explanations, published_at)
       VALUES (?, 'SAT Vocabulary Diagnostic', 'vocabulary', 2700, 40, 'published', 1, strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     `).run(testId);
+    console.log('✅  Default vocabulary test created');
+  } else {
+    console.log('ℹ️   Default vocabulary test already exists');
+  }
 
-    // Link all 40 questions to the test in order
+  // Ensure all 40 questions are linked to the test (fixes missing links if test_questions was wiped)
+  const existingLinksCount = db.prepare('SELECT COUNT(*) as c FROM test_questions WHERE test_id = ?').get(testId).c;
+  if (existingLinksCount === 0) {
+    console.log('⚠  Vocabulary test has no questions linked. Rebuilding links...');
     const insertTQ = db.prepare(`
       INSERT OR IGNORE INTO test_questions (id, test_id, question_id, section, question_order)
       VALUES (?, ?, ?, ?, ?)
@@ -79,9 +86,7 @@ async function seed() {
     });
 
     insertTestQuestions(questions);
-    console.log('✅  Default vocabulary test created and linked');
-  } else {
-    console.log('ℹ️   Default vocabulary test already exists');
+    console.log('✅  Default vocabulary test questions linked successfully');
   }
 
   console.log('\n🎉 Seed complete!');
