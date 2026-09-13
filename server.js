@@ -19,6 +19,20 @@ app.use(cookieParser());
 // ── Static files ──────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── Temporary Debug API ───────────────────────────────────────────
+app.get('/api/debug/db-state', (req, res) => {
+  try {
+    const db = require('./database/db').getDb();
+    const testCount = db.prepare('SELECT COUNT(*) as c FROM tests').get().c;
+    const vocabTest = db.prepare('SELECT * FROM tests WHERE id = ?').get('test-vocab-diagnostic-001');
+    const vocabLinks = db.prepare('SELECT COUNT(*) as c FROM test_questions WHERE test_id = ?').get('test-vocab-diagnostic-001').c;
+    const vocabQs = db.prepare('SELECT COUNT(*) as c FROM questions WHERE category = "vocabulary"').get().c;
+    res.json({ testCount, vocabTest, vocabLinks, vocabQs });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
+});
+
 // ── Auth routes (public) ──────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 
