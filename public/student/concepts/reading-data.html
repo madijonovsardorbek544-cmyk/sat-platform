@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Data — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --cyan-dim: rgba(111,227,214,0.4);
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --geo: #7C93BE;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+  .fdiagram{ width:100%; height:auto; display:block; margin-bottom:8px; }
+  .fcard .fmath{ font-size:14.5px; color:#fff; margin-bottom:8px; min-height:22px; line-height:1.4; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.9; line-height:1.5; }
+
+  .fcard.bonus{ border-color: rgba(111,227,214,0.3); }
+  .fcard.bonus::before{ color:var(--cyan); border-color: var(--cyan-dim); }
+  .fcard-extra{ margin-top:9px; font-size:10.5px; color:var(--cyan); font-style:italic; opacity:0.8; letter-spacing:0.02em; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:900px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .exdiagram{ width:100%; max-width:300px; height:auto; display:block; margin:4px auto 16px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.09em;
+    padding:2px 8px; border-radius:2px; border:1px solid; text-transform:uppercase;
+    flex-shrink:0;
+  }
+  .qdiff.diff-easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .qdiff.diff-medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); background:rgba(111,227,214,0.08); }
+  .qdiff.diff-hard{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .qdiff.diff-extreme{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.08); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  .grid-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .grid-input{
+    font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--text);
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; width:140px;
+  }
+  .grid-input:focus{ outline:none; border-color:var(--cyan); }
+  .grid-input.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .grid-input.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); }
+  .btn-check{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--bg2);
+    background:var(--amber); border:none; border-radius:3px; padding:11px 18px; cursor:pointer; font-weight:600;
+    letter-spacing:0.04em;
+  }
+  .btn-check:hover{ filter:brightness(1.08); }
+  .btn-check:disabled{ opacity:0.5; cursor:default; }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:6px; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 23</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Reading Data</h1>
+    <div class="subtitle-en">Bar Charts · Line Graphs · Scatterplots</div>
+    <p class="desc">This chapter uses no new algebra — it's a chart-reading skill set. Every rule below comes with a small chart of its own, so the skill and the picture are learned together. Formulas first — including two SAT shortcuts not spelled out in this chapter — then worked examples, and finally practice questions from easy to extreme.</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas &amp; Skills</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+
+    <div class="fcard" data-tag="RULE 01">
+      <div class="flabel">Reading a bar chart</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <rect x="25" y="80" width="28" height="40" fill="var(--geo)" opacity="0.55"/>
+        <rect x="63" y="50" width="28" height="70" fill="var(--geo)" opacity="0.55"/>
+        <rect x="101" y="65" width="28" height="55" fill="var(--geo)" opacity="0.55"/>
+        <rect x="139" y="30" width="28" height="90" fill="var(--amber)" opacity="0.9"/>
+        <rect x="177" y="90" width="28" height="30" fill="var(--geo)" opacity="0.55"/>
+        <line x1="15" y1="30" x2="153" y2="30" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      </svg>
+      <div class="fmath">Match the bar's height to the y-axis</div>
+      <div class="fexample">Taller bar = larger value. Compare bars directly, no formula needed.</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 02">
+      <div class="flabel">Reading a line graph</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <polyline points="25,105 60,90 95,70 130,55 165,35 195,20" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="130" cy="55" r="3.5" fill="var(--amber)"/>
+        <line x1="130" y1="55" x2="130" y2="120" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="130" y1="55" x2="15" y2="55" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      </svg>
+      <div class="fmath">Go up from x, then across to the y-axis</div>
+      <div class="fexample">If the point falls between grid lines, estimate by interpolating</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 03">
+      <div class="flabel">Average rate of change</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <polyline points="25,105 60,90 95,70 130,55 165,35 195,20" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="60" cy="90" r="3.5" fill="var(--cyan)"/>
+        <circle cx="130" cy="55" r="3.5" fill="var(--cyan)"/>
+        <line x1="60" y1="90" x2="130" y2="90" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <line x1="130" y1="90" x2="130" y2="55" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <text x="80" y="105" font-family="IBM Plex Mono" font-size="11" fill="var(--amber)">run</text>
+        <text x="136" y="76" font-family="IBM Plex Mono" font-size="11" fill="var(--amber)">rise</text>
+      </svg>
+      <div class="fmath">\(\text{rate}=\dfrac{\Delta y}{\Delta x}=\dfrac{y_2-y_1}{x_2-x_1}\)</div>
+      <div class="fexample">It's just slope — between any two points read off the graph</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 04">
+      <div class="flabel">Greatest / least rate of change</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <polyline points="25,105 60,95" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <polyline points="60,95 115,35" fill="none" stroke="var(--amber)" stroke-width="3"/>
+        <polyline points="115,35 165,30" fill="none" stroke="var(--cyan)" stroke-width="3"/>
+        <polyline points="165,30 195,15" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="60" cy="95" r="3" fill="var(--text)"/>
+        <circle cx="115" cy="35" r="3" fill="var(--text)"/>
+        <circle cx="165" cy="30" r="3" fill="var(--text)"/>
+      </svg>
+      <div class="fmath">Steepest segment = greatest rate; flattest = least</div>
+      <div class="fexample">Scan by eye first — you rarely need to compute every segment</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 05">
+      <div class="flabel">Reading a scatterplot</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="40" cy="100" r="4" fill="var(--cyan)"/>
+        <circle cx="65" cy="80" r="4" fill="var(--cyan)"/>
+        <circle cx="55" cy="55" r="4" fill="var(--cyan)"/>
+        <circle cx="95" cy="70" r="4" fill="var(--cyan)"/>
+        <circle cx="120" cy="45" r="4" fill="var(--cyan)"/>
+        <circle cx="140" cy="65" r="4" fill="var(--cyan)"/>
+        <circle cx="160" cy="30" r="4" fill="var(--cyan)"/>
+        <circle cx="180" cy="40" r="4" fill="var(--cyan)"/>
+        <circle cx="110" cy="100" r="4" fill="var(--cyan)"/>
+      </svg>
+      <div class="fmath">Each dot \(=\) one \((x,y)\) data point</div>
+      <div class="fexample">Read its position against both axes to get the pair of values</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 06">
+      <div class="flabel">Correlation</div>
+      <svg class="fdiagram" viewBox="0 0 320 120">
+        <line x1="15" y1="100" x2="95" y2="100" stroke="var(--geo)" stroke-width="1.5"/>
+        <line x1="15" y1="20" x2="15" y2="100" stroke="var(--geo)" stroke-width="1.5"/>
+        <circle cx="25" cy="90" r="3" fill="var(--good)"/>
+        <circle cx="40" cy="75" r="3" fill="var(--good)"/>
+        <circle cx="55" cy="65" r="3" fill="var(--good)"/>
+        <circle cx="65" cy="50" r="3" fill="var(--good)"/>
+        <circle cx="80" cy="35" r="3" fill="var(--good)"/>
+        <text x="18" y="116" font-family="IBM Plex Mono" font-size="10" fill="var(--good)">positive</text>
+        <line x1="125" y1="100" x2="205" y2="100" stroke="var(--geo)" stroke-width="1.5"/>
+        <line x1="125" y1="20" x2="125" y2="100" stroke="var(--geo)" stroke-width="1.5"/>
+        <circle cx="135" cy="35" r="3" fill="var(--bad)"/>
+        <circle cx="150" cy="50" r="3" fill="var(--bad)"/>
+        <circle cx="165" cy="65" r="3" fill="var(--bad)"/>
+        <circle cx="175" cy="75" r="3" fill="var(--bad)"/>
+        <circle cx="190" cy="90" r="3" fill="var(--bad)"/>
+        <text x="126" y="116" font-family="IBM Plex Mono" font-size="10" fill="var(--bad)">negative</text>
+        <line x1="235" y1="100" x2="315" y2="100" stroke="var(--geo)" stroke-width="1.5"/>
+        <line x1="235" y1="20" x2="235" y2="100" stroke="var(--geo)" stroke-width="1.5"/>
+        <circle cx="245" cy="55" r="3" fill="var(--muted)"/>
+        <circle cx="258" cy="85" r="3" fill="var(--muted)"/>
+        <circle cx="270" cy="40" r="3" fill="var(--muted)"/>
+        <circle cx="285" cy="70" r="3" fill="var(--muted)"/>
+        <circle cx="300" cy="50" r="3" fill="var(--muted)"/>
+        <text x="255" y="116" font-family="IBM Plex Mono" font-size="10" fill="var(--muted)">none</text>
+      </svg>
+      <div class="fmath">Positive ↗, negative ↘, or no pattern</div>
+      <div class="fexample">Describes the overall trend of the scattered points</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 07">
+      <div class="flabel">Line of best fit</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <circle cx="40" cy="100" r="4" fill="var(--cyan)"/>
+        <circle cx="65" cy="80" r="4" fill="var(--cyan)"/>
+        <circle cx="55" cy="55" r="4" fill="var(--cyan)"/>
+        <circle cx="95" cy="70" r="4" fill="var(--cyan)"/>
+        <circle cx="120" cy="45" r="4" fill="var(--cyan)"/>
+        <circle cx="140" cy="65" r="4" fill="var(--cyan)"/>
+        <circle cx="160" cy="30" r="4" fill="var(--cyan)"/>
+        <circle cx="180" cy="40" r="4" fill="var(--cyan)"/>
+        <circle cx="110" cy="100" r="4" fill="var(--cyan)"/>
+        <line x1="30" y1="105" x2="195" y2="25" stroke="var(--amber)" stroke-width="2"/>
+      </svg>
+      <div class="fmath">A straight line that best represents the trend</div>
+      <div class="fexample">Used to estimate values — it won't pass through every point</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 08">
+      <div class="flabel">Comparing two data values</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <rect x="30" y="45" width="30" height="75" fill="var(--amber)" opacity="0.85"/>
+        <rect x="90" y="80" width="30" height="40" fill="var(--cyan)" opacity="0.85"/>
+        <rect x="150" y="65" width="30" height="55" fill="var(--geo)" opacity="0.5"/>
+      </svg>
+      <div class="fmath">\(\dfrac{\text{value A}}{\text{value B}}\times100\%\)</div>
+      <div class="fexample">"A is what percent/fraction of B" — read both values, then divide</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 09">
+      <div class="flabel">Doubling / halving time</div>
+      <svg class="fdiagram" viewBox="0 0 220 140">
+        <line x1="15" y1="120" x2="210" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="10" x2="15" y2="120" stroke="var(--geo)" stroke-width="2"/>
+        <polyline points="25,110 60,95 90,75 120,55 150,35 180,20" fill="none" stroke="var(--geo)" stroke-width="2"/>
+        <line x1="15" y1="95" x2="60" y2="95" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <line x1="60" y1="95" x2="60" y2="120" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <line x1="15" y1="55" x2="120" y2="55" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <line x1="120" y1="55" x2="120" y2="120" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <circle cx="60" cy="95" r="3.5" fill="var(--cyan)"/>
+        <circle cx="120" cy="55" r="3.5" fill="var(--amber)"/>
+      </svg>
+      <div class="fmath">Find where \(y=2y_0\), read the x-values, subtract</div>
+      <div class="fexample">Doubling time \(=x_2-x_1\), same idea for halving</div>
+    </div>
+
+    <div class="fcard bonus" data-tag="BONUS 01">
+      <div class="flabel">Combine chart data with a given rate</div>
+      <div class="fmath">\(\text{total}=(\text{quantity from chart})\times(\text{rate given})\)</div>
+      <div class="fexample">Revenue \(=\) units sold (bar chart) \(\times\) price (given in the problem)</div>
+      <div class="fcard-extra">SAT shortcut — not spelled out in this chapter</div>
+    </div>
+
+    <div class="fcard bonus" data-tag="BONUS 02">
+      <div class="flabel">Interpolation vs. extrapolation</div>
+      <div class="fmath">Inside the plotted range = safer; beyond it = riskier</div>
+      <div class="fexample">Predicting past the last data point assumes the trend keeps going</div>
+      <div class="fcard-extra">SAT shortcut — connects to the Statistics chapters</div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1",
+    prompt: "A line graph shows a town's population, in thousands, recorded every 5 years: Year 0 = 12, Year 5 = 15, Year 10 = 19, Year 15 = 30, Year 20 = 33. Between which two consecutive recordings was the average rate of change the greatest?",
+    steps: [
+      "Compute each segment's rate of change: \\(\\dfrac{15-12}{5}=0.6\\), \\(\\dfrac{19-15}{5}=0.8\\), \\(\\dfrac{30-19}{5}=2.2\\), \\(\\dfrac{33-30}{5}=0.6\\) (thousand per year)",
+      "Compare the four rates — the largest one identifies the steepest segment"
+    ],
+    answer: "Between Year 10 and Year 15 (2.2 thousand per year)"
+  },
+  {
+    title: "Example 2",
+    prompt: "A bar chart shows books sold by genre: Mystery = 45, Romance = 60, SciFi = 38, Fantasy = 72, Biography = 25. How many more books were sold in Romance and Fantasy combined than in Mystery, SciFi, and Biography combined?",
+    steps: [
+      "Add the first group: \\(60+72=132\\)",
+      "Add the second group: \\(45+38+25=108\\)",
+      "Subtract: \\(132-108\\)"
+    ],
+    answer: "24 more books"
+  },
+  {
+    title: "Example 3",
+    prompt: "A scatterplot's line of best fit is \\(y=18x+40\\), where \\(x\\) is overtime hours worked and \\(y\\) is weekly bonus in dollars. One employee worked 6 overtime hours and actually received a $150 bonus. By how much did the actual bonus differ from what the line predicts?",
+    steps: [
+      "Find the predicted value at \\(x=6\\): \\(y=18(6)+40=108+40=148\\)",
+      "Compare to the actual value: \\(150-148\\)"
+    ],
+    answer: "$2 higher than predicted"
+  },
+  {
+    title: "Example 4",
+    prompt: "A scientist records daily outdoor temperature and hot chocolate sales at a cafe. As the temperature decreases, sales tend to increase. What type of correlation does this data show?",
+    steps: [
+      "One variable (temperature) going down corresponds to the other variable (sales) going up",
+      "That's the definition of an inverse trend between two variables"
+    ],
+    answer: "Negative correlation"
+  },
+  {
+    title: "Example 5",
+    prompt: "A line graph shows monthly rainfall. April recorded 80 mm and July recorded 50 mm. The rainfall in July was what percent of the rainfall in April?",
+    steps: [
+      "Divide July's value by April's value: \\(\\dfrac{50}{80}=0.625\\)",
+      "Convert to a percent: \\(0.625\\times100\\)"
+    ],
+    answer: "62.5%"
+  },
+  {
+    title: "Example 6",
+    prompt: "A graph shows a bacteria population over time: 400 at \\(t=0\\) hours, 800 at \\(t=6\\) hours, and 1,600 at \\(t=12\\) hours. Based on the graph, approximately how many hours does it take for the population to double?",
+    steps: [
+      "From 400 to 800 takes \\(6-0=6\\) hours",
+      "From 800 to 1,600 also takes \\(12-6=6\\) hours — the doubling time is consistent"
+    ],
+    answer: "6 hours"
+  }
+];
+
+const quiz = [
+  { diff:"easy", q: "A bar chart shows medals won by 4 countries: A=12, B=18, C=9, D=15. Which country won the most medals?", opts: ["Country B","Country A","Country C","Country D"], correct: 0, exp: "18 is the tallest bar, so Country B won the most medals." },
+  { diff:"easy", q: "A line graph shows a company's profit, in thousands of dollars, over 5 years: Year 1=20, Year 2=25, Year 3=22, Year 4=30, Year 5=35. What was the profit in Year 4?", opts: ["$30,000","$22,000","$35,000","$25,000"], correct: 0, exp: "Reading the graph at Year 4 gives a value of 30, so the profit was $30,000." },
+  { diff:"easy", q: "In a scatterplot, one point is located at \\((7, 42)\\), where \\(x\\) is hours studied and \\(y\\) is test score. How many hours did this student study?", opts: ["\\(7\\)","\\(42\\)","\\(35\\)","\\(49\\)"], correct: 0, exp: "The x-coordinate represents hours studied, which is 7." },
+  { diff:"medium", q: "A line graph shows a plant's height, in cm: Week 2 = 10 cm, Week 6 = 22 cm. What is the average rate of growth, in cm per week, between these two points?", opts: ["\\(3\\)","\\(4\\)","\\(6\\)","\\(12\\)"], correct: 0, exp: "\\(\\dfrac{22-10}{6-2}=\\dfrac{12}{4}=3\\) cm per week." },
+  { diff:"medium", q: "A bar chart shows T-shirts sold in 4 colors: Red=30, Blue=45, Green=20, Yellow=25. How many more were sold in Blue and Red combined than in Green and Yellow combined?", opts: ["\\(30\\)","\\(20\\)","\\(45\\)","\\(75\\)"], correct: 0, exp: "Blue+Red \\(=75\\). Green+Yellow \\(=45\\). Difference \\(=75-45=30\\)." },
+  { diff:"medium", q: "A line graph shows sales of $4,000 in March and $2,800 in May. Sales in May were what percent of sales in March?", opts: ["70%","30%","143%","40%"], correct: 0, exp: "\\(\\dfrac{2800}{4000}=0.70=70\\%\\)." },
+  { diff:"hard", q: "A line graph shows a car's value at years 0, 2, 4, 6, 8: $28,000, $24,000, $19,000, $17,000, $15,500. Between which two consecutive years was the average rate of decrease the greatest?", opts: ["Year 2 to year 4","Year 0 to year 2","Year 4 to year 6","Year 6 to year 8"], correct: 0, exp: "Rates of decrease per year: 2000, 2500, 1000, 750. The largest, 2500/year, occurs from year 2 to year 4." },
+  { diff:"hard", q: "A bar chart shows units sold for 3 products: X=200, Y=150, Z=100. Product X costs $8, Y costs $12, and Z costs $20. Which product generated the greatest total revenue?", opts: ["Product Z","Product X","Product Y","They are all equal"], correct: 0, exp: "Revenue \\(=\\) units \\(\\times\\) price: X\\(=1600\\), Y\\(=1800\\), Z\\(=2000\\). Product Z generated the most." },
+  { diff:"hard", q: "A scatterplot's line of best fit is \\(y=2.5x+12\\), where \\(x\\) is advertising spend in hundreds of dollars and \\(y\\) is monthly sales in units. Based on this model, about how many units are predicted when advertising spend is $800?", opts: ["\\(32\\)","\\(20\\)","\\(44\\)","\\(12\\)"], correct: 0, exp: "\\(x=8\\) hundred dollars. \\(y=2.5(8)+12=20+12=32\\)." },
+  { diff:"extreme", type:"grid", q: "A line graph shows quarterly revenue, in thousands of dollars: Q1=180, Q2=210, Q3=246, Q4=258, Q5=300. Let \\(r_1\\) be the greatest average rate of change between two consecutive quarters, and \\(r_2\\) be the least. What is \\(r_1-r_2\\), in thousands of dollars per quarter?", correctValue:"30", exp: "Rates between consecutive quarters: \\(30, 36, 12, 42\\). The greatest is \\(r_1=42\\) (Q4 to Q5) and the least is \\(r_2=12\\) (Q3 to Q4). So \\(r_1-r_2=42-12=30\\)." }
+];
+
+const diffLabel = { easy:"EASY", medium:"MEDIUM", hard:"HARD", extreme:"EXTREME" };
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.diagram || ''}
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+function lockAndStamp(card, isCorrect){
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+  stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+  stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+  explain.classList.add('show');
+  if(isCorrect) score++;
+  answered++;
+  renderScore();
+  if(window.renderMathInElement){ renderMathInElement(explain); }
+}
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  const isGrid = item.type === 'grid';
+
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff diff-${item.diff}">${diffLabel[item.diff]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    ${isGrid ? `
+      <div class="grid-row">
+        <input type="text" inputmode="numeric" class="grid-input" placeholder="Type your answer" id="gridin-${qi}">
+        <button class="btn-check" id="gridbtn-${qi}">CHECK</button>
+      </div>
+    ` : `
+      <div class="options">
+        ${item.opts.map((o, oi) => `
+          <button class="opt" data-i="${oi}">
+            <span class="optletter">${letters[oi]}</span>
+            <span>${o}</span>
+          </button>
+        `).join('')}
+      </div>
+    `}
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+
+  if(isGrid){
+    const input = card.querySelector(`#gridin-${qi}`);
+    const btn = card.querySelector(`#gridbtn-${qi}`);
+    const submit = () => {
+      if(input.disabled || !input.value.trim()) return;
+      const isCorrect = input.value.trim() === item.correctValue;
+      input.disabled = true;
+      btn.disabled = true;
+      input.classList.add(isCorrect ? 'correct' : 'wrong');
+      lockAndStamp(card, isCorrect);
+    };
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', (e) => { if(e.key === 'Enter') submit(); });
+  } else {
+    const buttons = card.querySelectorAll('.opt');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosen = parseInt(btn.dataset.i);
+        const isCorrect = chosen === item.correct;
+        buttons.forEach(b => b.disabled = true);
+        buttons[item.correct].classList.add('correct');
+        if(!isCorrect){ btn.classList.add('wrong'); }
+        lockAndStamp(card, isCorrect);
+      });
+    });
+  }
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
