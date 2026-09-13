@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Concept — SAT Platform</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; background: var(--gray-50); }
+
+    .concept-header {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .concept-header .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px; color: var(--blue); cursor: pointer;
+      border: 1px solid var(--gray-200); border-radius: 6px;
+      padding: 6px 14px; background: #fff; text-decoration: none;
+      transition: background .15s;
+    }
+    .concept-header .back-btn:hover { background: var(--blue-light); text-decoration: none; }
+    .concept-header .chapter-title {
+      font-size: 16px; font-weight: 700; color: var(--gray-900);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .concept-frame-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .concept-frame-wrap iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      min-height: 70vh;
+    }
+
+    /* ── Finish bar ── */
+    .finish-bar {
+      background: #fff;
+      border-top: 1px solid var(--gray-200);
+      padding: 20px 24px;
+      text-align: center;
+    }
+    .finish-bar .btn-finish {
+      font-size: 16px; font-weight: 600;
+      padding: 12px 40px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: var(--blue);
+      color: #fff;
+      transition: background .15s;
+    }
+    .finish-bar .btn-finish:hover { background: var(--blue-dark); }
+
+    /* ── Assessment overlay ── */
+    .assessment-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+    .assessment-overlay.show { display: flex; }
+    .assessment-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.18);
+      padding: 36px 40px;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+    }
+    .assessment-card h2 {
+      font-size: 22px; font-weight: 800; margin-bottom: 8px; color: var(--gray-900);
+    }
+    .assessment-card p {
+      font-size: 14px; color: var(--gray-500); margin-bottom: 24px;
+    }
+    .rating-options {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .rating-btn {
+      flex: 1; min-width: 120px;
+      padding: 14px 10px;
+      border-radius: 10px;
+      border: 2px solid var(--gray-200);
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all .15s;
+      text-align: center;
+    }
+    .rating-btn:hover { border-color: var(--blue); background: var(--blue-light); }
+    .rating-btn.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .rating-btn .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+
+    /* ── Feedback ── */
+    .feedback-area {
+      display: none;
+      margin-top: 16px;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    .feedback-area.show { display: block; }
+    .feedback-area.perfect { background: var(--green-bg); color: #065f46; }
+    .feedback-area.medium  { background: var(--orange-bg); color: #92400e; }
+    .feedback-area.not-understood { background: var(--red-bg); color: #991b1b; }
+
+    .feedback-actions {
+      display: none;
+      margin-top: 16px;
+      gap: 12px;
+      justify-content: center;
+    }
+    .feedback-actions.show { display: flex; }
+    .feedback-actions .btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-repeat {
+      background: var(--orange); color: #fff;
+    }
+    .btn-repeat:hover { background: #b45309; }
+    .btn-dashboard {
+      background: var(--blue); color: #fff;
+    }
+    .btn-dashboard:hover { background: var(--blue-dark); }
+    .btn-next {
+      background: var(--green); color: #fff;
+    }
+    .btn-next:hover { background: #0a7c5a; }
+  </style>
+</head>
+<body>
+
+<!-- Top bar with back + chapter title -->
+<div class="concept-header">
+  <a class="back-btn" href="/student/dashboard.html">← Dashboard</a>
+  <span class="chapter-title" id="chapter-title">Loading…</span>
+</div>
+
+<!-- Iframe for the lesson HTML -->
+<div class="concept-frame-wrap">
+  <iframe id="concept-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+</div>
+
+<!-- Finish bar at the bottom -->
+<div class="finish-bar" id="finish-bar">
+  <p style="color:var(--gray-500);font-size:13px;margin-bottom:10px">
+    Read through all formulas and examples above, then mark your lesson as finished.
+  </p>
+  <button class="btn-finish" onclick="showAssessment()">✅ I've Finished This Lesson</button>
+</div>
+
+<!-- Self-assessment overlay -->
+<div class="assessment-overlay" id="assessment-overlay">
+  <div class="assessment-card">
+    <h2>How well did you understand?</h2>
+    <p>Be honest — this helps us personalize your learning path.</p>
+
+    <div class="rating-options" id="rating-options">
+      <button class="rating-btn" data-level="not-understood" onclick="selectRating(this)">
+        <span class="emoji">😕</span>
+        Not Understood
+      </button>
+      <button class="rating-btn" data-level="medium" onclick="selectRating(this)">
+        <span class="emoji">🤔</span>
+        Medium
+      </button>
+      <button class="rating-btn" data-level="perfect" onclick="selectRating(this)">
+        <span class="emoji">🎯</span>
+        Perfect
+      </button>
+    </div>
+
+    <div class="feedback-area" id="feedback-area"></div>
+
+    <div class="feedback-actions" id="feedback-actions">
+      <!-- buttons injected by JS based on rating -->
+    </div>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const chapterFile = params.get('chapter');
+const chapterNum  = parseInt(params.get('n') || '0');
+const chapterTitle = params.get('title') || 'Math Concept';
+
+document.getElementById('chapter-title').textContent = `Ch.${String(chapterNum).padStart(2,'0')}: ${chapterTitle}`;
+document.title = `Ch.${String(chapterNum).padStart(2,'0')}: ${chapterTitle} — SAT Platform`;
+
+// Load the concept HTML inside the iframe
+const iframe = document.getElementById('concept-iframe');
+iframe.src = `/student/concepts/${chapterFile}`;
+
+// Auto-resize iframe to content height
+iframe.addEventListener('load', () => {
+  try {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    const h = doc.documentElement.scrollHeight;
+    iframe.style.height = h + 'px';
+  } catch (e) {
+    iframe.style.height = '85vh';
+  }
+});
+
+function showAssessment() {
+  document.getElementById('assessment-overlay').classList.add('show');
+}
+
+let selectedLevel = null;
+
+function selectRating(btn) {
+  // Highlight selected
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedLevel = btn.dataset.level;
+
+  const feedback = document.getElementById('feedback-area');
+  const actions  = document.getElementById('feedback-actions');
+  feedback.className = 'feedback-area show ' + selectedLevel;
+  actions.className = 'feedback-actions show';
+
+  if (selectedLevel === 'not-understood') {
+    feedback.innerHTML = `
+      <p>😕 It looks like this chapter needs more time.</p>
+      <p style="font-weight:400;margin-top:8px">Don't worry — that's completely normal! Go back and <strong>re-read the formulas and examples carefully</strong>. Try working through each example step by step. You can repeat this lesson as many times as you need.</p>
+    `;
+    actions.innerHTML = `
+      <button class="btn btn-repeat" onclick="repeatLesson()">🔄 Repeat Lesson</button>
+      <button class="btn btn-dashboard" onclick="goHome()">Dashboard</button>
+    `;
+  } else if (selectedLevel === 'medium') {
+    feedback.innerHTML = `
+      <p>🤔 Almost there! You have a decent grasp of the concepts.</p>
+      <p style="font-weight:400;margin-top:8px">We recommend <strong>reviewing the examples one more time</strong> to solidify your understanding before moving to the homework. Pay extra attention to the parts you found confusing.</p>
+    `;
+    actions.innerHTML = `
+      <button class="btn btn-repeat" onclick="repeatLesson()">🔄 Review Again</button>
+      <button class="btn btn-next" onclick="goToNextOrHome()">✅ Continue to Next</button>
+    `;
+  } else {
+    feedback.innerHTML = `
+      <p>🎯 Excellent! You've mastered this concept!</p>
+      <p style="font-weight:400;margin-top:8px">Great job! You're ready to move on to the next chapter or start the homework for this topic.</p>
+    `;
+    actions.innerHTML = `
+      <button class="btn btn-next" onclick="goToNextOrHome()">✅ Continue to Next</button>
+      <button class="btn btn-dashboard" onclick="goHome()">Dashboard</button>
+    `;
+  }
+}
+
+function repeatLesson() {
+  document.getElementById('assessment-overlay').classList.remove('show');
+  // Reset rating
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('feedback-area').className = 'feedback-area';
+  document.getElementById('feedback-actions').className = 'feedback-actions';
+  selectedLevel = null;
+  // Scroll iframe to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  try {
+    iframe.contentWindow.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) {}
+}
+
+/* ── Chapter navigation list (must match dashboard) ──── */
+const CHAPTERS = [
+  { file: "exponents-and-radicals.html",             n:  1, title: "Exponents & Radicals" },
+  { file: "expressions (2).html",                    n:  2, title: "Expressions" },
+  { file: "manipulating-solving-equations (1).html", n:  3, title: "Manipulating & Solving Equations" },
+  { file: "other-types-of-equation-questions.html",  n:  4, title: "Other Types of Equation Questions" },
+  { file: "functions (1).html",                      n:  5, title: "Functions" },
+  { file: "lines-and-linear-relationships.html",     n:  6, title: "Lines & Linear Relationships" },
+  { file: "linear-models.html",                      n:  7, title: "Interpreting Linear Equations & Models" },
+  { file: "percent.html",                            n:  8, title: "Percent" },
+  { file: "exponential-vs-linear-growth.html",       n:  9, title: "Exponential vs. Linear Growth" },
+  { file: "rates-conversions-ratios (4).html",       n: 10, title: "Rates, Conversions & Ratios" },
+  { file: "word-problems-sat-guide (3).html",        n: 11, title: "Word Problems" },
+  { file: "quadratic-equations-sat-guide.html",      n: 12, title: "Quadratic Equations" },
+  { file: "systems-of-equations (1).html",           n: 13, title: "Systems of Equations" },
+  { file: "inequalities.html",                       n: 14, title: "Inequalities" },
+  { file: "function-transformations (1).html",       n: 15, title: "Function Transformations" },
+  { file: "quadratic-functions.html",                n: 16, title: "Quadratic Functions" },
+  { file: "angles (1).html",                         n: 17, title: "Angles" },
+  { file: "triangles-sat-guide.html",                n: 18, title: "Triangles" },
+  { file: "circles (1).html",                        n: 19, title: "Circles" },
+  { file: "radians.html",                            n: 20, title: "Radians" },
+  { file: "trigonometry.html",                       n: 21, title: "Trigonometry" },
+  { file: "area-perimeter-volume-sat-guide.html",    n: 22, title: "Area, Perimeter & Volume" },
+  { file: "reading-data.html",                       n: 23, title: "Reading Data" },
+  { file: "probability.html",                        n: 24, title: "Probability" },
+  { file: "statistics-1.html",                       n: 25, title: "Statistics I" },
+  { file: "statistics-ii (1).html",                  n: 26, title: "Statistics II" },
+];
+
+function goToNextOrHome() {
+  const idx = CHAPTERS.findIndex(c => c.n === chapterNum);
+  if (idx >= 0 && idx < CHAPTERS.length - 1) {
+    const next = CHAPTERS[idx + 1];
+    location.href = `/student/concept.html?chapter=${encodeURIComponent(next.file)}&n=${next.n}&title=${encodeURIComponent(next.title)}`;
+  } else {
+    goHome();
+  }
+}
+
+function goHome() {
+  location.href = '/student/dashboard.html';
+}
+</script>
+</body>
+</html>
