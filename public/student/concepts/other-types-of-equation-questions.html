@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Other Types of Equation Questions — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --violet: #B79CF2;
+    --violet-dim: #4A3B7A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(24px, 6vw, 38px); margin:0 0 4px; line-height:1.08;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:64ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard.bonus::before{ color:var(--violet); border-color:var(--violet-dim); }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; min-height:32px; }
+  .fcard .fmath{ font-size:15px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:700px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .diffkey{
+    display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);
+  }
+  .diffkey span{ display:flex; align-items:center; gap:6px; }
+  .diffkey i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .difftag{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.07em;
+    padding:2px 7px; border-radius:2px; border:1px solid; text-transform:uppercase;
+    flex-shrink:0; align-self:center;
+  }
+  .difftag.easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .difftag.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); background:rgba(111,227,214,0.08); }
+  .difftag.hard{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .difftag.extreme{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.1); }
+  .qtext{ font-size:15px; color:#fff; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 4</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Other Types of Equation Questions</h1>
+    <div class="subtitle-en">Matching Terms · Solution Counting · Absolute Value</div>
+    <p class="desc">How to match coefficients between equivalent expressions, tell infinitely-many-solutions equations apart from no-solution equations, and solve absolute value equations — including the never-negative trap. Rules first, then worked examples and a 10-question practice set (3 easy · 3 medium · 3 hard · 1 extreme).</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS / TECHNIQUES -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Techniques</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid" id="formulaGrid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">Match corresponding coefficients</div><div class="fmath">\(Ax^2\!+\!Bx\!+\!C \equiv Dx^2\!+\!Ex\!+\!F \Rightarrow A\!=\!D,\ B\!=\!E,\ C\!=\!F\)</div><div class="fexample">\((x+10)(x+b) \equiv x^2+3bx+c\)</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Infinitely many solutions = identical sides</div><div class="fmath">\(ax+b=cx+d\) has \(\infty\) solutions \(\iff a=c,\ b=d\)</div><div class="fexample">\(6(x+2)=6x+12\) is true for every x</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">No solution = same slope, different constant</div><div class="fmath">\(ax+b=ax+d,\ (b\neq d) \Rightarrow \text{no solution}\)</div><div class="fexample">\(3x+6=3x+10 \Rightarrow 6=10\) (false)</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">Absolute value splits into two cases</div><div class="fmath">\(|A|=k\ (k>0) \Rightarrow A=k \text{ or } A=-k\)</div><div class="fexample">\(|x+3|=8 \Rightarrow x=5 \text{ or } x=-11\)</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Absolute value equal to 0 → only one solution</div><div class="fmath">\(|A|=0 \Rightarrow A=0 \text{ (single case)}\)</div><div class="fexample">\(|x-10|=0 \Rightarrow x=10\) only</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">A square or absolute value can never be negative</div><div class="fmath">\(A^2=k \text{ or } |A|=k,\ k<0 \Rightarrow \text{zero real solutions}\)</div><div class="fexample">\(x^2=-4\) → zero real solutions</div></div>
+    <div class="fcard bonus" data-tag="EXTRA · NOT IN TEXT"><div class="flabel">Quick classifier for linear equations</div><div class="fmath">\(ax+b=cx+d\): \(a\neq c \to \) one solution</div><div class="fexample">Same slope decides ∞ vs. 0 by comparing constants</div></div>
+    <div class="fcard bonus" data-tag="EXTRA · NOT IN TEXT"><div class="flabel">|expr| = negative constant → no solution</div><div class="fmath">\(|A| = k,\ k<0 \Rightarrow \text{no solution}\)</div><div class="fexample">\(|2x-1| = -5\) → no solution</div></div>
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diffkey">
+    <span><i style="background:var(--good)"></i>Easy ×3</span>
+    <span><i style="background:var(--cyan)"></i>Medium ×3</span>
+    <span><i style="background:var(--amber)"></i>Hard ×3</span>
+    <span><i style="background:var(--bad)"></i>Extreme ×1</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Matching terms",
+    prompt: "The expressions \\((x+8)(x+b)\\) and \\(x^2+5bx+c\\) are equivalent, where b and c are constants. What is the value of c?",
+    steps: [
+      "Expand the left side: \\((x+8)(x+b) = x^2 + bx + 8x + 8b = x^2 + (b+8)x + 8b\\)",
+      "Match the x-coefficients on both sides: \\(b+8 = 5b\\)",
+      "Solve for b: \\(8 = 4b \\Rightarrow b = 2\\)",
+      "Match the constants: \\(c = 8b = 8(2)\\)"
+    ],
+    answer: "\\(c = 16\\)"
+  },
+  {
+    title: "Example 2 — Infinitely many solutions",
+    prompt: "In the equation \\(a(x^2 - 3b) = 5x^2 - 30\\), a and b are constants and the equation has infinitely many solutions. What is the value of b?",
+    steps: [
+      "Distribute the a: \\(ax^2 - 3ab = 5x^2 - 30\\)",
+      "For infinitely many solutions, corresponding coefficients must match. Match the \\(x^2\\) terms: \\(a = 5\\)",
+      "Match the constants: \\(-3ab = -30 \\Rightarrow -3(5)b = -30\\)",
+      "Solve for b: \\(-15b = -30\\)"
+    ],
+    answer: "\\(b = 2\\)"
+  },
+  {
+    title: "Example 3 — No solution",
+    prompt: "In the equation \\(4cx - 3(x+2) = 5(x-1)\\), c is a constant and the equation has no solution. What is the value of c?",
+    steps: [
+      "Expand both sides: \\(4cx - 3x - 6 = 5x - 5\\)",
+      "For no solution, the x-coefficients must be equal (while the constants stay different): \\(4c - 3 = 5\\)",
+      "Solve for c: \\(4c = 8 \\Rightarrow c = 2\\)",
+      "Check: with c=2 the equation becomes \\(5x - 6 = 5x - 5\\), i.e. \\(-6 = -5\\) — a contradiction, confirming no solution"
+    ],
+    answer: "\\(c = 2\\)"
+  },
+  {
+    title: "Example 4 — Absolute value, two cases",
+    prompt: "If \\(|2x-5| = 17\\), what is the positive difference between the two possible values of x?",
+    steps: [
+      "Split into two cases: \\(2x-5 = 17\\) or \\(2x-5 = -17\\)",
+      "Case 1: \\(2x = 22 \\Rightarrow x = 11\\)",
+      "Case 2: \\(2x = -12 \\Rightarrow x = -6\\)",
+      "The positive difference is \\(11 - (-6)\\)"
+    ],
+    answer: "\\(17\\)"
+  },
+  {
+    title: "Example 5 — Never negative",
+    prompt: "How many real solutions does the equation \\(|4x - 9| = -2\\) have?",
+    steps: [
+      "Absolute value always produces a result that is zero or positive — it can never equal a negative number",
+      "Since the right side is \\(-2\\), no value of x can ever make this equation true"
+    ],
+    answer: "Zero real solutions"
+  },
+  {
+    title: "Example 6 — Absolute value equal to zero",
+    prompt: "How many solutions does the equation \\(3|x+7| = 0\\) have?",
+    steps: [
+      "Divide both sides by 3: \\(|x+7| = 0\\)",
+      "Unlike a positive target, zero has no separate '+' and '−' case — there's only one way for an absolute value to equal 0: the inside must be exactly 0",
+      "So \\(x + 7 = 0 \\Rightarrow x = -7\\), and this is the only solution"
+    ],
+    answer: "Exactly one solution (x = -7)"
+  }
+];
+
+const quiz = [
+  {
+    diff: "easy",
+    q: "If \\(|x - 6| = 9\\), what is the positive difference between the two possible values of x?",
+    opts: ["9","12","18","24"], correct: 2,
+    exp: "\\(x-6=9 \\Rightarrow x=15\\), and \\(x-6=-9 \\Rightarrow x=-3\\). The positive difference is \\(15-(-3)=18\\)."
+  },
+  {
+    diff: "easy",
+    q: "In the equation \\(kx + 6(4 - x) = 24\\), k is a constant and the equation is true for all values of x. What is the value of k?",
+    opts: ["4","5","6","8"], correct: 2,
+    exp: "Expanding gives \\((k-6)x + 24 = 24\\). For this to hold for every x, the x-coefficient must vanish: \\(k-6=0 \\Rightarrow k=6\\)."
+  },
+  {
+    diff: "easy",
+    q: "How many solutions does the equation \\(4(x+3) = 4x + 10\\) have?",
+    opts: ["Zero","One","Two","Infinitely many"], correct: 0,
+    exp: "Expanding gives \\(4x+12=4x+10\\), which simplifies to \\(12=10\\) — a false statement, so there are zero solutions."
+  },
+  {
+    diff: "medium",
+    q: "The expressions \\((x+6)(x+b)\\) and \\(x^2+4bx+c\\) are equivalent, where b and c are constants. What is the value of c?",
+    opts: ["6","8","12","16"], correct: 2,
+    exp: "Expanding gives \\(x^2+(b+6)x+6b\\). Matching x-coefficients: \\(b+6=4b \\Rightarrow b=2\\). Then \\(c=6b=12\\)."
+  },
+  {
+    diff: "medium",
+    q: "In the equation \\(3cx - 2(x-5) = 7(x+1)\\), c is a constant and the equation has no solution. What is the value of c?",
+    opts: ["2","3","4","5"], correct: 1,
+    exp: "Expanding: \\(3cx-2x+10 = 7x+7\\). Matching x-coefficients for no solution: \\(3c-2=7 \\Rightarrow c=3\\). The constants (10 vs. 7) stay different, confirming no solution."
+  },
+  {
+    diff: "medium",
+    q: "If \\(|5x - 10| = 40\\), what is the negative value of x?",
+    opts: ["-4","-6","-8","-10"], correct: 1,
+    exp: "\\(5x-10=-40 \\Rightarrow 5x=-30 \\Rightarrow x=-6\\). (The other case gives \\(x=10\\), which is positive.)"
+  },
+  {
+    diff: "hard",
+    q: "In the equation \\(2x + a(3x - 6) = bx - 18\\), a and b are constants. If the equation has infinitely many solutions, what is the value of \\(a + b\\)?",
+    opts: ["11","12","14","17"], correct: 2,
+    exp: "Expanding the left side: \\((2+3a)x - 6a = bx - 18\\). Matching constants: \\(-6a=-18 \\Rightarrow a=3\\). Matching x-coefficients: \\(b=2+3(3)=11\\). So \\(a+b=3+11=14\\)."
+  },
+  {
+    diff: "hard",
+    q: "If \\(2|x - 4| + 5 = 17\\), what is the sum of the two possible values of x?",
+    opts: ["4","6","8","12"], correct: 2,
+    exp: "Isolate the absolute value first: \\(2|x-4|=12 \\Rightarrow |x-4|=6\\). So \\(x=10\\) or \\(x=-2\\), which sum to \\(8\\)."
+  },
+  {
+    diff: "hard",
+    q: "How many real solutions does the equation \\((2x + 5)^2 + 9 = 0\\) have?",
+    opts: ["Zero","One","Two","Infinitely many"], correct: 0,
+    exp: "Rearranging gives \\((2x+5)^2 = -9\\). A square can never be negative, so there are zero real solutions."
+  },
+  {
+    diff: "extreme",
+    q: "For all values of x, the equation \\(a|x-4| + b = |ax - 4a| + 7\\) holds true, where a and b are constants and \\(a > 0\\). What is the value of b?",
+    opts: ["4","7","a","4a"], correct: 1,
+    exp: "Since \\(a>0\\), \\(|ax-4a| = |a(x-4)| = a|x-4|\\). The equation becomes \\(a|x-4|+b = a|x-4|+7\\); the \\(a|x-4|\\) terms cancel for any a, so this holds for every x exactly when \\(b=7\\)."
+  }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="difftag ${item.diff}">${item.diff}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+      if(window.renderMathInElement){ renderMathInElement(explain); }
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
