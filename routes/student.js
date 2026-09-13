@@ -200,6 +200,21 @@ router.post('/attempt/:attemptId/resume', (req, res) => {
   });
 });
 
+// ── Get existing answers for an attempt ──────────────────────────────
+router.get('/attempt/:attemptId/answers', (req, res) => {
+  const db = getDb();
+  const attempt = db.prepare(`
+    SELECT * FROM test_attempts WHERE id = ? AND student_id = ?
+  `).get(req.params.attemptId, req.user.id);
+  if (!attempt) return res.status(404).json({ error: 'Not found' });
+
+  const answers = db.prepare(`
+    SELECT question_id, selected_answer FROM answers WHERE attempt_id = ?
+  `).all(attempt.id);
+  
+  res.json({ answers });
+});
+
 // ── Autosave a single answer ────────────────────────────────────────
 router.post('/attempt/:attemptId/answer', (req, res) => {
   const db = getDb();
