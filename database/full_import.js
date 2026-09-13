@@ -132,6 +132,8 @@ function migrateSchema(db) {
     db.exec(`
       BEGIN;
       ALTER TABLE questions RENAME TO questions_bak;
+      
+      -- Recreate questions
       CREATE TABLE questions (
         id            TEXT PRIMARY KEY,
         word          TEXT NOT NULL DEFAULT '',
@@ -152,10 +154,35 @@ function migrateSchema(db) {
         created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
         updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
       );
-      INSERT INTO questions
-        SELECT id,word,question,context,options,correct_answer,explanation,difficulty,category,question_type,is_active,created_at,updated_at
-        FROM questions_bak;
+      INSERT INTO questions SELECT * FROM questions_bak;
       DROP TABLE questions_bak;
+
+      -- ALTER TABLE RENAME TO questions_bak automatically updated foreign keys in test_questions and answers.
+      -- We must recreate them to point back to 'questions'.
+      
+      ALTER TABLE test_questions RENAME TO test_questions_bak;
+      CREATE TABLE test_questions (
+        id             TEXT PRIMARY KEY,
+        test_id        TEXT NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+        question_id    TEXT NOT NULL REFERENCES questions(id),
+        section        TEXT,
+        question_order INTEGER NOT NULL
+      );
+      INSERT INTO test_questions SELECT * FROM test_questions_bak;
+      DROP TABLE test_questions_bak;
+
+      ALTER TABLE answers RENAME TO answers_bak;
+      CREATE TABLE answers (
+        id              TEXT PRIMARY KEY,
+        attempt_id      TEXT NOT NULL REFERENCES test_attempts(id) ON DELETE CASCADE,
+        question_id     TEXT NOT NULL REFERENCES questions(id),
+        selected_answer TEXT,
+        is_correct      INTEGER,
+        answered_at     TEXT
+      );
+      INSERT INTO answers SELECT * FROM answers_bak;
+      DROP TABLE answers_bak;
+
       COMMIT;
     `);
     db.exec('PRAGMA foreign_keys = ON;');
@@ -286,22 +313,40 @@ const db = getDb();
 // causes SQLite FK validation errors on subsequent runs.
 (function cleanupStaleTables() {
   db.exec('PRAGMA foreign_keys = OFF;');
-
-  const stale = db.prepare(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('questions_bak','questions_old')"
-  ).all().map(r => r.name);
-
-  if (stale.length > 0) {
-    console.log('⚠  Cleaning up stale migration tables:', stale.join(', '));
-    // If questions itself is missing but questions_bak exists, restore it first
-    const hasQuestions = db.prepare(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='questions'"
-    ).get();
-    if (!hasQuestions && stale.includes('questions_bak')) {
-      console.log('   Restoring questions table from backup...');
-      db.exec('ALTER TABLE questions_bak RENAME TO questions;');
-    } else {
-      for (const t of stale) db.exec(`DROP TABLE IF EXISTS "${t}";`);
+  
+  // If questions_bak exists, the migration failed halfway.
+  // SQLite updated the foreign keys in test_questions and answers to point to questions_bak!
+  // If questions_bak was later dropped, the FK is left pointing to a missing table.
+  const tqSchema = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='test_questions'").get();
+  const isCorrupted = tqSchema && tqSchema.sql && tqSchema.sql.includes('questions_bak');
+  
+  if (isCorrupted) {
+    console.log('⚠  Detected corrupted foreign keys from failed migration. Cleaning up...');
+    
+    db.exec(`
+      DROP TABLE IF EXISTS answers;
+      DROP TABLE IF EXISTS test_questions;
+      DROP TABLE IF EXISTS test_results;
+      DROP TABLE IF EXISTS integrity_events;
+      DROP TABLE IF EXISTS test_attempts;
+      DROP TABLE IF EXISTS tests;
+      DROP TABLE IF EXISTS questions;
+      DROP TABLE IF EXISTS questions_bak;
+      DROP TABLE IF EXISTS questions_old;
+    `);
+    
+    // We dropped everything except users.
+    // Let's re-run initSchema here.
+    const schemaPath = path.join(__dirname, 'schema.sql');
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+    db.exec(schema);
+    
+    console.log('   Recreated schema cleanly. Re-running seed to restore vocab...');
+    // We can just run seed as a child process or require it
+    try {
+      require('child_process').execSync('node ' + path.join(__dirname, 'seed.js'), { stdio: 'inherit' });
+    } catch (e) {
+      console.log('   Seed failed, but continuing...', e.message);
     }
     console.log('   Done.\n');
   }
