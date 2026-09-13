@@ -20,13 +20,25 @@
 <div class="container page-wrap">
   <h1 class="section-heading">My Dashboard</h1>
 
-  <!-- Active modules -->
-  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Available Modules</h2>
-  <div class="module-grid" id="module-grid">
-    <!-- Vocabulary module injected by JS -->
+  <!-- ══════ VOCABULARY ══════ -->
+  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">📚 Vocabulary</h2>
+  <div class="module-grid" id="vocab-grid">
+    <!-- filled by JS -->
   </div>
 
-  <!-- Coming soon -->
+  <!-- ══════ MATH — LEARNING CONCEPTS ══════ -->
+  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 16px">💡 Math — Learning Concepts</h2>
+  <div class="module-grid" id="math-concepts-grid">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- ══════ MATH — HOMEWORK ══════ -->
+  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 16px">📝 Math — Homework</h2>
+  <div class="module-grid" id="math-hw-grid">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- ══════ COMING SOON ══════ -->
   <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 16px">Coming Soon</h2>
   <div class="module-grid">
     <div class="module-card disabled">
@@ -91,6 +103,36 @@
 <script>
 let currentUser = null;
 
+/* ── Chapter list (maps to files inside /student/concepts/) ─── */
+const MATH_CHAPTERS = [
+  { file: "exponents-and-radicals.html",             n:  1, title: "Exponents & Radicals" },
+  { file: "expressions (2).html",                    n:  2, title: "Expressions" },
+  { file: "manipulating-solving-equations (1).html", n:  3, title: "Manipulating & Solving Equations" },
+  { file: "other-types-of-equation-questions.html",  n:  4, title: "Other Types of Equation Questions" },
+  { file: "functions (1).html",                      n:  5, title: "Functions" },
+  { file: "lines-and-linear-relationships.html",     n:  6, title: "Lines & Linear Relationships" },
+  { file: "linear-models.html",                      n:  7, title: "Interpreting Linear Equations & Models" },
+  { file: "percent.html",                            n:  8, title: "Percent" },
+  { file: "exponential-vs-linear-growth.html",       n:  9, title: "Exponential vs. Linear Growth" },
+  { file: "rates-conversions-ratios (4).html",       n: 10, title: "Rates, Conversions & Ratios" },
+  { file: "word-problems-sat-guide (3).html",        n: 11, title: "Word Problems" },
+  { file: "quadratic-equations-sat-guide.html",      n: 12, title: "Quadratic Equations" },
+  { file: "systems-of-equations (1).html",           n: 13, title: "Systems of Equations" },
+  { file: "inequalities.html",                       n: 14, title: "Inequalities" },
+  { file: "function-transformations (1).html",       n: 15, title: "Function Transformations" },
+  { file: "quadratic-functions.html",                n: 16, title: "Quadratic Functions" },
+  { file: "angles (1).html",                         n: 17, title: "Angles" },
+  { file: "triangles-sat-guide.html",                n: 18, title: "Triangles" },
+  { file: "circles (1).html",                        n: 19, title: "Circles" },
+  { file: "radians.html",                            n: 20, title: "Radians" },
+  { file: "trigonometry.html",                       n: 21, title: "Trigonometry" },
+  { file: "area-perimeter-volume-sat-guide.html",    n: 22, title: "Area, Perimeter & Volume" },
+  { file: "reading-data.html",                       n: 23, title: "Reading Data" },
+  { file: "probability.html",                        n: 24, title: "Probability" },
+  { file: "statistics-1.html",                       n: 25, title: "Statistics I" },
+  { file: "statistics-ii (1).html",                  n: 26, title: "Statistics II" },
+];
+
 async function init() {
   try {
     const r = await fetch('/api/auth/me');
@@ -103,38 +145,72 @@ async function init() {
     if (dash.user?.student_id) {
       document.getElementById('student-id-display').textContent = 'ID: ' + dash.user.student_id;
     }
-    renderModules(dash.tests || []);
+
+    const tests = dash.tests || [];
+    renderVocab(tests.filter(t => t.test_type === 'vocabulary'));
+    renderMathConcepts();
+    renderMathHomework(tests.filter(t => t.test_type === 'math'));
     await loadHistory();
   } catch (e) { console.error(e); }
 }
 
-function renderModules(tests) {
-  const grid = document.getElementById('module-grid');
-  if (!tests.length) {
-    grid.innerHTML = '<p class="text-muted">No tests available yet.</p>';
-    return;
-  }
-  grid.innerHTML = tests.map(test => {
-    const done = test.lastAttempt?.status === 'submitted';
-    const score = done ? `${test.lastAttempt.score}/${test.question_count}` : '';
-    const accuracy = done ? `${test.lastAttempt.accuracy}%` : '';
-    return `
-      <div class="module-card" onclick="goToTest('${test.id}', ${done})">
-        <div class="module-icon">📚</div>
-        <div class="module-name">${test.title}</div>
-        <div class="module-status" style="margin-bottom:12px">
-          ${done
-            ? `<span class="badge badge-green">Completed</span>`
-            : `<span class="badge badge-blue">Available</span>`}
-        </div>
-        ${done ? `<div style="font-size:13px;color:var(--gray-700)">Score: <strong>${score}</strong> &bull; ${accuracy}</div>` : ''}
-        <div style="margin-top:12px">
-          <button class="btn ${done ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="goToTest('${test.id}', ${done}); event.stopPropagation()">
-            ${done ? 'Retake / Review' : 'Start Test'}
-          </button>
-        </div>
-      </div>`;
-  }).join('');
+/* ── Vocabulary section ───────────────────────────────── */
+function renderVocab(tests) {
+  const grid = document.getElementById('vocab-grid');
+  if (!tests.length) { grid.innerHTML = '<p class="text-muted">No vocabulary tests available yet.</p>'; return; }
+  grid.innerHTML = tests.map(test => renderTestCard(test, '📚')).join('');
+}
+
+/* ── Math — Learning Concepts (your beautiful HTML pages) */
+function renderMathConcepts() {
+  const grid = document.getElementById('math-concepts-grid');
+  grid.innerHTML = MATH_CHAPTERS.map(ch => `
+    <div class="module-card" onclick="goToConcept('${encodeURIComponent(ch.file)}')">
+      <div class="module-icon">💡</div>
+      <div class="module-name" style="font-size:14px">Ch.${String(ch.n).padStart(2,'0')}: ${ch.title}</div>
+      <div class="module-status" style="margin-bottom:12px">
+        <span class="badge" style="background:#e0f2fe;color:#0369a1">Lesson</span>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-primary btn-sm" onclick="goToConcept('${encodeURIComponent(ch.file)}'); event.stopPropagation()">
+          Learn Concept
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+/* ── Math — Homework (database-driven tests) ─────────── */
+function renderMathHomework(tests) {
+  const grid = document.getElementById('math-hw-grid');
+  if (!tests.length) { grid.innerHTML = '<p class="text-muted">No homework available yet.</p>'; return; }
+  grid.innerHTML = tests.map(test => renderTestCard(test, '📝')).join('');
+}
+
+/* ── Shared card renderer ─────────────────────────────── */
+function renderTestCard(test, icon) {
+  const done = test.lastAttempt?.status === 'submitted';
+  const score = done ? `${test.lastAttempt.score}/${test.question_count}` : '';
+  const accuracy = done ? `${test.lastAttempt.accuracy}%` : '';
+  return `
+    <div class="module-card" onclick="goToTest('${test.id}', ${done})">
+      <div class="module-icon">${icon}</div>
+      <div class="module-name">${test.title}</div>
+      <div class="module-status" style="margin-bottom:12px">
+        ${done
+          ? '<span class="badge badge-green">Completed</span>'
+          : '<span class="badge badge-blue">Available</span>'}
+      </div>
+      ${done ? `<div style="font-size:13px;color:var(--gray-700)">Score: <strong>${score}</strong> &bull; ${accuracy}</div>` : ''}
+      <div style="margin-top:12px">
+        <button class="btn ${done ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="goToTest('${test.id}', ${done}); event.stopPropagation()">
+          ${done ? 'Retake / Review' : 'Start'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function goToConcept(file) {
+  location.href = `/student/concepts/${file}`;
 }
 
 function goToTest(testId, done) {
