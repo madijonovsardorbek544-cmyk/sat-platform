@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triangles — SAT Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --bonus: #B98BFF;
+    --bonus-dim: #4A3B7A;
+    --extreme: #FF2E63;
+    --extreme-dim: #7A1030;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  *:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:880px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.16em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.6; max-width:64ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+  .subhead{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.1em;
+    color:var(--muted); text-transform:uppercase; margin:0 0 12px;
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+  .fcard .fdiagram{ width:100%; display:flex; justify-content:center; margin:2px 0 10px; }
+  .fcard .fdiagram svg{ width:100%; max-width:165px; height:auto; display:block; }
+  .fcard .fmath{ font-size:15.5px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; line-height:1.5; }
+
+  .fcard.bonus{ border-color: rgba(185,139,255,0.35); background: linear-gradient(180deg, rgba(185,139,255,0.05), var(--surface)); }
+  .fcard.bonus::before{ color:var(--bonus); border-color:var(--bonus-dim); }
+  .fcard.bonus .fexample{ color:var(--bonus); }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 10px; }
+  .chip{ font-family:'IBM Plex Mono', monospace; font-size:12px; padding:3px 10px; border-radius:12px; border:1px solid; }
+  .chip.valid{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .chip.invalid{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.08); text-decoration:line-through; }
+
+  .bonus-panel{
+    margin-top:22px; border:1px dashed var(--bonus-dim); border-radius:4px;
+    padding:18px 18px 20px; background:linear-gradient(180deg, rgba(185,139,255,0.05), transparent);
+  }
+  .bonus-head{ display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; }
+  .bonus-icon{ font-size:18px; color:var(--bonus); flex-shrink:0; line-height:1.2; }
+  .bonus-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:16px; color:#fff; }
+  .bonus-sub{ font-size:13px; color:var(--muted); margin-top:4px; line-height:1.55; max-width:58ch; }
+
+  /* ---- Decision guide (signature element) ---- */
+  .dict-panel{
+    background:var(--bg2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:16px 18px; margin-bottom:18px;
+  }
+  .dict-title{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.09em;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:10px;
+  }
+  .dict-row{
+    display:flex; justify-content:space-between; align-items:center; gap:14px;
+    padding:9px 2px; border-bottom:1px dashed var(--line); font-size:13.5px;
+  }
+  .dict-row:last-of-type{ border-bottom:none; }
+  .dict-row .phrase{ color:var(--text); }
+  .dict-row .math{ color:var(--cyan); flex-shrink:0; text-align:right; }
+  .dict-row.warn{
+    margin-top:8px; border-bottom:none; border-top:1px solid var(--bonus-dim);
+    background:rgba(185,139,255,0.08); border-radius:3px; padding:10px 10px; flex-wrap:wrap;
+  }
+  .dict-row.warn .phrase{ color:var(--bonus); font-weight:600; }
+  .dict-row.warn .math{ color:#fff; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:900px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  /* ---- Adaptive ladder (scoring element) ---- */
+  .ladder-panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:18px 18px 20px; margin-bottom:20px;
+  }
+  .ladder-head{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.09em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:18px;
+  }
+  .ladder-head-right{ display:flex; align-items:center; gap:12px; }
+  .ladder-head-right b{ color:#fff; }
+  .ladder-head button{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .ladder-head button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+  .ladder-row{
+    display:flex; align-items:flex-end; justify-content:center; gap:20px;
+    padding:6px 4px 4px;
+  }
+  .ladder-col{ display:flex; flex-direction:column; align-items:center; gap:8px; width:62px; }
+  .tier-label{ font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; color:var(--muted); }
+  .tier-track{
+    position:relative; width:100%; border:1px solid var(--line-strong); border-radius:4px;
+    background:var(--bg2); overflow:hidden; display:flex; align-items:flex-end;
+  }
+  .tier-easy .tier-track{ height:60px; }
+  .tier-medium .tier-track{ height:88px; }
+  .tier-hard .tier-track{ height:116px; }
+  .tier-extreme .tier-track{ height:144px; }
+  .tier-fill{ width:100%; height:0%; transition:height .4s ease; }
+  .tier-easy .tier-fill{ background:var(--good); }
+  .tier-medium .tier-fill{ background:var(--amber); }
+  .tier-hard .tier-fill{ background:var(--bad); }
+  .tier-extreme .tier-fill{ background:linear-gradient(180deg,#FF7AC6,var(--extreme)); box-shadow:0 0 12px rgba(255,46,99,0.55); }
+  .tier-count{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:#fff; }
+  .tier-clear{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.06em;
+    color:var(--good); opacity:0; transition:opacity .3s ease;
+  }
+  .tier-clear.show{ opacity:1; }
+  .tier-extreme .tier-clear.show{ color:var(--extreme); text-shadow:0 0 8px rgba(255,46,99,0.6); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px; position:relative;
+  }
+  .qcard.extreme{
+    border-color: var(--extreme);
+    background: linear-gradient(160deg, rgba(255,46,99,0.08), var(--surface) 55%);
+    box-shadow: 0 0 22px rgba(255,46,99,0.16);
+  }
+  .qcard.extreme::before{
+    content:"FINAL BOSS"; position:absolute; top:-10px; right:14px;
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em;
+    color:#0B1E3D; font-weight:600; background:linear-gradient(90deg,#FF7AC6,var(--extreme));
+    padding:3px 8px; border-radius:2px;
+  }
+  .qhead{ display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
+  .qtop{ display:flex; align-items:center; gap:10px; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .diff-badge{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.08em;
+    padding:2px 8px; border-radius:10px; border:1px solid; text-transform:uppercase;
+  }
+  .diff-easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .diff-medium{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .diff-hard{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.08); }
+  .diff-extreme{
+    color:#fff; border-color:var(--extreme);
+    background:linear-gradient(90deg, rgba(255,46,99,0.3), rgba(185,139,255,0.3));
+  }
+  .qtext{ font-size:15px; color:#fff; line-height:1.5; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.55;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .ladder-row{ gap:10px; }
+    .ladder-col{ width:50px; }
+    .tier-easy .tier-track{ height:46px; }
+    .tier-medium .tier-track{ height:68px; }
+    .tier-hard .tier-track{ height:90px; }
+    .tier-extreme .tier-track{ height:112px; }
+    .dict-row{ flex-direction:column; align-items:flex-start; gap:4px; }
+    .dict-row .math{ text-align:left; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 18</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Triangles</h1>
+    <div class="subtitle-en">Rules · Diagrams · Practice</div>
+    <p class="desc">Triangle questions reward pattern recognition more than memorization. Learn the ten core rules — each one with a diagram that makes the relationship click — use the decision guide to know which rule to reach for, work through six full solutions, then climb the ten-question ladder: three easy, three medium, three hard, and one true extreme.</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="subhead">Core Triangle Toolkit</div>
+  <div class="formula-grid" id="formulaGrid">
+
+    <div class="fcard" data-tag="RULE 01">
+      <div class="flabel">Area of a triangle</div>
+      <div class="fdiagram"><svg viewBox="0 0 190 140"><polygon points="20,110 170,110 90,20" fill="none" stroke="#6FE3D6" stroke-width="2.5"/><line x1="90" y1="20" x2="90" y2="110" stroke="#F2B84B" stroke-width="1.5" stroke-dasharray="4,3"/><text x="88" y="130" fill="#EAF2FF" font-size="13" text-anchor="middle">b</text><text x="99" y="68" fill="#F2B84B" font-size="13">h</text></svg></div>
+      <div class="fmath">\(A=\dfrac12 bh\)</div>
+      <div class="fexample">base 14, height 9 \(\Rightarrow A=63\)</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 02">
+      <div class="flabel">Isosceles triangle</div>
+      <div class="fdiagram"><svg viewBox="0 0 170 140"><polygon points="85,25 25,110 145,110" fill="none" stroke="#6FE3D6" stroke-width="2.5"/><line x1="52" y1="65" x2="60" y2="72" stroke="#F2B84B" stroke-width="2.5"/><line x1="118" y1="65" x2="110" y2="72" stroke="#F2B84B" stroke-width="2.5"/><text x="85" y="18" fill="#EAF2FF" font-size="12" text-anchor="middle">A</text><text x="14" y="122" fill="#EAF2FF" font-size="12">B</text><text x="148" y="122" fill="#EAF2FF" font-size="12">C</text></svg></div>
+      <div class="fmath">2 equal sides \(\Rightarrow\) 2 equal opposite angles</div>
+      <div class="fexample">\(AB=AC \Rightarrow \angle B=\angle C\)</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 03">
+      <div class="flabel">Equilateral triangle</div>
+      <div class="fdiagram"><svg viewBox="0 0 170 140"><polygon points="85,25 25,110 145,110" fill="none" stroke="#6FE3D6" stroke-width="2.5"/><line x1="52" y1="65" x2="60" y2="72" stroke="#F2B84B" stroke-width="2.5"/><line x1="118" y1="65" x2="110" y2="72" stroke="#F2B84B" stroke-width="2.5"/><line x1="80" y1="110" x2="80" y2="100" stroke="#F2B84B" stroke-width="2.5"/><text x="85" y="45" fill="#86A2C9" font-size="11" text-anchor="middle">60°</text><text x="44" y="100" fill="#86A2C9" font-size="11">60°</text><text x="118" y="100" fill="#86A2C9" font-size="11">60°</text></svg></div>
+      <div class="fmath">all 3 sides equal \(\Rightarrow\) every angle \(=60°\)</div>
+      <div class="fexample">\(180° \div 3 = 60°\)</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 04">
+      <div class="flabel">Pythagorean theorem</div>
+      <div class="fdiagram"><svg viewBox="0 0 170 140"><polygon points="30,110 150,110 30,30" fill="none" stroke="#6FE3D6" stroke-width="2.5"/><polyline points="30,100 40,100 40,110" fill="none" stroke="#86A2C9" stroke-width="1.5"/><text x="14" y="75" fill="#EAF2FF" font-size="13">a</text><text x="85" y="128" fill="#EAF2FF" font-size="13">b</text><text x="95" y="65" fill="#F2B84B" font-size="13">c</text></svg></div>
+      <div class="fmath">\(a^2+b^2=c^2\)</div>
+      <div class="fexample">legs \(a,b\), hypotenuse \(c\) (always the longest side)</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 05">
+      <div class="flabel">Common Pythagorean triples</div>
+      <div class="fmath">3-4-5 · 5-12-13 · 7-24-25 · 8-15-17</div>
+      <div class="fexample">6-8-10 is just \(2\times\)(3-4-5) — watch for multiples too</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 06">
+      <div class="flabel">45-45-90 triangle</div>
+      <div class="fdiagram"><svg viewBox="0 0 160 140"><polygon points="30,110 110,110 30,30" fill="none" stroke="#6FE3D6" stroke-width="2.5"/><polyline points="30,100 40,100 40,110" fill="none" stroke="#86A2C9" stroke-width="1.5"/><text x="10" y="75" fill="#EAF2FF" font-size="13">x</text><text x="60" y="128" fill="#EAF2FF" font-size="13">x</text><text x="58" y="65" fill="#F2B84B" font-size="13">x√2</text></svg></div>
+      <div class="fmath">legs \(x,\ x\) — hypotenuse \(x\sqrt2\)</div>
+      <div class="fexample">right isosceles triangle</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 07">
+      <div class="flabel">30-60-90 triangle</div>
+      <div class="fdiagram"><svg viewBox="0 0 160 140"><polygon points="30,110 140,110 30,50" fill="none" stroke="#6FE3D6" stroke-width="2.5"/><polyline points="30,100 40,100 40,110" fill="none" stroke="#86A2C9" stroke-width="1.5"/><text x="10" y="85" fill="#EAF2FF" font-size="13">x</text><text x="68" y="128" fill="#EAF2FF" font-size="13">x√3</text><text x="88" y="75" fill="#F2B84B" font-size="13">2x</text><text x="36" y="62" fill="#86A2C9" font-size="10">60°</text><text x="110" y="105" fill="#86A2C9" font-size="10">30°</text></svg></div>
+      <div class="fmath">shortest \(x\) — longer leg \(x\sqrt3\) — hypotenuse \(2x\)</div>
+      <div class="fexample">shortest side is opposite the 30° angle</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 08">
+      <div class="flabel">Triangle congruence theorems</div>
+      <div class="chip-row">
+        <span class="chip valid">SSS</span>
+        <span class="chip valid">SAS</span>
+        <span class="chip valid">ASA</span>
+        <span class="chip valid">AAS</span>
+        <span class="chip invalid">SSA</span>
+      </div>
+      <div class="fexample">SSA does NOT prove congruence — more than one triangle can fit</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 09">
+      <div class="flabel">Triangle similarity theorems</div>
+      <div class="chip-row">
+        <span class="chip valid">AA</span>
+        <span class="chip valid">SAS</span>
+        <span class="chip valid">SSS</span>
+        <span class="chip invalid">SSA</span>
+      </div>
+      <div class="fexample">AA is by far the most commonly tested — 2 equal angles is always enough</div>
+    </div>
+
+    <div class="fcard" data-tag="RULE 10">
+      <div class="flabel">Similar triangle proportions</div>
+      <div class="fdiagram"><svg viewBox="0 0 200 110"><polygon points="20,90 90,90 45,20" fill="none" stroke="#6FE3D6" stroke-width="2.5"/><polygon points="120,90 190,90 155,45" fill="none" stroke="#F2B84B" stroke-width="2.5"/></svg></div>
+      <div class="fmath">\(\dfrac{AB}{DE}=\dfrac{AC}{DF}=\dfrac{BC}{EF}\)</div>
+      <div class="fexample">corresponding sides share one common ratio</div>
+    </div>
+
+  </div>
+
+  <div class="bonus-panel">
+    <div class="bonus-head">
+      <span class="bonus-icon">&#9733;</span>
+      <div>
+        <div class="bonus-title">SAT Bonus — Beyond This Chapter</div>
+        <div class="bonus-sub">Four ideas the textbook demonstrates inside examples but never boxes up as a named rule — even though they show up on the real Digital SAT constantly.</div>
+      </div>
+    </div>
+
+    <div class="dict-panel">
+      <div class="dict-title">Which Formula Do You Need?</div>
+      <div class="dict-row"><span class="phrase">Two sides of a right triangle given, need the third?</span><span class="math">Pythagorean theorem</span></div>
+      <div class="dict-row"><span class="phrase">A right triangle has a 45° or a 30°/60° angle?</span><span class="math">Special right triangle ratios</span></div>
+      <div class="dict-row"><span class="phrase">Need to prove two triangles are identical in size?</span><span class="math">Check SSS, SAS, ASA, or AAS</span></div>
+      <div class="dict-row"><span class="phrase">Same shape, different size?</span><span class="math">Check AA, SAS, or SSS similarity, then set up a proportion</span></div>
+      <div class="dict-row warn"><span class="phrase">⚠ A segment cuts across a triangle, parallel to one side?</span><span class="math">Use the OUTER triangle's real sides in your proportion — never a sub-segment like AD</span></div>
+    </div>
+
+    <div class="formula-grid" id="bonusGrid">
+      <div class="fcard bonus" data-tag="SAT+ 01">
+        <div class="flabel">Corresponding parts trap</div>
+        <div class="fdiagram"><svg viewBox="0 0 170 140"><polygon points="85,25 25,110 145,110" fill="none" stroke="#B98BFF" stroke-width="2.5"/><line x1="70" y1="46" x2="100" y2="46" stroke="#F2B84B" stroke-width="2"/><text x="85" y="20" fill="#EAF2FF" font-size="11" text-anchor="middle">B</text><text x="14" y="122" fill="#EAF2FF" font-size="11">A</text><text x="148" y="122" fill="#EAF2FF" font-size="11">C</text><text x="56" y="44" fill="#EAF2FF" font-size="11">D</text><text x="104" y="44" fill="#EAF2FF" font-size="11">E</text></svg></div>
+        <div class="fmath">\(\dfrac{BD}{BA}=\dfrac{DE}{AC}\)</div>
+        <div class="fexample">not \(\dfrac{AD}{DB}=\dfrac{AC}{DE}\) — AD isn't a triangle side</div>
+      </div>
+      <div class="fcard bonus" data-tag="SAT+ 02">
+        <div class="flabel">Altitude-to-hypotenuse shortcuts</div>
+        <div class="fdiagram"><svg viewBox="0 0 180 140"><polygon points="20,110 160,110 80,25" fill="none" stroke="#B98BFF" stroke-width="2.5"/><line x1="80" y1="25" x2="80" y2="110" stroke="#F2B84B" stroke-width="1.5" stroke-dasharray="4,3"/><text x="10" y="122" fill="#EAF2FF" font-size="11">F</text><text x="163" y="122" fill="#EAF2FF" font-size="11">H</text><text x="80" y="18" fill="#EAF2FF" font-size="11" text-anchor="middle">G</text><text x="85" y="122" fill="#EAF2FF" font-size="11">K</text></svg></div>
+        <div class="fmath">\(GK^2=FK\cdot KH\)</div>
+        <div class="fexample">also: \(\text{Area}=\frac12(\text{leg}_1)(\text{leg}_2)=\frac12(\text{hyp})(\text{altitude})\)</div>
+      </div>
+      <div class="fcard bonus" data-tag="SAT+ 03">
+        <div class="flabel">Similarity beyond triangles</div>
+        <div class="fmath">any polygon can be similar to another</div>
+        <div class="fexample">same 2 rules apply: congruent angles + proportional sides</div>
+      </div>
+      <div class="fcard bonus" data-tag="SAT+ 04">
+        <div class="flabel">Triangle inequality theorem</div>
+        <div class="fmath">\(|a-b| < c < a+b\)</div>
+        <div class="fexample">sides 9, 15 \(\Rightarrow\) third side \(x\): \(6<x<24\)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="ladder-panel">
+    <div class="ladder-head">
+      <span>Adaptive Progress</span>
+      <div class="ladder-head-right">
+        <span>TOTAL: <b id="totalScoreText">0 / 10</b></span>
+        <button id="resetBtn">RESTART</button>
+      </div>
+    </div>
+    <div class="ladder-row">
+      <div class="ladder-col tier-easy">
+        <span class="tier-label">EASY</span>
+        <div class="tier-track"><div class="tier-fill" id="fillEasy"></div></div>
+        <span class="tier-count" id="countEasy">0/3</span>
+        <span class="tier-clear" id="clearEasy">CLEARED</span>
+      </div>
+      <div class="ladder-col tier-medium">
+        <span class="tier-label">MEDIUM</span>
+        <div class="tier-track"><div class="tier-fill" id="fillMedium"></div></div>
+        <span class="tier-count" id="countMedium">0/3</span>
+        <span class="tier-clear" id="clearMedium">CLEARED</span>
+      </div>
+      <div class="ladder-col tier-hard">
+        <span class="tier-label">HARD</span>
+        <div class="tier-track"><div class="tier-fill" id="fillHard"></div></div>
+        <span class="tier-count" id="countHard">0/3</span>
+        <span class="tier-clear" id="clearHard">CLEARED</span>
+      </div>
+      <div class="ladder-col tier-extreme">
+        <span class="tier-label">EXTREME</span>
+        <div class="tier-track"><div class="tier-fill" id="fillExtreme"></div></div>
+        <span class="tier-count" id="countExtreme">0/1</span>
+        <span class="tier-clear" id="clearExtreme">SUMMIT</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · RULES ARE UNIVERSAL, EXAMPLES &amp; QUESTIONS ARE ORIGINAL</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Isosceles Triangle Angles",
+    prompt: "In an isosceles triangle, one angle measures 40°, and another angle measures x°. What is the greatest possible value of x?",
+    steps: [
+      "Case 1: the 40° angle is one of the two equal angles. Then the triangle is 40-40-100, so x could be 40 or 100",
+      "Case 2: the 40° angle is the unique angle instead. The other two equal angles are each \\((180-40)\\div2 = 70°\\), so x could be 70",
+      "Comparing every possible value of x (40, 100, 70), the greatest is 100"
+    ],
+    answer: "\\(100\\)"
+  },
+  {
+    title: "Example 2 — Pythagorean Theorem with a Radical Answer",
+    prompt: "A right triangle has legs with lengths of 12 feet and 18 feet. What is the length, in feet, of the hypotenuse?",
+    steps: [
+      "Apply the Pythagorean theorem: \\(12^2+18^2=c^2\\)",
+      "Compute: \\(144+324=468=c^2\\)",
+      "Simplify the square root: \\(468=36\\cdot13\\), so \\(c=\\sqrt{468}=6\\sqrt{13}\\)"
+    ],
+    answer: "\\(6\\sqrt{13}\\text{ feet}\\)"
+  },
+  {
+    title: "Example 3 — Special Right Triangle Area",
+    prompt: "In a right triangle, one of the acute angles measures 30°, and the length of the hypotenuse is 16 inches. What is the area, in square inches, of this triangle?",
+    steps: [
+      "Since one acute angle is 30°, the other acute angle is 60° — this is a 30-60-90 triangle",
+      "The hypotenuse is \\(2x=16\\), so the shortest side (opposite 30°) is \\(x=8\\), and the other leg (opposite 60°) is \\(x\\sqrt3=8\\sqrt3\\)",
+      "Area \\(=\\dfrac12(\\text{base})(\\text{height}) = \\dfrac12(8)(8\\sqrt3)\\)"
+    ],
+    answer: "\\(32\\sqrt3\\text{ square inches}\\)"
+  },
+  {
+    title: "Example 4 — Congruent Triangles",
+    prompt: "Triangles PQR and STU are congruent, where P corresponds to S. Angles Q and T each measure 55°. The measure of angle R is 35°. What is the measure of angle S?",
+    steps: [
+      "Since \\(\\triangle PQR \\cong \\triangle STU\\) with \\(P\\leftrightarrow S,\\ Q\\leftrightarrow T,\\ R\\leftrightarrow U\\), corresponding angles are congruent",
+      "Angle R (35°) corresponds to angle U, so \\(\\angle U = 35°\\)",
+      "Angle S is then \\(180°-\\angle T-\\angle U = 180-55-35\\)"
+    ],
+    answer: "\\(90°\\)"
+  },
+  {
+    title: "Example 5 — The Corresponding Parts Trap",
+    prompt: "In triangle ABC, segment DE is parallel to AC, where D lies on AB and E lies on BC. If BD = 4, DA = 8, and DE = 5, what is the length of AC?",
+    steps: [
+      "Since \\(DE \\parallel AC\\), triangle BDE ~ triangle BAC by AA (they share angle B, and the parallel lines create congruent corresponding angles)",
+      "A common mistake is assuming \\(AC=2\\cdot DE\\) since DA is twice BD — but DA is not a side of either triangle, so this reasoning is invalid",
+      "Use the actual triangle sides: \\(\\dfrac{BD}{BA}=\\dfrac{DE}{AC}\\), where \\(BA=BD+DA=4+8=12\\)",
+      "Substitute: \\(\\dfrac{4}{12}=\\dfrac{5}{AC}\\)",
+      "Cross-multiply: \\(4\\cdot AC = 60\\)"
+    ],
+    answer: "\\(AC=15\\)"
+  },
+  {
+    title: "Example 6 — Altitude to the Hypotenuse",
+    prompt: "In the figure, triangle FGH has a right angle at G, and GK is the altitude drawn to hypotenuse FH. If FK = 4 and KH = 9, what is the length of GK?",
+    steps: [
+      "The altitude GK splits right triangle FGH into two smaller right triangles, FGK and GKH, both similar to FGH (and to each other) by AA",
+      "Using the tick-mark method to match corresponding sides, the altitude sits between the two hypotenuse segments the same way in each small triangle: \\(\\dfrac{FK}{GK}=\\dfrac{GK}{KH}\\)",
+      "Substitute FK = 4, KH = 9: \\(\\dfrac{4}{GK}=\\dfrac{GK}{9}\\)",
+      "Cross-multiply: \\(GK^2=36\\)"
+    ],
+    answer: "\\(GK=6\\)"
+  }
+];
+
+const quiz = [
+  { tier:"easy", q: "A triangle has a base of 14 cm and a height of 9 cm. What is its area, in square centimeters?", opts: ["63","126","45","108"], correct: 0, exp: "Area \\(=\\dfrac12 bh = \\dfrac12(14)(9)=63\\)." },
+  { tier:"easy", q: "In an isosceles triangle, one angle measures 80°, and the two remaining angles are equal to each other. What is the measure, in degrees, of each remaining angle?", opts: ["50","80","100","40"], correct: 0, exp: "The two equal angles share the leftover \\(180-80=100°\\), so each is \\(100\\div2=50°\\)." },
+  { tier:"easy", q: "A right triangle has legs of length 9 and 12. What is the length of the hypotenuse?", opts: ["15","21","13","18"], correct: 0, exp: "\\(9^2+12^2=81+144=225=15^2\\), so the hypotenuse is \\(15\\) (this is a 3-4-5 triangle scaled by 3)." },
+
+  { tier:"medium", q: "In a right triangle, one of the acute angles measures 45°. If one leg has length 10, what is the length of the hypotenuse?", opts: ["10√2","20","10√3","5√2"], correct: 0, exp: "A 45° acute angle in a right triangle makes it a 45-45-90 triangle, so the hypotenuse is \\(x\\sqrt2 = 10\\sqrt2\\)." },
+  { tier:"medium", q: "Triangles JKL and MNO are congruent, where J corresponds to M and K corresponds to N. Angle J measures 48° and angle O measures 82°. What is the measure of angle K?", opts: ["50","82","48","100"], correct: 0, exp: "Angle O corresponds to angle L, so \\(\\angle L = 82°\\). Then \\(\\angle K = 180-48-82 = 50°\\)." },
+  { tier:"medium", q: "Triangles ABC and DEF are similar, where A corresponds to D and B corresponds to E. If AB = 9, DE = 6, and BC = 12, what is the length of EF?", opts: ["8","18","6","9"], correct: 0, exp: "The ratio DE/AB = 6/9 = 2/3, so \\(EF = BC \\times \\dfrac23 = 12\\times\\dfrac23 = 8\\)." },
+
+  { tier:"hard", q: "A right triangle has one leg of length 20 and a hypotenuse of length 29. What is the length of the other leg?", opts: ["21","9","√41","41"], correct: 0, exp: "\\(29^2-20^2=(29-20)(29+20)=9\\times49=441=21^2\\), so the other leg is \\(21\\) (20-21-29 is a Pythagorean triple)." },
+  { tier:"hard", q: "In right triangle XYZ, angle Y is the right angle, and YW is the altitude to hypotenuse XZ. If XW = 3 and WZ = 12, what is the length of YW?", opts: ["6","15","36","7.5"], correct: 0, exp: "By the altitude-to-hypotenuse relationship, \\(YW^2 = XW\\cdot WZ = 3\\times12=36\\), so \\(YW=6\\)." },
+  { tier:"hard", q: "In triangles RST and UVW, angle R and angle U each measure 65°, and angle S and angle V each measure 47°. Which additional piece of information is sufficient to prove that triangle RST is similar to triangle UVW?", opts: ["No additional information is necessary","The lengths of sides RS and UV must be equal","The lengths of sides ST and VW must be proportional","The measure of angle T must be greater than the measure of angle W"], correct: 0, exp: "Two pairs of congruent angles already satisfy AA — the third pair (\\(180-65-47=68°\\) in both triangles) is automatically congruent too, so no extra information is needed." },
+
+  { tier:"extreme", q: "In right triangle ABC, angle B is the right angle, AB = 6, BC = 8, and AC = 10. Altitude BD is drawn from B to hypotenuse AC. What is the length of BD?", opts: ["4.8","5","6","7.2"], correct: 0, exp: "The area of triangle ABC can be found two ways. Using the legs: \\(\\dfrac12(6)(8)=24\\). Using the hypotenuse and the altitude: \\(\\dfrac12(10)(BD)=24\\), so \\(BD = \\dfrac{48}{10}=4.8\\). Setting the two area expressions equal to each other is the key move — this is the same idea behind SAT+ 02, just applied through area instead of similar triangles." }
+];
+
+// ----- render examples -----
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+// ----- render quiz + adaptive ladder -----
+const quizWrap = document.getElementById('quizWrap');
+const tierNames = { easy:"EASY", medium:"MEDIUM", hard:"HARD", extreme:"EXTREME" };
+const totals = { easy:0, medium:0, hard:0, extreme:0 };
+quiz.forEach(q => totals[q.tier]++);
+const correctCounts = { easy:0, medium:0, hard:0, extreme:0 };
+let totalCorrect = 0;
+let totalAnswered = 0;
+
+function updateLadder(){
+  document.getElementById('totalScoreText').textContent = `${totalCorrect} / ${quiz.length}`;
+  ['easy','medium','hard','extreme'].forEach(t => {
+    const pct = totals[t] ? (correctCounts[t] / totals[t]) * 100 : 0;
+    document.getElementById('fill' + capitalize(t)).style.height = pct + '%';
+    document.getElementById('count' + capitalize(t)).textContent = `${correctCounts[t]}/${totals[t]}`;
+    document.getElementById('clear' + capitalize(t)).classList.toggle('show', pct >= 100);
+  });
+}
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard' + (item.tier === 'extreme' ? ' extreme' : '');
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <div class="qtop">
+        <span class="qnum">Q${qi+1}</span>
+        <span class="diff-badge diff-${item.tier}">${tierNames[item.tier]}</span>
+      </div>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect){ totalCorrect++; correctCounts[item.tier]++; }
+      totalAnswered++;
+      updateLadder();
+      if(window.renderMathInElement){ renderMathInElement(explain); }
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+updateLadder();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
