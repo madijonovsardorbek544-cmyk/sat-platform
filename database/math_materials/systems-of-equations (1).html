@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Systems of Equations — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:22px 22px 20px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    display:flex; gap:22px; align-items:center; flex-wrap:wrap;
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .titletext{ flex:1 1 320px; min-width:0; }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px; gap:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(26px, 5.6vw, 40px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.55; max-width:60ch;}
+
+  /* Signature element: eq1 + eq2 -> solution */
+  .machine{ flex:0 0 auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; }
+  .machine .node{
+    border:1px solid var(--line-strong); border-radius:2px; padding:8px 10px;
+    font-size:12.5px; color:var(--muted); background:var(--surface); white-space:nowrap;
+  }
+  .machine .box{
+    border:1px solid var(--amber-dim); border-radius:2px; padding:10px 14px;
+    font-size:15px; color:var(--amber); background:rgba(242,184,75,0.08); font-weight:600;
+  }
+  .machine .arrow{ color:var(--cyan); font-size:15px; }
+  @media (max-width:660px){ .machine{ display:none; } }
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; }
+  .fcard .fmath{ font-size:16px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:700px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  .diff-row{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .diff-pill{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    padding:5px 10px; border-radius:20px; border:1px solid var(--line-strong); color:var(--muted);
+  }
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:12px 16px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .score-bar .ruler{ flex:1; margin:0 16px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .score-bar .ruler-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--cyan), var(--amber)); transition:width .3s ease; }
+  .score-bar button{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .score-bar button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px;
+  }
+  .qhead{ display:flex; gap:10px; margin-bottom:12px; align-items:baseline; flex-wrap:wrap; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .qdiff{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em;
+    padding:2px 7px; border-radius:10px; border:1px solid var(--line-strong); color:var(--muted);
+    text-transform:uppercase;
+  }
+  .qdiff.easy{ color:var(--good); border-color:var(--good-dim); }
+  .qdiff.medium{ color:var(--cyan); border-color:rgba(111,227,214,0.35); }
+  .qdiff.hard{ color:var(--amber); border-color:var(--amber-dim); }
+  .qdiff.extreme{ color:var(--bad); border-color:var(--bad-dim); }
+  .qtext{ font-size:15px; color:#fff; flex-basis:100%; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.5;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  .trapnote{
+    border:1px dashed var(--bad-dim); background:rgba(242,109,109,0.06);
+    border-radius:3px; padding:12px 14px; margin:18px 0 0; font-size:13.5px;
+    color:var(--muted); line-height:1.55;
+  }
+  .trapnote b{ color:var(--bad); font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .qhead{ flex-direction:column; gap:2px; }
+    .titleblock{ padding:20px 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="titletext">
+      <div class="eyebrow-row">
+        <span>SAT MATH · CHAPTER 13</span>
+        <span>REV. 01</span>
+      </div>
+      <h1 class="maintitle">Systems of Equations</h1>
+      <div class="subtitle-en">Substitution · Elimination · Special Cases · Graphs</div>
+      <p class="desc">Formulas first, then step-by-step worked examples, and finally 10 practice questions ranked Easy → Extreme with instant feedback.</p>
+    </div>
+    <div class="machine" aria-hidden="true">
+      <div class="node">eq 1</div>
+      <span class="arrow">+</span>
+      <div class="node">eq 2</div>
+      <span class="arrow">→</span>
+      <div class="box">(x, y)</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="formula-grid">
+    <div class="fcard" data-tag="RULE 01"><div class="flabel">What is a system?</div><div class="fmath">2+ equations sharing the same variables</div><div class="fexample">the solution is the (x, y) that satisfies all of them at once</div></div>
+    <div class="fcard" data-tag="RULE 02"><div class="flabel">Substitution</div><div class="fmath">isolate one variable, plug it into the other equation</div><div class="fexample">best when a variable already has no coefficient</div></div>
+    <div class="fcard" data-tag="RULE 03"><div class="flabel">Elimination</div><div class="fmath">scale an equation so a variable's coefficients match</div><div class="fexample">then add or subtract to cancel that variable</div></div>
+    <div class="fcard" data-tag="RULE 04"><div class="flabel">Choosing a method</div><div class="fmath">no-coefficient variable → substitution</div><div class="fexample">matching (or easily-matched) coefficients → elimination</div></div>
+    <div class="fcard" data-tag="RULE 05"><div class="flabel">Infinitely many solutions</div><div class="fmath">the two equations are equivalent</div><div class="fexample">one equation is just a scaled version of the other — same ratio, including the constant</div></div>
+    <div class="fcard" data-tag="RULE 06"><div class="flabel">No solution</div><div class="fmath">matching coefficients, different constants</div><div class="fexample">parallel lines — they never intersect</div></div>
+    <div class="fcard" data-tag="RULE 07"><div class="flabel">Graphs ↔ solutions</div><div class="fmath"># of solutions = # of intersection points</div><div class="fexample">1 = crossing lines &nbsp;·&nbsp; 0 = parallel &nbsp;·&nbsp; ∞ = same line</div></div>
+    <div class="fcard" data-tag="RULE 08"><div class="flabel">Word problems</div><div class="fmath">translate 2 given facts into 2 equations</div><div class="fexample">then solve using substitution or elimination</div></div>
+    <div class="fcard" data-tag="RULE 09"><div class="flabel">Combined-expression shortcut</div><div class="fmath">asked for a + b or a − b (not a, b separately)?</div><div class="fexample">add/subtract the equations directly — skip solving for each variable</div></div>
+    <div class="fcard" data-tag="RULE 10"><div class="flabel">System with a nonlinear equation</div><div class="fmath">isolate a variable in the linear equation</div><div class="fexample">substitute it into the nonlinear one, then solve</div></div>
+    <div class="fcard" data-tag="RULE 11"><div class="flabel">Finding an intersection point</div><div class="fmath">set the two expressions for y equal</div><div class="fexample">solve for x, then plug back in to get y</div></div>
+  </div>
+
+  <div class="trapnote"><b>WATCH OUT —</b> "Equivalent" doesn't mean identical-looking. 6x + 4y = 10 and 3x + 2y = 5 look different but are the same line (divide the first by 2) — that system has infinitely many solutions, not one.</div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="diff-row">
+    <span class="diff-pill" style="color:var(--good);border-color:var(--good-dim)">● 3 EASY</span>
+    <span class="diff-pill" style="color:var(--cyan);border-color:rgba(111,227,214,0.35)">● 3 MEDIUM</span>
+    <span class="diff-pill" style="color:var(--amber);border-color:var(--amber-dim)">● 3 HARD</span>
+    <span class="diff-pill" style="color:var(--bad);border-color:var(--bad-dim)">● 1 EXTREME</span>
+  </div>
+
+  <div class="score-bar">
+    <span>SCORE: <b id="scoreText">0 / 10</b></span>
+    <div class="ruler"><div class="ruler-fill" id="rulerFill"></div></div>
+    <button id="resetBtn">RESTART</button>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · MATH RULES ARE UNIVERSAL, EXAMPLES ARE NOT COPIED FROM ANY TEXTBOOK</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Substitution",
+    prompt: "Solve the system: y = 2x + 1 and 3x - y = 4. What is the value of x?",
+    steps: [
+      "The first equation already isolates y, so substitute it into the second equation: \\(3x - (2x+1) = 4\\)",
+      "Simplify: \\(3x - 2x - 1 = 4 \\Rightarrow x - 1 = 4\\)",
+      "Solve: \\(x = 5\\)"
+    ],
+    answer: "x = 5."
+  },
+  {
+    title: "Example 2 — Elimination",
+    prompt: "Solve the system: 4x + 3y = 18 and 2x + 3y = 12. What is the value of x?",
+    steps: [
+      "Both equations already have the same coefficient for y (3), so subtract the second equation from the first",
+      "\\((4x+3y) - (2x+3y) = 18 - 12 \\Rightarrow 2x = 6\\)",
+      "Solve: \\(x = 3\\)"
+    ],
+    answer: "x = 3."
+  },
+  {
+    title: "Example 3 — Infinitely many solutions",
+    prompt: "The system 6x + 9y = 21 and 2x + ky = 7 has infinitely many solutions. What is the value of k?",
+    steps: [
+      "For infinitely many solutions, the two equations must be equivalent — one must be a scaled copy of the other",
+      "Scale the second equation by 3 to match the first: \\(3(2x + ky) = 3(7) \\Rightarrow 6x + 3ky = 21\\)",
+      "Compare to \\(6x + 9y = 21\\): the y-coefficients must match, so \\(3k = 9 \\Rightarrow k = 3\\)"
+    ],
+    answer: "k = 3."
+  },
+  {
+    title: "Example 4 — No solution",
+    prompt: "The system 4x - 2y = 10 and 8x - ky = 12 has no solution. What is the value of k?",
+    steps: [
+      "For no solution, the coefficients must match (same ratio) but the constants must NOT match",
+      "Scaling the first equation by 2 gives \\(8x - 4y = 20\\) — so for the y-coefficients to match, \\(k = 4\\)",
+      "Check: with k=4, the system becomes \\(8x-4y=20\\) and \\(8x-4y=12\\) — same left side, different constants, confirming no solution"
+    ],
+    answer: "k = 4."
+  },
+  {
+    title: "Example 5 — Combined-expression shortcut",
+    prompt: "The solution to the system 3a + 5b = 22 and -2a - 4b = -17 is (a, b). What is the value of a + b?",
+    steps: [
+      "The question asks for a + b directly — not a and b separately — so try adding the equations as they are",
+      "\\((3a+5b) + (-2a-4b) = 22 + (-17)\\)",
+      "\\(a + b = 5\\) — no need to solve for a or b individually!"
+    ],
+    answer: "a + b = 5."
+  },
+  {
+    title: "Example 6 — Finding an intersection point",
+    prompt: "In the xy-plane, the graphs of y = 4x - 7 and y = -3x + 14 intersect at the point (h, k). What is the value of h?",
+    steps: [
+      "The intersection point is the solution to the system, so set the two expressions for y equal to each other",
+      "\\(4x - 7 = -3x + 14\\)",
+      "\\(7x = 21 \\Rightarrow x = 3\\), so \\(h = 3\\)"
+    ],
+    answer: "h = 3."
+  }
+];
+
+const quiz = [
+  { level: "easy", q: "What is the value of x in the system: y = 3x - 2 and 2x + y = 8?", opts: ["2","1","3","4"], correct: 0, exp: "Substitute y=3x-2 into 2x+y=8: 2x+(3x-2)=8 → 5x-2=8 → 5x=10 → x=2." },
+  { level: "easy", q: "What is the value of y in the system: 3x + 2y = 16 and 3x - 2y = 4?", opts: ["2","4","3","6"], correct: 2, exp: "Subtract the second equation from the first: (3x+2y)-(3x-2y)=16-4 → 4y=12 → y=3." },
+  { level: "easy", q: "The system 4x + 6y = 20 and 2x + 3y = k has infinitely many solutions. What is the value of k?", opts: ["5","10","8","20"], correct: 1, exp: "Multiply the second equation by 2 to match the first equation's form: 4x+6y=2k. Since both equations describe the same line, 2k must equal 20, so k=10." },
+  { level: "medium", q: "The system 5x - 2y = 14 and 10x - 4y = c has no solution. Which of the following CANNOT be the value of c?", opts: ["20","24","32","28"], correct: 3, exp: "The coefficients already match in a 2:1 ratio (10=2×5, -4=2×-2), so for the system to have NO solution, c must be anything EXCEPT the value that matches that same ratio: 2×14=28. So c=28 is the one value that must be excluded — that value would give infinitely many solutions instead." },
+  { level: "medium", q: "In the xy-plane, the graphs of y = -2x + 9 and y = 5x - 5 intersect at the point (h, k). What is the value of h?", opts: ["2","1","3","4"], correct: 0, exp: "Set the two expressions for y equal to each other: -2x+9 = 5x-5 → 14=7x → x=2." },
+  { level: "medium", q: "The solution to the system 4x + 3y = 26 and -4x + y = -10 is (x, y). What is the value of y?", opts: ["2","6","4","8"], correct: 2, exp: "Add the two equations directly: (4x+3y)+(-4x+y)=26+(-10) → 4y=16 → y=4." },
+  { level: "hard", q: "The solution to the system 3p + 5q = 28 and -2p - 6q = -24 is (p, q). What is the value of p - q?", opts: ["-4","4","2","8"], correct: 1, exp: "The question asks for p−q directly. Add the two equations: (3p+5q)+(-2p-6q) = 28+(-24) → p−q=4." },
+  { level: "hard", q: "The solution to the system y = x + 1 and x² + y² = 25 includes a point where x > 0. What is the value of x at that point?", opts: ["-4","4","5","3"], correct: 3, exp: "Substitute y=x+1 into x²+y²=25: x²+(x+1)²=25 → 2x²+2x-24=0 → x²+x-12=0 → (x+4)(x-3)=0 → x=-4 or x=3. Since x>0, x=3." },
+  { level: "hard", q: "The graphs of 6x - 3y = 12 and kx - 6y = 9 are parallel lines in the xy-plane. What is the value of k?", opts: ["12","3","6","9"], correct: 0, exp: "Rewrite both in slope-intercept form: the first becomes y=2x-4 (slope 2). The second becomes y=(k/6)x - 1.5 (slope k/6). For parallel lines, the slopes must be equal: k/6=2 → k=12." },
+  { level: "extreme", q: "The solution to the system 4(2x-5) + 3(y+6) = 26 and 7(2x-5) - 2(y+6) = 31 is (x, y). What is the value of 2x - 5?", opts: ["10","2.5","5","15"], correct: 2, exp: "Treat (2x−5) and (y+6) as single units, say u and v: the system becomes 4u+3v=26 and 7u-2v=31. Multiply the first by 2 and the second by 3: 8u+6v=52 and 21u-6v=93. Adding: 29u=145 → u=5. So 2x−5=5." }
+];
+
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex, i) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+const quizWrap = document.getElementById('quizWrap');
+let score = 0;
+let answered = 0;
+
+function renderScore(){
+  document.getElementById('scoreText').textContent = `${score} / ${quiz.length}`;
+  document.getElementById('rulerFill').style.width = `${(answered/quiz.length)*100}%`;
+}
+
+const levelLabel = { easy: "Easy", medium: "Medium", hard: "Hard", extreme: "Extreme" };
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <span class="qnum">Q${qi+1}</span>
+      <span class="qdiff ${item.level}">${levelLabel[item.level]}</span>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect) score++;
+      answered++;
+      renderScore();
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+renderScore();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
