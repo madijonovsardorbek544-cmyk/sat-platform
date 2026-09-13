@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Problems — SAT Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg: #0B1E3D;
+    --bg2: #081527;
+    --surface: #10294F;
+    --surface2: #143164;
+    --line: rgba(153,190,255,0.16);
+    --line-strong: rgba(153,190,255,0.32);
+    --text: #EAF2FF;
+    --muted: #86A2C9;
+    --amber: #F2B84B;
+    --amber-dim: #7A5E24;
+    --cyan: #6FE3D6;
+    --good: #57D08A;
+    --good-dim: #1E4A34;
+    --bad: #F26D6D;
+    --bad-dim: #4A2020;
+    --bonus: #B98BFF;
+    --bonus-dim: #4A3B7A;
+    --extreme: #FF2E63;
+    --extreme-dim: #7A1030;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(var(--bg), var(--bg2));
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  *:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+  .blueprint-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at top, black 10%, transparent 75%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:880px; margin:0 auto; padding:28px 18px 90px; }
+
+  .titleblock{
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:20px 22px;
+    position:relative;
+    margin-bottom:34px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .titleblock::before, .titleblock::after{
+    content:""; position:absolute; width:14px; height:14px;
+  }
+  .titleblock::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .titleblock::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+  .eyebrow-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow-row span:last-child{ color:var(--amber); }
+  h1.maintitle{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:clamp(28px, 6vw, 42px); margin:0 0 4px; line-height:1.05;
+    color:#fff;
+  }
+  .subtitle-en{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.16em;
+    color:var(--cyan); text-transform:uppercase;
+  }
+  .desc{ color:var(--muted); font-size:14.5px; margin-top:14px; line-height:1.6; max-width:64ch;}
+
+  .section-head{
+    display:flex; align-items:center; gap:12px; margin: 46px 0 18px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:2px; padding:3px 8px;
+    background:rgba(242,184,75,0.06);
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; color:#fff;
+  }
+  .section-rule{
+    flex:1; height:0; border-top:1px dashed var(--line-strong);
+  }
+  .subhead{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.1em;
+    color:var(--muted); text-transform:uppercase; margin:0 0 12px;
+  }
+
+  .formula-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+  }
+  .fcard{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+  }
+  .fcard::before{
+    content: attr(data-tag);
+    position:absolute; top:-9px; left:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    background:var(--bg2); color:var(--amber);
+    padding:1px 6px; border:1px solid var(--amber-dim); border-radius:2px;
+    letter-spacing:0.08em;
+  }
+  .fcard .flabel{ font-size:12.5px; color:var(--muted); margin-bottom:10px; }
+  .fcard .fmath{ font-size:15.5px; color:#fff; margin-bottom:8px; min-height:26px; }
+  .fcard .fexample{ font-size:12.5px; color:var(--cyan); opacity:0.85; }
+
+  .fcard.bonus{ border-color: rgba(185,139,255,0.35); background: linear-gradient(180deg, rgba(185,139,255,0.05), var(--surface)); }
+  .fcard.bonus::before{ color:var(--bonus); border-color:var(--bonus-dim); }
+  .fcard.bonus .fexample{ color:var(--bonus); }
+
+  .bonus-panel{
+    margin-top:22px; border:1px dashed var(--bonus-dim); border-radius:4px;
+    padding:18px 18px 20px; background:linear-gradient(180deg, rgba(185,139,255,0.05), transparent);
+  }
+  .bonus-head{ display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; }
+  .bonus-icon{ font-size:18px; color:var(--bonus); flex-shrink:0; line-height:1.2; }
+  .bonus-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:16px; color:#fff; }
+  .bonus-sub{ font-size:13px; color:var(--muted); margin-top:4px; line-height:1.55; max-width:58ch; }
+
+  /* ---- Word-to-Math translation dictionary (signature element) ---- */
+  .dict-panel{
+    background:var(--bg2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:16px 18px; margin-bottom:18px;
+  }
+  .dict-title{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.09em;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:10px;
+  }
+  .dict-row{
+    display:flex; justify-content:space-between; align-items:center; gap:14px;
+    padding:8px 2px; border-bottom:1px dashed var(--line); font-size:13.5px;
+  }
+  .dict-row:last-of-type{ border-bottom:none; }
+  .dict-row .phrase{ color:var(--text); }
+  .dict-row .math{ color:var(--cyan); flex-shrink:0; }
+  .dict-row.warn{
+    margin-top:8px; border-bottom:none; border-top:1px solid var(--bonus-dim);
+    background:rgba(185,139,255,0.08); border-radius:3px; padding:10px 10px; flex-wrap:wrap;
+  }
+  .dict-row.warn .phrase{ color:var(--bonus); font-weight:600; }
+  .dict-row.warn .math{ color:#fff; }
+
+  .excard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .exhead{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; cursor:pointer; user-select:none;
+    gap:12px;
+  }
+  .exhead .extitle{ font-weight:600; font-size:15px; color:#fff; }
+  .exhead .exprompt{ font-size:14px; color:var(--muted); margin-top:3px; }
+  .exhead .chev{
+    font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px;
+    border:1px solid var(--amber-dim); border-radius:50%; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .25s ease;
+  }
+  .excard.open .chev{ transform:rotate(45deg); }
+  .exbody{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    border-top:1px dashed var(--line);
+  }
+  .excard.open .exbody{ max-height:900px; }
+  .exsteps{ padding:14px 16px 18px; }
+  .step{ margin-bottom:10px; font-size:14.5px; color:var(--text); display:flex; gap:10px; }
+  .step .stepnum{ font-family:'IBM Plex Mono', monospace; color:var(--muted); font-size:12px; padding-top:3px; flex-shrink:0; width:16px;}
+  .step .stepmath{ flex:1; }
+  .answer-tag{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--good); border:1px solid var(--good-dim);
+    background:rgba(87,208,138,0.08); padding:3px 8px; border-radius:2px;
+  }
+
+  /* ---- Adaptive ladder (scoring element) ---- */
+  .ladder-panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:18px 18px 20px; margin-bottom:20px;
+  }
+  .ladder-head{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.09em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:18px;
+  }
+  .ladder-head-right{ display:flex; align-items:center; gap:12px; }
+  .ladder-head-right b{ color:#fff; }
+  .ladder-head button{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);
+    background:transparent; border:1px solid var(--line-strong); border-radius:2px;
+    padding:5px 10px; cursor:pointer;
+  }
+  .ladder-head button:hover{ color:var(--amber); border-color:var(--amber-dim); }
+  .ladder-row{
+    display:flex; align-items:flex-end; justify-content:center; gap:20px;
+    padding:6px 4px 4px;
+  }
+  .ladder-col{ display:flex; flex-direction:column; align-items:center; gap:8px; width:62px; }
+  .tier-label{ font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; color:var(--muted); }
+  .tier-track{
+    position:relative; width:100%; border:1px solid var(--line-strong); border-radius:4px;
+    background:var(--bg2); overflow:hidden; display:flex; align-items:flex-end;
+  }
+  .tier-easy .tier-track{ height:60px; }
+  .tier-medium .tier-track{ height:88px; }
+  .tier-hard .tier-track{ height:116px; }
+  .tier-extreme .tier-track{ height:144px; }
+  .tier-fill{ width:100%; height:0%; transition:height .4s ease; }
+  .tier-easy .tier-fill{ background:var(--good); }
+  .tier-medium .tier-fill{ background:var(--amber); }
+  .tier-hard .tier-fill{ background:var(--bad); }
+  .tier-extreme .tier-fill{ background:linear-gradient(180deg,#FF7AC6,var(--extreme)); box-shadow:0 0 12px rgba(255,46,99,0.55); }
+  .tier-count{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:#fff; }
+  .tier-clear{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.06em;
+    color:var(--good); opacity:0; transition:opacity .3s ease;
+  }
+  .tier-clear.show{ opacity:1; }
+  .tier-extreme .tier-clear.show{ color:var(--extreme); text-shadow:0 0 8px rgba(255,46,99,0.6); }
+
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:16px; margin-bottom:16px; position:relative;
+  }
+  .qcard.extreme{
+    border-color: var(--extreme);
+    background: linear-gradient(160deg, rgba(255,46,99,0.08), var(--surface) 55%);
+    box-shadow: 0 0 22px rgba(255,46,99,0.16);
+  }
+  .qcard.extreme::before{
+    content:"FINAL BOSS"; position:absolute; top:-10px; right:14px;
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em;
+    color:#0B1E3D; font-weight:600; background:linear-gradient(90deg,#FF7AC6,var(--extreme));
+    padding:3px 8px; border-radius:2px;
+  }
+  .qhead{ display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
+  .qtop{ display:flex; align-items:center; gap:10px; }
+  .qnum{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:13px; flex-shrink:0; }
+  .diff-badge{
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.08em;
+    padding:2px 8px; border-radius:10px; border:1px solid; text-transform:uppercase;
+  }
+  .diff-easy{ color:var(--good); border-color:var(--good-dim); background:rgba(87,208,138,0.08); }
+  .diff-medium{ color:var(--amber); border-color:var(--amber-dim); background:rgba(242,184,75,0.08); }
+  .diff-hard{ color:var(--bad); border-color:var(--bad-dim); background:rgba(242,109,109,0.08); }
+  .diff-extreme{
+    color:#fff; border-color:var(--extreme);
+    background:linear-gradient(90deg, rgba(255,46,99,0.3), rgba(185,139,255,0.3));
+  }
+  .qtext{ font-size:15px; color:#fff; line-height:1.5; }
+  .options{ display:grid; gap:8px; }
+  .opt{
+    display:flex; align-items:center; gap:10px;
+    text-align:left; width:100%;
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:3px;
+    padding:10px 12px; color:var(--text); font-size:14.5px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--cyan); }
+  .opt .optletter{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);
+    border:1px solid var(--line-strong); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .opt:disabled{ cursor:default; opacity:0.85; }
+  .opt.correct{ border-color:var(--good); background:rgba(87,208,138,0.12); }
+  .opt.correct .optletter{ border-color:var(--good); color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:rgba(242,109,109,0.12); animation: shake .32s ease; }
+  .opt.wrong .optletter{ border-color:var(--bad); color:var(--bad); }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .stamp{
+    display:inline-block; margin-top:12px; font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; font-weight:600; letter-spacing:0.08em; padding:4px 10px;
+    border:2px solid; border-radius:2px; transform:rotate(-3deg);
+    opacity:0; transition:opacity .2s ease;
+  }
+  .stamp.show{ opacity:1; }
+  .stamp.good{ color:var(--good); border-color:var(--good); }
+  .stamp.bad{ color:var(--bad); border-color:var(--bad); }
+  .qexplain{
+    margin-top:10px; font-size:13.5px; color:var(--muted); line-height:1.55;
+    padding-top:10px; border-top:1px dashed var(--line); display:none;
+  }
+  .qexplain.show{ display:block; }
+
+  footer{
+    text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; margin-top:50px; opacity:0.6;
+  }
+
+  @media (max-width:480px){
+    .wrap{ padding:20px 12px 70px; }
+    .ladder-row{ gap:10px; }
+    .ladder-col{ width:50px; }
+    .tier-easy .tier-track{ height:46px; }
+    .tier-medium .tier-track{ height:68px; }
+    .tier-hard .tier-track{ height:90px; }
+    .tier-extreme .tier-track{ height:112px; }
+    .dict-row{ flex-direction:column; align-items:flex-start; gap:4px; }
+  }
+</style>
+</head>
+<body>
+<div class="blueprint-grid"></div>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="eyebrow-row">
+      <span>SAT MATH · CHAPTER 11</span>
+      <span>REV. 01</span>
+    </div>
+    <h1 class="maintitle">Word Problems</h1>
+    <div class="subtitle-en">Setups · Translation · Practice</div>
+    <p class="desc">Word problems don't test a brand-new formula — they test whether you can turn a sentence into an equation. Learn the ten setups that cover almost every scenario, master the phrase-to-math dictionary, work through six full solutions, then climb the ten-question ladder: three easy, three medium, three hard, and one true extreme.</p>
+  </div>
+
+  <!-- SECTION 1: FORMULAS -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Formulas</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="subhead">Common Problem-Solving Setups</div>
+  <div class="formula-grid" id="formulaGrid">
+    <div class="fcard" data-tag="SETUP 01"><div class="flabel">Fixed + variable cost</div><div class="fmath">\(\text{Total} = \text{Fixed} + (\text{Rate})(\text{Quantity})\)</div><div class="fexample">\(c = 45 + 30m\)</div></div>
+    <div class="fcard" data-tag="SETUP 02"><div class="flabel">Distance, rate, time</div><div class="fmath">\(d = rt\)</div><div class="fexample">\(d = 60t\)</div></div>
+    <div class="fcard" data-tag="SETUP 03"><div class="flabel">Consecutive integers</div><div class="fmath">\(x,\ x{+}1,\ x{+}2,\ \dots\)</div><div class="fexample">sum of 3: \(x+(x{+}1)+(x{+}2)\)</div></div>
+    <div class="fcard" data-tag="SETUP 04"><div class="flabel">Percent of a whole</div><div class="fmath">\(\text{part} = p\cdot(\text{whole})\)</div><div class="fexample">\(0.70x\) attend full-time</div></div>
+    <div class="fcard" data-tag="SETUP 05"><div class="flabel">Age in y years</div><div class="fmath">\(\text{future age} = \text{current age} + y\)</div><div class="fexample">in 5 years: \(x+5\)</div></div>
+    <div class="fcard" data-tag="SETUP 06"><div class="flabel">Ratio / proportion</div><div class="fmath">\(\dfrac{a}{b}=\dfrac{c}{d} \Rightarrow ad = bc\)</div><div class="fexample">\(\dfrac{3}{2}=\dfrac{6}{k} \Rightarrow k=4\)</div></div>
+    <div class="fcard" data-tag="SETUP 07"><div class="flabel">Combined work rate</div><div class="fmath">\(\dfrac{1}{t_A}+\dfrac{1}{t_B}=\dfrac{1}{t_{\text{together}}}\)</div><div class="fexample">\(\dfrac18+\dfrac1{12}=\dfrac1t\)</div></div>
+    <div class="fcard" data-tag="SETUP 08"><div class="flabel">Mixture (adding solutions)</div><div class="fmath">\(c_1v_1+c_2v_2=c_{f}(v_1{+}v_2)\)</div><div class="fexample">\(0.10(30)+0.50x=0.20(30{+}x)\)</div></div>
+    <div class="fcard" data-tag="SETUP 09"><div class="flabel">Two-rate / piecewise</div><div class="fmath">\(\text{Total}=r_1t_1+r_2(t-t_1),\ t>t_1\)</div><div class="fexample">\(6(2)+4(t-2)=20\)</div></div>
+    <div class="fcard" data-tag="SETUP 10"><div class="flabel">Part-whole (segments/groups)</div><div class="fmath">\(\text{whole}=\text{part}_1+\text{part}_2\)</div><div class="fexample">\(AB+BC=AC\)</div></div>
+  </div>
+
+  <div class="bonus-panel">
+    <div class="bonus-head">
+      <span class="bonus-icon">&#9733;</span>
+      <div>
+        <div class="bonus-title">SAT Bonus — Beyond This Chapter</div>
+        <div class="bonus-sub">The textbook shows you the setups, but most points are lost (or won) on these four habits.</div>
+      </div>
+    </div>
+
+    <div class="dict-panel">
+      <div class="dict-title">Word-to-Math Dictionary</div>
+      <div class="dict-row"><span class="phrase">increased by · more than · sum of · added to</span><span class="math">\(+\)</span></div>
+      <div class="dict-row"><span class="phrase">decreased by · less than · difference of</span><span class="math">\(-\)</span></div>
+      <div class="dict-row"><span class="phrase">times as many as · product of · "of"</span><span class="math">\(\times\)</span></div>
+      <div class="dict-row"><span class="phrase">per · for every · ratio of ___ to ___</span><span class="math">\(\div\)</span></div>
+      <div class="dict-row"><span class="phrase">is · was · will be · results in · gives</span><span class="math">\(=\)</span></div>
+      <div class="dict-row warn"><span class="phrase">⚠ "less than" flips the order:</span><span class="math">\(5\text{ less than }3x \Rightarrow 3x-5,\ \text{not } 5-3x\)</span></div>
+    </div>
+
+    <div class="formula-grid" id="bonusGrid">
+      <div class="fcard bonus" data-tag="SAT+ 01"><div class="flabel">Assign the variable wisely</div><div class="fmath">let \(x\) = what the question asks for</div><div class="fexample">fewer conversions at the end = fewer mistakes</div></div>
+      <div class="fcard bonus" data-tag="SAT+ 02"><div class="flabel">Unit-conversion chains</div><div class="fmath">\(\text{qty}\times\dfrac{\text{new unit}}{\text{old unit}}\times\cdots\)</div><div class="fexample">multiply by chained fractions so units cancel</div></div>
+      <div class="fcard bonus" data-tag="SAT+ 03"><div class="flabel">Replacement mixture</div><div class="fmath">\(c_1(V{-}x)+c_2x=c_{f}\cdot V\)</div><div class="fexample">draining &amp; refilling keeps total volume \(V\) fixed</div></div>
+      <div class="fcard bonus" data-tag="SAT+ 04"><div class="flabel">Reasonableness check</div><div class="fmath">does the answer fit the story?</div><div class="fexample">a "leftover" can't be negative or bigger than the start</div></div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: EXAMPLES -->
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Worked Examples</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div id="examplesWrap"></div>
+
+  <!-- SECTION 3: PRACTICE -->
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Practice</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="ladder-panel">
+    <div class="ladder-head">
+      <span>Adaptive Progress</span>
+      <div class="ladder-head-right">
+        <span>TOTAL: <b id="totalScoreText">0 / 10</b></span>
+        <button id="resetBtn">RESTART</button>
+      </div>
+    </div>
+    <div class="ladder-row">
+      <div class="ladder-col tier-easy">
+        <span class="tier-label">EASY</span>
+        <div class="tier-track"><div class="tier-fill" id="fillEasy"></div></div>
+        <span class="tier-count" id="countEasy">0/3</span>
+        <span class="tier-clear" id="clearEasy">CLEARED</span>
+      </div>
+      <div class="ladder-col tier-medium">
+        <span class="tier-label">MEDIUM</span>
+        <div class="tier-track"><div class="tier-fill" id="fillMedium"></div></div>
+        <span class="tier-count" id="countMedium">0/3</span>
+        <span class="tier-clear" id="clearMedium">CLEARED</span>
+      </div>
+      <div class="ladder-col tier-hard">
+        <span class="tier-label">HARD</span>
+        <div class="tier-track"><div class="tier-fill" id="fillHard"></div></div>
+        <span class="tier-count" id="countHard">0/3</span>
+        <span class="tier-clear" id="clearHard">CLEARED</span>
+      </div>
+      <div class="ladder-col tier-extreme">
+        <span class="tier-label">EXTREME</span>
+        <div class="tier-track"><div class="tier-fill" id="fillExtreme"></div></div>
+        <span class="tier-count" id="countExtreme">0/1</span>
+        <span class="tier-clear" id="clearExtreme">SUMMIT</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="quizWrap"></div>
+
+  <footer>ORIGINAL PRACTICE SET · SETUPS ARE UNIVERSAL, EXAMPLES &amp; QUESTIONS ARE ORIGINAL</footer>
+</div>
+
+<script>
+const examples = [
+  {
+    title: "Example 1 — Setting Up a Cost Equation",
+    prompt: "A catering company charges a flat delivery fee of $50 plus $12 for each guest served. If the total charge for an event was $482, how many guests were served?",
+    steps: [
+      "Let \\(g\\) = number of guests. Translate the sentence: \\(\\text{Total} = \\text{Fixed} + (\\text{Rate})(\\text{guests})\\)",
+      "Set up the equation: \\(50 + 12g = 482\\)",
+      "Subtract 50 from both sides: \\(12g = 432\\)",
+      "Divide by 12: \\(g = 36\\)"
+    ],
+    answer: "\\(36\\text{ guests}\\)"
+  },
+  {
+    title: "Example 2 — Consecutive Integers",
+    prompt: "The sum of four consecutive even integers is 116. What is the largest of the four integers?",
+    steps: [
+      "Let the smallest even integer be \\(x\\). The four consecutive even integers are \\(x,\\ x+2,\\ x+4,\\ x+6\\)",
+      "Set up the sum: \\(x+(x+2)+(x+4)+(x+6)=116\\)",
+      "Combine like terms: \\(4x+12=116\\)",
+      "Solve: \\(4x=104 \\Rightarrow x=26\\)",
+      "The largest integer is \\(x+6 = 32\\)"
+    ],
+    answer: "\\(32\\)"
+  },
+  {
+    title: "Example 3 — Percent-Difference Group Problem",
+    prompt: "At a conference, 65% of attendees are researchers and the rest are students. If the number of researchers is 90 more than the number of students, how many total people attended the conference?",
+    steps: [
+      "Let \\(x\\) = total attendees. Then researchers \\(=0.65x\\) and students \\(=0.35x\\)",
+      "Translate \"90 more than\": \\(0.65x - 0.35x = 90\\)",
+      "Combine: \\(0.30x = 90\\)",
+      "Solve: \\(x = 300\\)"
+    ],
+    answer: "\\(300\\text{ attendees}\\)"
+  },
+  {
+    title: "Example 4 — Age Problem",
+    prompt: "Priya is 9 years older than her brother Dev. In 6 years, Priya will be twice as old as Dev. How old is Priya right now?",
+    steps: [
+      "Let \\(x\\) = Priya's age now, so Dev's age now is \\(x-9\\)",
+      "In 6 years: Priya is \\(x+6\\), Dev is \\((x-9)+6 = x-3\\)",
+      "Translate \"twice as old\": \\(x+6 = 2(x-3)\\)",
+      "Expand and solve: \\(x+6=2x-6 \\Rightarrow x = 12\\)"
+    ],
+    answer: "\\(12\\text{ years old}\\)"
+  },
+  {
+    title: "Example 5 — Combined Work Rate",
+    prompt: "Working alone, Marcus can mow a field in 5 hours, and his sister Talia can mow the same field in 8 hours. Working together at their constant rates, how many hours will it take them to mow the field?",
+    steps: [
+      "Marcus's rate: \\(\\dfrac15\\) field/hr. Talia's rate: \\(\\dfrac18\\) field/hr",
+      "Combined rate: \\(\\dfrac15+\\dfrac18 = \\dfrac{8}{40}+\\dfrac{5}{40} = \\dfrac{13}{40}\\) field/hr",
+      "Use \\(W=rt\\) with \\(W=1\\): \\(1 = \\dfrac{13}{40}t\\)",
+      "Solve: \\(t = \\dfrac{40}{13}\\)"
+    ],
+    answer: "\\(\\dfrac{40}{13}\\text{ hours} \\approx 3.08\\text{ hours}\\)"
+  },
+  {
+    title: "Example 6 — Mixture Problem",
+    prompt: "A tank contains 40 liters of a 15% saline solution. How many liters of a 45% saline solution must be added to obtain a 25% saline solution?",
+    steps: [
+      "Let \\(x\\) = liters of 45% solution added. The new total volume is \\(40+x\\)",
+      "Common mistake: don't just compare 25% of the original 40 liters — the total volume changes once you add solution!",
+      "Set up by equating the total amount of salt: \\(0.15(40) + 0.45x = 0.25(40+x)\\)",
+      "Expand: \\(6 + 0.45x = 10 + 0.25x\\)",
+      "Solve: \\(0.20x = 4 \\Rightarrow x = 20\\)"
+    ],
+    answer: "\\(20\\text{ liters}\\)"
+  }
+];
+
+const quiz = [
+  { tier:"easy", q: "The sum of three consecutive integers is 84. What is the smallest of the three integers?", opts: ["27","28","26","29"], correct: 0, exp: "Let the smallest be \\(x\\): \\(x+(x+1)+(x+2)=84 \\Rightarrow 3x+3=84 \\Rightarrow 3x=81 \\Rightarrow x=27\\)." },
+  { tier:"easy", q: "A gym charges a $45 signup fee plus $30 per month. Which expression gives the total cost, in dollars, for m months of membership?", opts: ["\\(45+30m\\)","\\(30+45m\\)","\\(45m+30\\)","\\(75m\\)"], correct: 0, exp: "The flat $45 fee is paid once; the $30 rate is multiplied by the number of months: \\(\\text{Total}=\\text{Fixed}+(\\text{Rate})(m) = 45+30m\\)." },
+  { tier:"easy", q: "Twice a number, increased by 9, equals 31. What is the number?", opts: ["11","20","7","4"], correct: 0, exp: "Translate: \\(2x+9=31 \\Rightarrow 2x=22 \\Rightarrow x=11\\)." },
+
+  { tier:"medium", q: "Diego is 9 years older than his sister Elena. In 4 years, Diego will be twice as old as Elena. How old is Diego now?", opts: ["14","18","9","5"], correct: 0, exp: "Let \\(x\\)=Diego's age now, Elena \\(=x-9\\). In 4 years: \\(x+4=2(x-9+4)=2x-10 \\Rightarrow x=14\\)." },
+  { tier:"medium", q: "In a trail mix, the ratio of flour to sugar is 3 to 2, and the ratio of sugar to butter is 4 to 5. If the ratio of flour to butter is 6 to k, what is the value of k?", opts: ["5","10","8","15"], correct: 0, exp: "Scale flour:sugar (3:2) to match the sugar value of 4: multiply by 2 to get 6:4. Now flour:sugar:butter = 6:4:5, so flour:butter = 6:5, meaning \\(k=5\\)." },
+  { tier:"medium", q: "Of the members in a chess club, 60% are students and the rest are adults. If the number of students is 40 more than the number of adults, how many total members are in the club?", opts: ["200","160","100","240"], correct: 0, exp: "Let \\(x\\)=total members: \\(0.60x - 0.40x = 40 \\Rightarrow 0.20x=40 \\Rightarrow x=200\\)." },
+
+  { tier:"hard", q: "A container holds 40 liters of a 25% acid solution. How many liters of a 60% acid solution must be added to obtain a 40% acid solution?", opts: ["30","24","20","16"], correct: 0, exp: "\\(0.25(40)+0.60x=0.40(40+x) \\Rightarrow 10+0.6x=16+0.4x \\Rightarrow 0.2x=6 \\Rightarrow x=30\\)." },
+  { tier:"hard", q: "Working alone, Priya can tile a floor in 8 hours, and Noah can tile the same floor in 12 hours. Working together, how many hours will it take them to tile the floor?", opts: ["4.8","5","6","10"], correct: 0, exp: "Combined rate: \\(\\dfrac18+\\dfrac1{12}=\\dfrac{3}{24}+\\dfrac{2}{24}=\\dfrac{5}{24}\\). Time: \\(t=\\dfrac{24}{5}=4.8\\) hours." },
+  { tier:"hard", q: "Sofia jogs at 6 miles per hour for the first 2 hours of a trip, then jogs at 4 miles per hour for the rest of the trip. If the entire trip covers 20 miles, how many hours t did the trip take (t > 2)?", opts: ["4","3","5","6"], correct: 0, exp: "\\(6(2)+4(t-2)=20 \\Rightarrow 12+4t-8=20 \\Rightarrow 4t=16 \\Rightarrow t=4\\)." },
+
+  { tier:"extreme", q: "A tank contains 60 liters of a 20% acid solution. Some of this solution is drained and replaced with an equal amount of a 50% acid solution, resulting in a 35% acid solution. How many liters were drained and replaced?", opts: ["30","24","20","40"], correct: 0, exp: "Because the drained liquid is replaced, the total volume stays 60 liters throughout. Let \\(x\\) = liters drained/replaced: \\(0.20(60-x)+0.50x = 0.35(60) \\Rightarrow 12-0.2x+0.5x=21 \\Rightarrow 0.3x=9 \\Rightarrow x=30\\). This differs from a simple 'adding' mixture because the volume never grows past 60 liters." }
+];
+
+// ----- render examples -----
+const exWrap = document.getElementById('examplesWrap');
+examples.forEach((ex) => {
+  const card = document.createElement('div');
+  card.className = 'excard';
+  card.innerHTML = `
+    <div class="exhead">
+      <div>
+        <div class="extitle">${ex.title}</div>
+        <div class="exprompt">${ex.prompt}</div>
+      </div>
+      <div class="chev">+</div>
+    </div>
+    <div class="exbody">
+      <div class="exsteps">
+        ${ex.steps.map((s, j) => `<div class="step"><span class="stepnum">${j+1}.</span><span class="stepmath">${s}</span></div>`).join('')}
+        <div class="answer-tag">ANSWER: ${ex.answer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.exhead').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  exWrap.appendChild(card);
+});
+
+// ----- render quiz + adaptive ladder -----
+const quizWrap = document.getElementById('quizWrap');
+const tierNames = { easy:"EASY", medium:"MEDIUM", hard:"HARD", extreme:"EXTREME" };
+const totals = { easy:0, medium:0, hard:0, extreme:0 };
+quiz.forEach(q => totals[q.tier]++);
+const correctCounts = { easy:0, medium:0, hard:0, extreme:0 };
+let totalCorrect = 0;
+let totalAnswered = 0;
+
+function updateLadder(){
+  document.getElementById('totalScoreText').textContent = `${totalCorrect} / ${quiz.length}`;
+  ['easy','medium','hard','extreme'].forEach(t => {
+    const pct = totals[t] ? (correctCounts[t] / totals[t]) * 100 : 0;
+    document.getElementById('fill' + capitalize(t)).style.height = pct + '%';
+    document.getElementById('count' + capitalize(t)).textContent = `${correctCounts[t]}/${totals[t]}`;
+    document.getElementById('clear' + capitalize(t)).classList.toggle('show', pct >= 100);
+  });
+}
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+quiz.forEach((item, qi) => {
+  const card = document.createElement('div');
+  card.className = 'qcard' + (item.tier === 'extreme' ? ' extreme' : '');
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="qhead">
+      <div class="qtop">
+        <span class="qnum">Q${qi+1}</span>
+        <span class="diff-badge diff-${item.tier}">${tierNames[item.tier]}</span>
+      </div>
+      <span class="qtext">${item.q}</span>
+    </div>
+    <div class="options">
+      ${item.opts.map((o, oi) => `
+        <button class="opt" data-i="${oi}">
+          <span class="optletter">${letters[oi]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="stamp"></div>
+    <div class="qexplain">${item.exp}</div>
+  `;
+  const buttons = card.querySelectorAll('.opt');
+  const stamp = card.querySelector('.stamp');
+  const explain = card.querySelector('.qexplain');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = parseInt(btn.dataset.i);
+      const isCorrect = chosen === item.correct;
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.correct].classList.add('correct');
+      if(!isCorrect){ btn.classList.add('wrong'); }
+      stamp.textContent = isCorrect ? "CORRECT ✓" : "INCORRECT ✕";
+      stamp.classList.add('show', isCorrect ? 'good' : 'bad');
+      explain.classList.add('show');
+      if(isCorrect){ totalCorrect++; correctCounts[item.tier]++; }
+      totalAnswered++;
+      updateLadder();
+      if(window.renderMathInElement){ renderMathInElement(explain); }
+    });
+  });
+
+  quizWrap.appendChild(card);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  location.reload();
+});
+
+updateLadder();
+
+window.addEventListener('load', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</body>
+</html>
