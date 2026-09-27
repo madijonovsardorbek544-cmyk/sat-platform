@@ -317,10 +317,11 @@ function renderQuestion(idx) {
   } else {
     html += `<ul class="options-list">`;
     (q.options || []).forEach((opt, i) => {
-      const letter = letters[i];
-      const sel = selectedAnswer === letter ? 'selected' : '';
-      html += `<li class="option-item ${sel}" onclick="selectAnswer('${q.id}','${letter}',this)">
-        <span class="option-letter">${letter}</span>
+      const screenLetter = letters[i];
+      const originalLetter = q.optionMapping ? q.optionMapping[screenLetter] : screenLetter;
+      const sel = selectedAnswer === originalLetter ? 'selected' : '';
+      html += `<li class="option-item ${sel}" onclick="selectAnswer('${q.id}','${originalLetter}',this)">
+        <span class="option-letter">${screenLetter}</span>
         <span>${opt}</span>
       </li>`;
     });

@@ -26,37 +26,7 @@
     <!-- filled by JS -->
   </div>
 
-  <!-- ══════ MATH — LEARNING CONCEPTS ══════ -->
-  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 16px">💡 Math — Learning Concepts</h2>
-  <div class="module-grid" id="math-concepts-grid">
-    <!-- filled by JS -->
-  </div>
 
-  <!-- ══════ MATH — HOMEWORK ══════ -->
-  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 16px">📝 Math — Homework</h2>
-  <div class="module-grid" id="math-hw-grid">
-    <!-- filled by JS -->
-  </div>
-
-  <!-- ══════ COMING SOON ══════ -->
-  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 16px">Coming Soon</h2>
-  <div class="module-grid">
-    <div class="module-card disabled">
-      <div class="module-icon">📖</div>
-      <div class="module-name">Reading</div>
-      <div class="module-status">Coming Soon</div>
-    </div>
-    <div class="module-card disabled">
-      <div class="module-icon">✏️</div>
-      <div class="module-name">Grammar</div>
-      <div class="module-status">Coming Soon</div>
-    </div>
-    <div class="module-card disabled">
-      <div class="module-icon">📝</div>
-      <div class="module-name">Mock Tests</div>
-      <div class="module-status">Coming Soon</div>
-    </div>
-  </div>
 
   <!-- Progress Overview -->
   <div class="card mt-3" id="progress-card" style="display:none; margin-bottom:24px">
@@ -148,8 +118,6 @@ async function init() {
 
     const tests = dash.tests || [];
     renderVocab(tests.filter(t => t.test_type === 'vocabulary'));
-    renderMathConcepts();
-    renderMathHomework(tests.filter(t => t.test_type === 'math'));
     await loadHistory();
   } catch (e) { console.error(e); }
 }
@@ -159,35 +127,6 @@ function renderVocab(tests) {
   const grid = document.getElementById('vocab-grid');
   if (!tests.length) { grid.innerHTML = '<p class="text-muted">No vocabulary tests available yet.</p>'; return; }
   grid.innerHTML = tests.map(test => renderTestCard(test, '📚')).join('');
-}
-
-/* ── Math — Learning Concepts (your beautiful HTML pages) */
-function renderMathConcepts() {
-  const grid = document.getElementById('math-concepts-grid');
-  grid.innerHTML = MATH_CHAPTERS.map(ch => {
-    const ef = encodeURIComponent(ch.file);
-    const et = encodeURIComponent(ch.title);
-    return `
-    <div class="module-card" onclick="goToConcept('${ef}', ${ch.n}, '${et}')">
-      <div class="module-icon">💡</div>
-      <div class="module-name" style="font-size:14px">Ch.${String(ch.n).padStart(2,'0')}: ${ch.title}</div>
-      <div class="module-status" style="margin-bottom:12px">
-        <span class="badge" style="background:#e0f2fe;color:#0369a1">Lesson</span>
-      </div>
-      <div style="margin-top:12px">
-        <button class="btn btn-primary btn-sm" onclick="goToConcept('${ef}', ${ch.n}, '${et}'); event.stopPropagation()">
-          Learn Concept
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ── Math — Homework (database-driven tests) ─────────── */
-function renderMathHomework(tests) {
-  const grid = document.getElementById('math-hw-grid');
-  if (!tests.length) { grid.innerHTML = '<p class="text-muted">No homework available yet.</p>'; return; }
-  grid.innerHTML = tests.map(test => renderTestCard(test, '📝')).join('');
 }
 
 /* ── Shared card renderer ─────────────────────────────── */
