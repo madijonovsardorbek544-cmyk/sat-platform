@@ -117,7 +117,7 @@
     </div>
 
     <p class="text-muted text-center mt-2" style="font-size:12px">
-      SAT Tutoring Platform &copy; 2026
+      SAT Tutoring Platform &copy; 2026 &nbsp;|&nbsp; <a href="#" onclick="switchTab('teacher'); return false;" style="color:var(--gray-400); text-decoration:none;">Teacher Login</a>
     </p>
   </div>
 </div>
@@ -167,8 +167,6 @@ function hideAlert() { document.getElementById('alert').classList.add('hidden');
 function switchTab(tab) {
   document.getElementById('panel-student').classList.toggle('hidden', tab !== 'student');
   document.getElementById('panel-teacher').classList.toggle('hidden', tab !== 'teacher');
-  document.getElementById('tab-student').classList.toggle('active', tab === 'student');
-  document.getElementById('tab-teacher').classList.toggle('active', tab === 'teacher');
   hideAlert();
 }
 
