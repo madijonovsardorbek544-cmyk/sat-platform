@@ -479,8 +479,8 @@ function showResults(result) {
         ${item.context ? `<div style="font-size:13px;color:var(--gray-600);margin-bottom:8px;font-style:italic">${item.context}</div>` : ''}
         <div class="review-q">${item.question}</div>
         <div class="review-answers">
-          <span>Your answer: <strong style="color:${status==='correct'?'var(--green)':'var(--red)'}">${item.selected_answer || '—'}</strong></span>
-          <span>Correct: <strong style="color:var(--green)">${item.correct_answer}</strong></span>
+          <span>Your answer: <strong style="color:${status==='correct'?'var(--green)':'var(--red)'}">${item.selected_answer ? item.options[['A','B','C','D'].indexOf(item.selected_answer)] : '—'}</strong></span>
+          <span style="margin-left: 12px;">Correct: <strong style="color:var(--green)">${item.options[['A','B','C','D'].indexOf(item.correct_answer)]}</strong></span>
         </div>
         ${item.explanation ? `<div class="review-explanation">💡 ${item.explanation}</div>` : ''}
       </div>`;
