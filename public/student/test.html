@@ -306,7 +306,8 @@ function renderQuestion(idx) {
     html += `<div class="passage-box">${q.context.replace(/______/g, '<span style="font-weight:700;color:var(--blue);font-size:18px">______</span>')}</div>`;
   }
 
-  html += `<div class="question-text">${q.word ? `<span class="word-highlight">${q.word}</span> — ` : ''}${q.question}</div>`;
+  const showWord = q.question_type !== 'passage-in-context';
+  html += `<div class="question-text">${(q.word && showWord) ? `<span class="word-highlight">${q.word}</span> — ` : ''}${q.question}</div>`;
   
   if (q.question_type === 'math-grid-in') {
     const val = selectedAnswer || '';
