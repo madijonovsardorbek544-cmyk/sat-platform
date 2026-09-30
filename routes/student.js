@@ -532,5 +532,22 @@ function buildReview(db, attemptId) {
     options: typeof r.options === 'string' ? JSON.parse(r.options || '[]') : (r.options || [])
   }));
 }
+// ── Record Concept Lesson Completion ────────────────────────────────
+router.post('/concept/completion', (req, res) => {
+  const db = getDb();
+  const { chapterNum, chapterTitle, chapterFile, understanding } = req.body;
+
+  if (!chapterNum || !chapterTitle || !chapterFile || !understanding) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const id = uuidv4();
+  db.prepare(`
+    INSERT INTO lesson_completions (id, student_id, chapter_num, chapter_title, chapter_file, understanding)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(id, req.user.id, chapterNum, chapterTitle, chapterFile, understanding);
+
+  res.json({ ok: true });
+});
 
 module.exports = router;

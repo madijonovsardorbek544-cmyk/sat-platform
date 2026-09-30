@@ -271,6 +271,18 @@ function selectRating(btn) {
       <button class="btn btn-dashboard" onclick="goHome()">Dashboard</button>
     `;
   }
+
+  // Send completion to backend
+  fetch('/api/student/concept/completion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chapterNum,
+      chapterTitle,
+      chapterFile,
+      understanding: selectedLevel
+    })
+  }).catch(err => console.error('Failed to record completion:', err));
 }
 
 function repeatLesson() {

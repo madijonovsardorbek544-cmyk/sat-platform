@@ -11,12 +11,23 @@ async function seed() {
 
   // ─── Migrations ─────────────────────────────────────────────────
   try {
-    // Add access_code column if it doesn't exist
     db.prepare('ALTER TABLE tests ADD COLUMN access_code TEXT DEFAULT NULL').run();
     console.log('✅  Applied migration: added access_code to tests table');
-  } catch (err) {
-    // Column already exists, ignore
-  }
+  } catch (err) { /* column already exists */ }
+
+  try {
+    db.prepare(`CREATE TABLE IF NOT EXISTS lesson_completions (
+      id            TEXT PRIMARY KEY,
+      student_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      chapter_num   INTEGER NOT NULL,
+      chapter_title TEXT NOT NULL,
+      chapter_file  TEXT NOT NULL,
+      understanding TEXT NOT NULL CHECK (understanding IN ('perfect','medium','not-understood')),
+      completed_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`).run();
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_lesson_completions_stu ON lesson_completions(student_id)').run();
+    console.log('✅  Applied migration: created lesson_completions table');
+  } catch (err) { /* already exists */ }
 
   // ─── Teacher account ───────────────────────────────────────────
   const teacherEmail = process.env.TEACHER_EMAIL || 'teacher@satplatform.com';

@@ -121,9 +121,23 @@ CREATE TABLE IF NOT EXISTS integrity_events (
 );
 
 -- ─────────────────────────────────────────────
+--  LESSON_COMPLETIONS  (math concept chapter tracking)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS lesson_completions (
+  id              TEXT PRIMARY KEY,
+  student_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  chapter_num     INTEGER NOT NULL,
+  chapter_title   TEXT NOT NULL,
+  chapter_file    TEXT NOT NULL,
+  understanding   TEXT NOT NULL CHECK (understanding IN ('perfect','medium','not-understood')),
+  completed_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+
+-- ─────────────────────────────────────────────
 --  INDEXES
 -- ─────────────────────────────────────────────
-CREATE INDEX IF NOT EXISTS idx_test_attempts_student ON test_attempts(student_id);
-CREATE INDEX IF NOT EXISTS idx_answers_attempt        ON answers(attempt_id);
-CREATE INDEX IF NOT EXISTS idx_integrity_attempt      ON integrity_events(attempt_id);
-CREATE INDEX IF NOT EXISTS idx_test_questions_test    ON test_questions(test_id);
+CREATE INDEX IF NOT EXISTS idx_test_attempts_student  ON test_attempts(student_id);
+CREATE INDEX IF NOT EXISTS idx_answers_attempt         ON answers(attempt_id);
+CREATE INDEX IF NOT EXISTS idx_integrity_attempt       ON integrity_events(attempt_id);
+CREATE INDEX IF NOT EXISTS idx_test_questions_test     ON test_questions(test_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_completions_stu  ON lesson_completions(student_id);

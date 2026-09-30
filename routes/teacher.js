@@ -250,7 +250,15 @@ router.get('/stats', (req, res) => {
     LIMIT 10
   `).all();
 
-  res.json({ totalStudents, totalAttempts, avgAccuracy: avgAccuracy ? Math.round(avgAccuracy * 10) / 10 : 0, recentAttempts });
+  const recentCompletions = db.prepare(`
+    SELECT lc.id, lc.chapter_num, lc.chapter_title, lc.understanding, lc.completed_at, u.name as student_name
+    FROM lesson_completions lc
+    JOIN users u ON u.id = lc.student_id
+    ORDER BY lc.completed_at DESC
+    LIMIT 10
+  `).all();
+
+  res.json({ totalStudents, totalAttempts, avgAccuracy: avgAccuracy ? Math.round(avgAccuracy * 10) / 10 : 0, recentAttempts, recentCompletions });
 });
 
 // ── Analytics ──────────────────────────────────────────────────────

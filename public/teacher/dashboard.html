@@ -419,9 +419,9 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">🕒 Recent Submissions</div>
+          <div class="card-title">🕒 Recent Test Submissions</div>
         </div>
         <div style="overflow-x:auto">
           <table>
@@ -429,6 +429,20 @@
               <th>Student</th><th>Test</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Date</th><th></th>
             </tr></thead>
             <tbody id="recent-body"><tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray-400)">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📚 Recent Lesson Completions</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Student</th><th>Chapter</th><th>Understanding</th><th>Date</th>
+            </tr></thead>
+            <tbody id="completions-body"><tr><td colspan="4" style="text-align:center;padding:32px;color:var(--gray-400)">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -573,6 +587,27 @@ async function loadStats() {
       <td style="color:var(--gray-500)">${fmtDate(a.submitted_at)}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();location.href='/teacher/attempt.html?attemptId=${a.id}'">View</button></td>
     </tr>`).join('');
+
+  const cb = document.getElementById('completions-body');
+  if (cb) {
+    if (!d.recentCompletions || !d.recentCompletions.length) {
+      cb.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--gray-400)"><div style="font-size:32px;margin-bottom:8px">📭</div>No lesson completions yet</td></tr>';
+    } else {
+      const uMap = {
+        'perfect': '<span class="chip chip-green">🎯 Perfect</span>',
+        'medium': '<span class="chip chip-orange">🤔 Medium</span>',
+        'not-understood': '<span class="chip chip-red">😕 Not Understood</span>'
+      };
+      cb.innerHTML = d.recentCompletions.map(c => `
+        <tr>
+          <td><strong>${c.student_name}</strong></td>
+          <td>Ch.${String(c.chapter_num).padStart(2,'0')}: ${c.chapter_title}</td>
+          <td>${uMap[c.understanding] || c.understanding}</td>
+          <td style="color:var(--gray-500)">${fmtDate(c.completed_at)}</td>
+        </tr>
+      `).join('');
+    }
+  }
 }
 
 // ─── Tests & Codes ─────────────────────────────────────
