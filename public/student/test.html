@@ -202,7 +202,14 @@
   </div>
 </div>
 
-
+<!-- ══════════════════════════════════════════════ -->
+<!--  LOADING SCREEN                               -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="loading-screen" style="display:none; position:fixed; inset:0; background:rgba(255,255,255,0.95); z-index:1000; align-items:center; justify-content:center; flex-direction:column; backdrop-filter:blur(4px);">
+  <div class="spinner" style="width:48px;height:48px;border-width:4px;border-top-color:var(--blue);margin-bottom:20px;"></div>
+  <h3 style="font-size:20px;font-weight:800;color:var(--gray-900);">Scoring your test...</h3>
+  <p style="color:var(--gray-500);margin-top:8px;font-weight:500;">Please do not close this window.</p>
+</div>
 
 <script>
 const params = new URLSearchParams(location.search);
