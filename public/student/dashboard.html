@@ -4,116 +4,330 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Dashboard — SAT Platform</title>
-  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --blue:       #4f46e5;
+      --blue-dark:  #3730a3;
+      --blue-light: #eef2ff;
+      --green:      #059669;
+      --green-bg:   #ecfdf5;
+      --red:        #dc2626;
+      --red-bg:     #fef2f2;
+      --orange:     #d97706;
+      --orange-bg:  #fffbeb;
+      --purple:     #7c3aed;
+      --purple-bg:  #f5f3ff;
+      --gray-50:    #f9fafb;
+      --gray-100:   #f3f4f6;
+      --gray-200:   #e5e7eb;
+      --gray-300:   #d1d5db;
+      --gray-400:   #9ca3af;
+      --gray-500:   #6b7280;
+      --gray-600:   #4b5563;
+      --gray-700:   #374151;
+      --gray-800:   #1f2937;
+      --gray-900:   #111827;
+      --font: 'Inter', system-ui, sans-serif;
+      --radius: 12px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:    0 4px 20px rgba(0,0,0,.08);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.12);
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:var(--font); background:#f1f5f9; color:var(--gray-900); min-height:100vh; font-size:15px; }
+
+    /* ── Top Nav ── */
+    .topnav {
+      background:#fff; border-bottom:1px solid var(--gray-200);
+      padding:0 32px; height:64px; display:flex; align-items:center;
+      justify-content:space-between; position:sticky; top:0; z-index:100;
+      box-shadow:0 1px 0 rgba(0,0,0,.05);
+    }
+    .topnav-logo { display:flex; align-items:center; gap:10px; }
+    .topnav-logo-icon {
+      width:36px; height:36px; border-radius:10px;
+      background:linear-gradient(135deg,var(--blue) 0%,var(--purple) 100%);
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px; color:#fff; box-shadow:0 4px 12px rgba(79,70,229,.4);
+    }
+    .topnav-logo-text { font-weight:800; font-size:16px; color:var(--gray-900); letter-spacing:-.3px; }
+    .topnav-logo-sub  { font-size:11px; color:var(--gray-400); font-weight:500; }
+    .topnav-user { display:flex; align-items:center; gap:12px; }
+    .user-avatar {
+      width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg,var(--blue),var(--purple));
+      color:#fff; font-weight:700; font-size:14px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .user-meta { text-align:right; }
+    .user-meta-name { font-size:14px; font-weight:600; color:var(--gray-900); }
+    .user-meta-id { font-size:12px; color:var(--gray-400); }
+    .btn-signout {
+      padding:7px 16px; border-radius:8px; border:1px solid var(--gray-200);
+      background:#fff; font-size:13px; font-weight:500; cursor:pointer;
+      color:var(--gray-600); transition:all .15s; font-family:var(--font);
+    }
+    .btn-signout:hover { background:var(--gray-50); border-color:var(--gray-300); }
+
+    /* ── Page Layout ── */
+    .page { max-width:1140px; margin:0 auto; padding:32px 24px 80px; }
+
+    /* ── Hero Welcome ── */
+    .hero {
+      background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+      border-radius:20px; padding:36px 40px; margin-bottom:28px;
+      display:flex; align-items:center; justify-content:space-between;
+      overflow:hidden; position:relative;
+      box-shadow:0 8px 32px rgba(79,70,229,.35);
+    }
+    .hero::before {
+      content:''; position:absolute; top:-60px; right:-60px;
+      width:250px; height:250px; border-radius:50%;
+      background:rgba(255,255,255,.06);
+    }
+    .hero::after {
+      content:''; position:absolute; bottom:-80px; right:120px;
+      width:200px; height:200px; border-radius:50%;
+      background:rgba(255,255,255,.04);
+    }
+    .hero-left { position:relative; z-index:1; }
+    .hero-greeting { font-size:13px; font-weight:600; color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+    .hero-name { font-size:28px; font-weight:800; color:#fff; margin-bottom:6px; letter-spacing:-.5px; }
+    .hero-sub { font-size:14px; color:rgba(255,255,255,.7); }
+    .hero-right { position:relative; z-index:1; display:flex; gap:20px; }
+    .hero-stat { text-align:center; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15); border-radius:14px; padding:16px 24px; backdrop-filter:blur(10px); }
+    .hero-stat-val { font-size:26px; font-weight:800; color:#fff; line-height:1; }
+    .hero-stat-lbl { font-size:11px; color:rgba(255,255,255,.7); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:.4px; }
+
+    /* ── Section Headings ── */
+    .section-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; margin-top:32px; }
+    .section-badge {
+      width:34px; height:34px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px;
+    }
+    .section-badge.vocab { background:#eef2ff; }
+    .section-badge.math  { background:#fef3c7; }
+    .section-title { font-size:17px; font-weight:700; color:var(--gray-900); }
+    .section-count { font-size:12px; color:var(--gray-400); background:var(--gray-100); border-radius:99px; padding:2px 10px; font-weight:600; }
+
+    /* ── Test Cards Grid ── */
+    .tests-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .test-card {
+      background:#fff; border:1px solid var(--gray-200);
+      border-radius:16px; overflow:hidden; cursor:pointer;
+      transition:all .2s; box-shadow:var(--shadow-sm);
+      display:flex; flex-direction:column;
+    }
+    .test-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:var(--blue); }
+    .test-card-top { padding:24px 24px 16px; flex:1; }
+    .test-card-icon-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .test-icon-wrap {
+      width:48px; height:48px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; flex-shrink:0;
+    }
+    .test-icon-wrap.vocab { background:#eef2ff; box-shadow:0 4px 12px rgba(79,70,229,.15); }
+    .test-icon-wrap.math  { background:#fef3c7; box-shadow:0 4px 12px rgba(217,119,6,.15); }
+    .test-card-title { font-size:15px; font-weight:700; color:var(--gray-900); margin-bottom:8px; line-height:1.3; }
+    .test-card-meta { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+    .chip {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:3px 10px; border-radius:99px; font-size:12px; font-weight:600;
+    }
+    .chip-blue   { background:var(--blue-light); color:var(--blue); }
+    .chip-green  { background:var(--green-bg); color:var(--green); }
+    .chip-orange { background:var(--orange-bg); color:var(--orange); }
+    .chip-gray   { background:var(--gray-100); color:var(--gray-500); }
+    .chip-purple { background:var(--purple-bg); color:var(--purple); }
+
+    .test-score-bar { margin-top:12px; }
+    .test-score-label { display:flex; justify-content:space-between; font-size:12px; color:var(--gray-500); margin-bottom:4px; font-weight:500; }
+    .bar-bg { background:var(--gray-100); border-radius:99px; height:6px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:99px; transition:width .6s ease; }
+    .bar-fill.green { background:linear-gradient(90deg,var(--green),#34d399); }
+    .bar-fill.blue  { background:linear-gradient(90deg,var(--blue),var(--purple)); }
+
+    .test-card-bottom { padding:0 24px 20px; }
+    .btn-start {
+      width:100%; padding:11px; border-radius:10px; border:none;
+      font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font);
+      transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px;
+    }
+    .btn-start.primary { background:linear-gradient(135deg,var(--blue),var(--purple)); color:#fff; box-shadow:0 4px 14px rgba(79,70,229,.35); }
+    .btn-start.primary:hover { box-shadow:0 6px 20px rgba(79,70,229,.45); transform:translateY(-1px); }
+    .btn-start.ghost { background:var(--gray-100); color:var(--gray-700); }
+    .btn-start.ghost:hover { background:var(--gray-200); }
+
+    /* ── Progress & History ── */
+    .bottom-grid { display:grid; grid-template-columns:1fr 2fr; gap:20px; margin-top:32px; }
+    .progress-card {
+      background:#fff; border:1px solid var(--gray-200);
+      border-radius:16px; padding:24px; box-shadow:var(--shadow-sm);
+    }
+    .progress-card-title { font-size:14px; font-weight:700; color:var(--gray-900); margin-bottom:20px; display:flex; align-items:center; gap:6px; }
+    .progress-stat { margin-bottom:20px; }
+    .progress-stat-val { font-size:32px; font-weight:800; line-height:1; }
+    .progress-stat-lbl { font-size:12px; color:var(--gray-400); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:.4px; }
+
+    .history-card {
+      background:#fff; border:1px solid var(--gray-200);
+      border-radius:16px; padding:24px; box-shadow:var(--shadow-sm); overflow:hidden;
+    }
+    .history-card-title { font-size:14px; font-weight:700; color:var(--gray-900); margin-bottom:16px; display:flex; align-items:center; gap:6px; }
+    .history-table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { padding:8px 12px; text-align:left; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-400); background:var(--gray-50); border-bottom:1px solid var(--gray-100); }
+    td { padding:12px 12px; border-bottom:1px solid var(--gray-50); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafbff; }
+
+    .chart-wrap { height:180px; margin-top:12px; }
+
+    /* ── Empty state ── */
+    .empty { text-align:center; padding:40px; color:var(--gray-400); }
+    .empty-icon { font-size:40px; margin-bottom:10px; }
+    .empty-text { font-size:14px; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .page { animation: fadeUp .4s ease-out; }
+    .test-card { animation: fadeUp .4s ease-out backwards; }
+    .test-card:nth-child(1) { animation-delay:.05s; }
+    .test-card:nth-child(2) { animation-delay:.1s; }
+    .test-card:nth-child(3) { animation-delay:.15s; }
+
+    @media(max-width:900px) {
+      .hero { flex-direction:column; gap:20px; }
+      .hero-right { width:100%; justify-content:space-between; }
+      .bottom-grid { grid-template-columns:1fr; }
+    }
+    @media(max-width:600px) {
+      .topnav { padding:0 16px; }
+      .page { padding:20px 16px 60px; }
+      .hero { padding:24px; }
+      .hero-name { font-size:22px; }
+      .tests-grid { grid-template-columns:1fr; }
+    }
+  </style>
 </head>
 <body>
 
 <nav class="topnav">
-  <span class="logo">🎓 SAT Platform</span>
-  <div class="user-info">
-    <span>Welcome, <strong id="user-name">…</strong></span>
-    <span id="student-id-display" class="text-muted"></span>
-    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  <div class="topnav-logo">
+    <div class="topnav-logo-icon">🎓</div>
+    <div>
+      <div class="topnav-logo-text">SAT Platform</div>
+      <div class="topnav-logo-sub">Student Portal</div>
+    </div>
+  </div>
+  <div class="topnav-user">
+    <div class="user-meta">
+      <div class="user-meta-name" id="user-name">Loading…</div>
+      <div class="user-meta-id" id="student-id-display"></div>
+    </div>
+    <div class="user-avatar" id="user-avatar">?</div>
+    <button class="btn-signout" onclick="logout()">Sign Out</button>
   </div>
 </nav>
 
-<div class="container page-wrap">
-  <h1 class="section-heading">My Dashboard</h1>
+<div class="page">
 
-  <!-- ══════ VOCABULARY ══════ -->
-  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">📚 Vocabulary</h2>
-  <div class="module-grid" id="vocab-grid">
-    <!-- filled by JS -->
-  </div>
-
-  <!-- ══════ MATH ══════ -->
-  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:28px 0 16px">🧮 Math</h2>
-  <div class="module-grid" id="math-grid">
-    <!-- filled by JS -->
-  </div>
-
-  <!-- Progress Overview -->
-  <div class="card mt-3" id="progress-card" style="display:none; margin-bottom:24px">
-    <div class="card-title">📈 My Progress</div>
-    <div style="display:grid; grid-template-columns: 1fr 3fr; gap:20px; align-items:center">
-      <div>
-        <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--gray-500);text-transform:uppercase">Average Score</div><div style="font-size:28px;font-weight:800;color:var(--blue)" id="prog-avg-score">—</div></div>
-        <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--gray-500);text-transform:uppercase">Best Score</div><div style="font-size:28px;font-weight:800;color:var(--green)" id="prog-best-score">—</div></div>
-        <div><div style="font-size:12px;color:var(--gray-500);text-transform:uppercase">Tests Completed</div><div style="font-size:24px;font-weight:700;color:var(--gray-800)" id="prog-total-tests">—</div></div>
+  <!-- Hero Banner -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-greeting">Welcome back</div>
+      <div class="hero-name" id="hero-name">Student</div>
+      <div class="hero-sub">Ready to conquer the SAT today? 🚀</div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="h-tests">—</div>
+        <div class="hero-stat-lbl">Tests Taken</div>
       </div>
-      <div class="chart-container" style="height:220px">
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="h-avg">—</div>
+        <div class="hero-stat-lbl">Avg Accuracy</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="h-best">—</div>
+        <div class="hero-stat-lbl">Best Score</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vocabulary Section -->
+  <div class="section-head">
+    <div class="section-badge vocab">📚</div>
+    <div class="section-title">Vocabulary Tests</div>
+    <div class="section-count" id="vocab-count">0 available</div>
+  </div>
+  <div class="tests-grid" id="vocab-grid">
+    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div>
+  </div>
+
+  <!-- Math Section -->
+  <div class="section-head">
+    <div class="section-badge math">🧮</div>
+    <div class="section-title">Math Tests</div>
+    <div class="section-count" id="math-count">0 available</div>
+  </div>
+  <div class="tests-grid" id="math-grid">
+    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div>
+  </div>
+
+  <!-- Progress + History -->
+  <div class="bottom-grid" id="bottom-section" style="display:none">
+    <div class="progress-card">
+      <div class="progress-card-title">📈 My Progress</div>
+      <div class="progress-stat">
+        <div class="progress-stat-val" style="color:var(--blue)" id="prog-avg-score">—</div>
+        <div class="progress-stat-lbl">Average Score</div>
+      </div>
+      <div class="progress-stat">
+        <div class="progress-stat-val" style="color:var(--green)" id="prog-best-score">—</div>
+        <div class="progress-stat-lbl">Best Score</div>
+      </div>
+      <div class="progress-stat">
+        <div class="progress-stat-val" style="color:var(--gray-700)" id="prog-total-tests">—</div>
+        <div class="progress-stat-lbl">Tests Completed</div>
+      </div>
+      <div class="chart-wrap">
         <canvas id="studentProgressChart"></canvas>
       </div>
     </div>
-  </div>
 
-  <!-- Test history -->
-  <div class="card" id="history-card" style="display:none">
-    <div class="card-title">📋 Test History</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Test</th>
-            <th>Score</th>
-            <th>Correct</th>
-            <th>Wrong</th>
-            <th>Unanswered</th>
-            <th>Accuracy</th>
-            <th>Time</th>
-            <th>Date</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="history-body"></tbody>
-      </table>
+    <div class="history-card">
+      <div class="history-card-title">📋 Test History</div>
+      <div class="history-table-wrap">
+        <table>
+          <thead><tr><th>Test</th><th>Score</th><th>Accuracy</th><th>Time</th><th>Date</th><th></th></tr></thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Include Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</div>
 
 <script>
 let currentUser = null;
-
-/* ── Chapter list (maps to files inside /student/concepts/) ─── */
-const MATH_CHAPTERS = [
-  { file: "exponents-and-radicals.html",             n:  1, title: "Exponents & Radicals" },
-  { file: "expressions (2).html",                    n:  2, title: "Expressions" },
-  { file: "manipulating-solving-equations (1).html", n:  3, title: "Manipulating & Solving Equations" },
-  { file: "other-types-of-equation-questions.html",  n:  4, title: "Other Types of Equation Questions" },
-  { file: "functions (1).html",                      n:  5, title: "Functions" },
-  { file: "lines-and-linear-relationships.html",     n:  6, title: "Lines & Linear Relationships" },
-  { file: "linear-models.html",                      n:  7, title: "Interpreting Linear Equations & Models" },
-  { file: "percent.html",                            n:  8, title: "Percent" },
-  { file: "exponential-vs-linear-growth.html",       n:  9, title: "Exponential vs. Linear Growth" },
-  { file: "rates-conversions-ratios (4).html",       n: 10, title: "Rates, Conversions & Ratios" },
-  { file: "word-problems-sat-guide (3).html",        n: 11, title: "Word Problems" },
-  { file: "quadratic-equations-sat-guide.html",      n: 12, title: "Quadratic Equations" },
-  { file: "systems-of-equations (1).html",           n: 13, title: "Systems of Equations" },
-  { file: "inequalities.html",                       n: 14, title: "Inequalities" },
-  { file: "function-transformations (1).html",       n: 15, title: "Function Transformations" },
-  { file: "quadratic-functions.html",                n: 16, title: "Quadratic Functions" },
-  { file: "angles (1).html",                         n: 17, title: "Angles" },
-  { file: "triangles-sat-guide.html",                n: 18, title: "Triangles" },
-  { file: "circles (1).html",                        n: 19, title: "Circles" },
-  { file: "radians.html",                            n: 20, title: "Radians" },
-  { file: "trigonometry.html",                       n: 21, title: "Trigonometry" },
-  { file: "area-perimeter-volume-sat-guide.html",    n: 22, title: "Area, Perimeter & Volume" },
-  { file: "reading-data.html",                       n: 23, title: "Reading Data" },
-  { file: "probability.html",                        n: 24, title: "Probability" },
-  { file: "statistics-1.html",                       n: 25, title: "Statistics I" },
-  { file: "statistics-ii (1).html",                  n: 26, title: "Statistics II" },
-];
 
 async function init() {
   try {
     const r = await fetch('/api/auth/me');
     const d = await r.json();
-    if (!d.authenticated || d.user.role !== 'student') { location.href = '/'; return; }
+    if (!d.authenticated || d.user.role !== 'student') { location.href='/'; return; }
     currentUser = d.user;
-    document.getElementById('user-name').textContent = d.user.name;
+
+    const name = d.user.name;
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('hero-name').textContent = name.split(' ')[0];
+    document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
 
     const dash = await fetch('/api/student/dashboard').then(r => r.json());
     if (dash.user?.student_id) {
@@ -121,53 +335,70 @@ async function init() {
     }
 
     const tests = dash.tests || [];
-    renderVocab(tests.filter(t => t.test_type === 'vocabulary'));
-    renderMath(tests.filter(t => t.test_type === 'math'));
+    const vocabTests = tests.filter(t => t.test_type === 'vocabulary');
+    const mathTests  = tests.filter(t => t.test_type === 'math');
+    document.getElementById('vocab-count').textContent = vocabTests.length + ' available';
+    document.getElementById('math-count').textContent  = mathTests.length  + ' available';
+
+    renderGrid('vocab-grid', vocabTests, 'vocab');
+    renderGrid('math-grid',  mathTests,  'math');
+
     await loadHistory();
-  } catch (e) { console.error(e); }
+  } catch(e) { console.error(e); }
 }
 
-/* ── Vocabulary section ───────────────────────────────── */
-function renderVocab(tests) {
-  const grid = document.getElementById('vocab-grid');
-  if (!tests.length) { grid.innerHTML = '<p class="text-muted">No vocabulary tests available yet.</p>'; return; }
-  grid.innerHTML = tests.map(test => renderTestCard(test, '📚')).join('');
+function renderGrid(gridId, tests, type) {
+  const grid = document.getElementById(gridId);
+  if (!tests.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No tests available yet.</div></div>';
+    return;
+  }
+  grid.innerHTML = tests.map(t => renderCard(t, type)).join('');
 }
 
-/* ── Math section ─────────────────────────────────────── */
-function renderMath(tests) {
-  const grid = document.getElementById('math-grid');
-  if (!tests.length) { grid.innerHTML = '<p class="text-muted">No math tests available yet.</p>'; return; }
-  grid.innerHTML = tests.map(test => renderTestCard(test, '🧮')).join('');
-}
+function renderCard(t, type) {
+  const done = t.lastAttempt?.status === 'submitted';
+  const accuracy = done ? t.lastAttempt.accuracy : 0;
+  const score = done ? t.lastAttempt.score : 0;
+  const total = t.question_count;
+  const mins = Math.round(t.duration_seconds / 60);
+  const lockChip = t.has_access_code
+    ? `<span class="chip chip-orange">🔒 Code Required</span>`
+    : '';
+  const statusChip = done
+    ? `<span class="chip chip-green">✓ Completed</span>`
+    : `<span class="chip chip-blue">Available</span>`;
 
-/* ── Shared card renderer ─────────────────────────────── */
-function renderTestCard(test, icon) {
-  const done = test.lastAttempt?.status === 'submitted';
-  const score = done ? `${test.lastAttempt.score}/${test.question_count}` : '';
-  const accuracy = done ? `${test.lastAttempt.accuracy}%` : '';
-  const lockBadge = test.has_access_code ? '<span style="font-size:11px;background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 6px;font-weight:600">🔒 Code Required</span>' : '';
+  const barColor = type === 'vocab' ? 'blue' : 'green';
+
   return `
-    <div class="module-card" onclick="goToTest('${test.id}', ${!!test.has_access_code})">
-      <div class="module-icon">${icon}</div>
-      <div class="module-name">${test.title}</div>
-      <div style="margin-bottom:8px">${lockBadge}</div>
-      <div class="module-status" style="margin-bottom:12px">
-        ${done
-          ? '<span class="badge badge-green">Completed</span>'
-          : '<span class="badge badge-blue">Available</span>'}
+  <div class="test-card" onclick="goToTest('${t.id}')">
+    <div class="test-card-top">
+      <div class="test-card-icon-row">
+        <div class="test-icon-wrap ${type}">${type === 'vocab' ? '📚' : '🧮'}</div>
+        ${statusChip}
       </div>
-      ${done ? `<div style="font-size:13px;color:var(--gray-700)">Score: <strong>${score}</strong> &bull; ${accuracy}</div>` : ''}
-      <div style="margin-top:12px">
-        <button class="btn ${done ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="goToTest('${test.id}', ${!!test.has_access_code}); event.stopPropagation()">
-          ${done ? 'Retake / Review' : 'Start'}
-        </button>
+      <div class="test-card-title">${t.title}</div>
+      <div class="test-card-meta">
+        <span class="chip chip-gray">⏱ ${mins} min</span>
+        <span class="chip chip-gray">📝 ${total} questions</span>
+        ${lockChip}
       </div>
-    </div>`;
-}
-
-function goToConcept(file, n, title) {
-  location.href = `/student/concept.html?chapter=${file}&n=${n}&title=${title}`;
+      ${done ? `
+      <div class="test-score-bar">
+        <div class="test-score-label">
+          <span>Score: <strong>${score}/${total}</strong></span>
+          <span>${accuracy}%</span>
+        </div>
+        <div class="bar-bg"><div class="bar-fill ${barColor}" style="width:${accuracy}%"></div></div>
+      </div>` : ''}
+    </div>
+    <div class="test-card-bottom">
+      <button class="btn-start ${done ? 'ghost' : 'primary'}" onclick="goToTest('${t.id}'); event.stopPropagation()">
+        ${done ? '🔄 Retake / Review' : '▶ Start Test'}
+      </button>
+    </div>
+  </div>`;
 }
 
 function goToTest(testId) {
@@ -178,79 +409,81 @@ async function loadHistory() {
   const r = await fetch('/api/student/history').then(r => r.json());
   const attempts = r.attempts || [];
   if (!attempts.length) return;
-  
-  // Render History Table
-  document.getElementById('history-card').style.display = 'block';
-  document.getElementById('history-body').innerHTML = attempts.map(a => `
-    <tr>
-      <td>${a.title}</td>
-      <td><strong>${a.score ?? '—'}/${a.question_count || 40}</strong></td>
-      <td class="badge badge-green">${a.correct_count ?? '—'}</td>
-      <td style="color:var(--red)">${a.incorrect_count ?? '—'}</td>
-      <td style="color:var(--gray-500)">${a.unanswered_count ?? '—'}</td>
-      <td>${a.accuracy != null ? a.accuracy + '%' : '—'}</td>
-      <td>${a.time_used != null ? fmtTime(a.time_used) : '—'}</td>
-      <td>${fmtDate(a.submitted_at)}</td>
-      <td><a class="btn btn-ghost btn-sm" href="/student/results.html?attemptId=${a.id}">View</a></td>
-    </tr>`).join('');
 
-  // Render Progress Chart
-  document.getElementById('progress-card').style.display = 'block';
-  
-  // Calculate metrics
-  let totalScore = 0;
-  let maxScore = 0;
+  document.getElementById('bottom-section').style.display = 'grid';
+
+  // Hero stats
+  let totalScore = 0, maxScore = 0, totalAcc = 0;
   attempts.forEach(a => {
     totalScore += (a.score || 0);
+    totalAcc += (a.accuracy || 0);
     if ((a.score || 0) > maxScore) maxScore = a.score;
   });
   const avgScore = Math.round(totalScore / attempts.length);
-  
-  document.getElementById('prog-avg-score').textContent = avgScore;
+  const avgAcc   = Math.round(totalAcc / attempts.length);
+
+  document.getElementById('h-tests').textContent  = attempts.length;
+  document.getElementById('h-avg').textContent     = avgAcc + '%';
+  document.getElementById('h-best').textContent    = maxScore + '/40';
+  document.getElementById('prog-avg-score').textContent  = avgScore;
   document.getElementById('prog-best-score').textContent = maxScore;
   document.getElementById('prog-total-tests').textContent = attempts.length;
 
-  // Chart data (oldest to newest)
-  const chronoAttempts = [...attempts].reverse();
-  const labels = chronoAttempts.map((a, i) => `Attempt ${i+1}`);
-  const data = chronoAttempts.map(a => a.accuracy);
+  // History table
+  document.getElementById('history-body').innerHTML = attempts.map(a => `
+    <tr>
+      <td><strong>${a.title}</strong></td>
+      <td><strong>${a.score ?? '—'}/${a.question_count || 40}</strong></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="bar-bg" style="width:60px;flex-shrink:0"><div class="bar-fill blue" style="width:${a.accuracy||0}%"></div></div>
+          <span>${a.accuracy != null ? a.accuracy+'%' : '—'}</span>
+        </div>
+      </td>
+      <td>${a.time_used != null ? fmtTime(a.time_used) : '—'}</td>
+      <td>${fmtDate(a.submitted_at)}</td>
+      <td><a style="color:var(--blue);font-size:12px;font-weight:600;text-decoration:none" href="/student/results.html?attemptId=${a.id}">View →</a></td>
+    </tr>`).join('');
 
+  // Progress Chart
+  const chrono = [...attempts].reverse();
   const ctx = document.getElementById('studentProgressChart').getContext('2d');
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
+      labels: chrono.map((_, i) => `#${i+1}`),
       datasets: [{
-        label: 'Accuracy (%)',
-        data,
-        borderColor: '#0f9b6c',
-        backgroundColor: 'rgba(15,155,108,0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 5,
-        pointBackgroundColor: '#0f9b6c'
+        data: chrono.map(a => a.accuracy),
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79,70,229,0.08)',
+        fill: true, tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#4f46e5',
+        borderWidth: 2
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      scales: { y: { beginAtZero: true, max: 100 } },
-      plugins: { legend: { display: false } }
+      scales: {
+        y: { beginAtZero: true, max: 100, grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:11} } },
+        x: { grid:{ display:false }, ticks:{ font:{size:11} } }
+      },
+      plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: c => ` ${c.raw}% accuracy` } } }
     }
   });
 }
 
 function fmtTime(s) {
-  const m = Math.floor(s / 60), sec = s % 60;
+  const m = Math.floor(s/60), sec = s%60;
   return `${m}:${String(sec).padStart(2,'0')}`;
 }
 function fmtDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
-
 async function logout() {
-  await fetch('/api/auth/logout', { method: 'POST' });
-  location.href = '/';
+  await fetch('/api/auth/logout',{method:'POST'});
+  location.href='/';
 }
 
 init();
