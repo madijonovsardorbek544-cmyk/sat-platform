@@ -202,52 +202,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════ -->
-<!--  RESULT SCREEN                                -->
-<!-- ══════════════════════════════════════════════ -->
-<div id="result-screen">
-  <div class="result-card">
-    <div class="score-circle">
-      <div style="font-size:15px;font-weight:600;color:var(--gray-500);margin-bottom:8px">Test Complete</div>
-      <div class="score-big"><span id="res-score">—</span> <span style="font-size:28px;color:var(--gray-300)">/</span> <span style="font-size:28px;color:var(--gray-400)" id="res-total">40</span></div>
-      <div class="score-label" id="res-accuracy"></div>
-    </div>
 
-    <div class="result-grid">
-      <div class="result-stat">
-        <div class="val" style="color:var(--green)" id="res-correct">—</div>
-        <div class="lbl">Correct</div>
-      </div>
-      <div class="result-stat">
-        <div class="val" style="color:var(--red)" id="res-incorrect">—</div>
-        <div class="lbl">Incorrect</div>
-      </div>
-      <div class="result-stat">
-        <div class="val" style="color:var(--gray-500)" id="res-unanswered">—</div>
-        <div class="lbl">Unanswered</div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:20px;justify-content:center;font-size:14px;color:var(--gray-600);margin-bottom:24px">
-      <span>⏱ Time used: <strong id="res-time">—</strong></span>
-      <span>📅 <strong id="res-date">—</strong></span>
-    </div>
-
-    <!-- Breakdown by type -->
-    <div id="type-breakdown" style="margin-bottom:24px"></div>
-
-    <!-- Review -->
-    <div id="review-section" style="display:none">
-      <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;padding-top:16px;border-top:1px solid var(--gray-200)">📋 Answer Review</h3>
-      <div id="review-items"></div>
-    </div>
-
-    <div style="text-align:center;margin-top:24px;display:flex;gap:12px;justify-content:center">
-      <a href="/student/dashboard.html" class="btn btn-ghost">← Dashboard</a>
-      <button class="btn btn-primary" onclick="location.href='/student/dashboard.html'">Finish</button>
-    </div>
-  </div>
-</div>
 
 <script>
 const params = new URLSearchParams(location.search);
@@ -549,7 +504,7 @@ function renderQuestion(idx) {
   if (isMathTest && currentModule === 1) {
     nextBtn.textContent = idx === 19 ? 'Finish Module 1 →' : 'Next →';
   } else {
-    nextBtn.textContent = idx === questions.length - 1 ? 'Review' : 'Next →';
+    nextBtn.textContent = idx === questions.length - 1 ? 'Submit Test' : 'Next →';
   }
 
   updateAnsweredCount();
@@ -587,10 +542,17 @@ function navigate(dir) {
       }
     } else if (currentModule === 2) {
       if (next < 20) return; // Locked out of Module 1
-      if (next >= questions.length) return;
+      if (next >= questions.length) {
+        confirmSubmit();
+        return;
+      }
     }
   } else {
-    if (next < 0 || next >= questions.length) return;
+    if (next < 0) return;
+    if (next >= questions.length) {
+      confirmSubmit();
+      return;
+    }
   }
   renderQuestion(next);
 }
@@ -686,6 +648,7 @@ async function autoSubmit() {
 async function submitTest() {
   clearInterval(timerInterval);
   document.getElementById('test-screen').style.display = 'none';
+  document.getElementById('loading-screen').style.display = 'flex';
 
   try {
     for (const [qid, ans] of Object.entries(answers)) {
@@ -698,91 +661,13 @@ async function submitTest() {
       location.href = '/student/dashboard.html';
       return;
     }
-    showResults(d.result);
+    location.href = `/student/results.html?attemptId=${attemptId}`;
   } catch(e) {
     alert('Network error during submission. Please contact your teacher.');
     location.href = '/student/dashboard.html';
   }
 }
 
-// ── Results ───────────────────────────────────────────────
-function showResults(result) {
-  document.getElementById('result-screen').style.display = 'block';
-  document.getElementById('res-score').textContent = result.correct;
-  document.getElementById('res-total').textContent = result.total;
-  document.getElementById('res-accuracy').textContent = `Accuracy: ${result.accuracy}%`;
-  document.getElementById('res-correct').textContent = result.correct;
-  document.getElementById('res-incorrect').textContent = result.incorrect;
-  document.getElementById('res-unanswered').textContent = result.unanswered;
-  document.getElementById('res-time').textContent = fmtTime(result.timeUsed);
-  document.getElementById('res-date').textContent = new Date(result.submittedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
-
-  const tb = result.questionTypeBreakdown || {};
-  const typeNames = {
-    'definition': 'Definitions',
-    'isolated-word': 'Word Knowledge',
-    'passage-in-context': 'Passage in Context',
-    'math-multiple-choice': 'Math (Multiple Choice)',
-    'math-grid-in': 'Math (Answer-Box / Grid-In)'
-  };
-  let tbHtml = '<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:600;color:var(--gray-500);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Breakdown by Type</div>';
-  for (const [type, counts] of Object.entries(tb)) {
-    const total = (counts.correct||0) + (counts.incorrect||0) + (counts.unanswered||0);
-    const pct = total > 0 ? Math.round(counts.correct/total*100) : 0;
-    tbHtml += `<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-        <span>${typeNames[type]||type}</span><span><strong>${counts.correct||0}/${total}</strong> (${pct}%)</span>
-      </div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
-    </div>`;
-  }
-  tbHtml += '</div>';
-  document.getElementById('type-breakdown').innerHTML = tbHtml;
-
-  // Review
-  if (result.review) {
-    document.getElementById('review-section').style.display = 'block';
-    const letters = ['A','B','C','D'];
-    document.getElementById('review-items').innerHTML = result.review.map((item, i) => {
-      const status = item.is_correct === 1 ? 'correct' : item.selected_answer ? 'incorrect' : 'unanswered';
-      const icon = status === 'correct' ? '✓' : status === 'incorrect' ? '✗' : '—';
-      const badgeCls = status === 'correct' ? 'badge-green' : status === 'incorrect' ? 'badge-red' : 'badge-gray';
-
-      const hasOpts = item.options && item.options.length > 0;
-      let userAnsDisplay = '—';
-      if (item.selected_answer) {
-        if (hasOpts && letters.includes(item.selected_answer)) {
-          userAnsDisplay = `${item.selected_answer} (${item.options[letters.indexOf(item.selected_answer)]})`;
-        } else {
-          userAnsDisplay = item.selected_answer;
-        }
-      }
-
-      let correctAnsDisplay = item.correct_answer;
-      if (hasOpts && letters.includes(item.correct_answer)) {
-        correctAnsDisplay = `${item.correct_answer} (${item.options[letters.indexOf(item.correct_answer)]})`;
-      }
-
-      return `<div class="review-item ${status}">
-        <div class="review-header">
-          <span class="review-word">${item.word || ('Question ' + (i+1))}</span>
-          <span class="badge ${badgeCls}">${icon} ${status.charAt(0).toUpperCase()+status.slice(1)}</span>
-        </div>
-        ${item.context ? `<div style="font-size:13px;color:var(--gray-600);margin-bottom:8px;font-style:italic">${item.context}</div>` : ''}
-        <div class="review-q">${item.question}</div>
-        <div class="review-answers">
-          <span>Your answer: <strong style="color:${status==='correct'?'var(--green)':'var(--red)'}">${userAnsDisplay}</strong></span>
-          <span style="margin-left: 12px;">Correct: <strong style="color:var(--green)">${correctAnsDisplay}</strong></span>
-        </div>
-        ${item.explanation ? `<div class="review-explanation">💡 ${item.explanation}</div>` : ''}
-      </div>`;
-    }).join('');
-
-    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
-  }
-
-  exitFullscreen();
-}
 
 // ── Integrity ─────────────────────────────────────────────
 function setupIntegrityListeners() {
