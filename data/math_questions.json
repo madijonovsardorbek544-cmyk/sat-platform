@@ -1,0 +1,712 @@
+[
+  {
+    "id": "math-diag-q001",
+    "word": "Exponents & Radicals",
+    "question": "If 3^{x−1} = 81, what is the value of x?",
+    "context": null,
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "correct_answer": "C",
+    "explanation": "Since 81 = 3^4, we have 3^{x−1} = 3^4. Equating exponents: x − 1 = 4, so x = 5.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Exponents & Radicals"
+  },
+  {
+    "id": "math-diag-q002",
+    "word": "Functions",
+    "question": "The function f is defined by f(x) = 3x^2 − 2x + 1. What is the value of f(−2)?",
+    "context": null,
+    "options": [
+      "−7",
+      "9",
+      "11",
+      "17"
+    ],
+    "correct_answer": "D",
+    "explanation": "Substitute x = −2: f(−2) = 3(−2)^2 − 2(−2) + 1 = 3(4) + 4 + 1 = 12 + 4 + 1 = 17.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Functions"
+  },
+  {
+    "id": "math-diag-q003",
+    "word": "Other Types of Equation Questions",
+    "question": "In the equation ax + 8 = 3x − 5, a is a constant. If the equation has no solution, what is the value of a?",
+    "context": null,
+    "options": [],
+    "correct_answer": "3",
+    "explanation": "A linear equation ax + c = bx + d has no solution if and only if the coefficients of x are equal (a = 3) and the constants are unequal (8 ≠ −5). Thus, a = 3.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 1,
+    "topic": "Other Types of Equation Questions"
+  },
+  {
+    "id": "math-diag-q004",
+    "word": "Exponential vs. Linear Growth",
+    "question": "An investment of $2,000 earns 5% interest, compounded annually. Which function gives the value V, in dollars, of the investment after t years?",
+    "context": null,
+    "options": [
+      "V = 2000(1.05)^t",
+      "V = 2000 + 100t",
+      "V = 2000(0.05)^t",
+      "V = 2000(1.5)^t"
+    ],
+    "correct_answer": "A",
+    "explanation": "The formula for compound interest compounded annually is V = P(1 + r)^t. With P = 2000 and r = 0.05, V = 2000(1 + 0.05)^t = 2000(1.05)^t.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Exponential vs. Linear Growth"
+  },
+  {
+    "id": "math-diag-q005",
+    "word": "Word Problems",
+    "question": "Malika has $60 to spend. She wants to buy one calculator for $12 and as many notebooks as possible at $4 each. What is the maximum number of notebooks she can buy?",
+    "context": null,
+    "options": [
+      "10",
+      "11",
+      "12",
+      "15"
+    ],
+    "correct_answer": "C",
+    "explanation": "After buying the calculator for $12, Malika has 60 − 12 = $48 remaining. At $4 per notebook, 48 / 4 = 12 notebooks.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Word Problems"
+  },
+  {
+    "id": "math-diag-q006",
+    "word": "Interpreting Linear Equations & Models",
+    "question": "A candle is 24 centimeters tall when lit and burns at a constant rate. After 5 hours, its height is 16.5 centimeters. Which equation gives the height h, in centimeters, t hours after it is lit?",
+    "context": null,
+    "options": [
+      "h = 24 + 1.5t",
+      "h = 16.5 − 1.5t",
+      "h = 24 − 7.5t",
+      "h = 24 − 1.5t"
+    ],
+    "correct_answer": "D",
+    "explanation": "The initial height is 24 cm. Over 5 hours it decreased by 24 − 16.5 = 7.5 cm, so the burning rate is 7.5 / 5 = 1.5 cm/hr. The equation is h = 24 − 1.5t.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Interpreting Linear Equations & Models"
+  },
+  {
+    "id": "math-diag-q007",
+    "word": "Expressions",
+    "question": "Which expression is equivalent to (x^2 − 9)/(x^2 + 5x + 6), where x ≠ −2 and x ≠ −3?",
+    "context": null,
+    "options": [
+      "(x + 3)/(x + 2)",
+      "(x − 3)/(x + 2)",
+      "(x − 3)/(x + 3)",
+      "−9/(5x + 6)"
+    ],
+    "correct_answer": "B",
+    "explanation": "Factor both numerator and denominator: (x^2 − 9) = (x − 3)(x + 3) and (x^2 + 5x + 6) = (x + 2)(x + 3). Canceling (x + 3) gives (x − 3)/(x + 2).",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Expressions"
+  },
+  {
+    "id": "math-diag-q008",
+    "word": "Percent",
+    "question": "A jacket has an original price of $80. It is discounted by 25%, and then the sale price is discounted by an additional 10%. What is the final price, in dollars?",
+    "context": null,
+    "options": [],
+    "correct_answer": "54",
+    "explanation": "First discount: 80 × (1 − 0.25) = 80 × 0.75 = $60. Second discount: 60 × (1 − 0.10) = 60 × 0.90 = $54.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 1,
+    "topic": "Percent"
+  },
+  {
+    "id": "math-diag-q009",
+    "word": "Exponents & Radicals",
+    "question": "Which expression is equivalent to ((x^3 * y^2)^4)/(x^5 * y), where x > 0 and y > 0?",
+    "context": null,
+    "options": [
+      "x^7 * y^7",
+      "x^7 * y^8",
+      "x^8 * y^7",
+      "x^17 * y^9"
+    ],
+    "correct_answer": "A",
+    "explanation": "((x^3 * y^2)^4) = x^12 * y^8. Dividing by x^5 * y yields x^{12−5} * y^{8−1} = x^7 * y^7.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Exponents & Radicals"
+  },
+  {
+    "id": "math-diag-q010",
+    "word": "Rates, Conversions, & Ratios",
+    "question": "A car travels at a constant speed of 72 kilometers per hour. What is the car’s speed, in meters per second? (1 kilometer = 1,000 meters)",
+    "context": null,
+    "options": [],
+    "correct_answer": "20",
+    "explanation": "72 km/h = (72 × 1,000 meters) / (3,600 seconds) = 72,000 / 3,600 = 20 m/s.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 1,
+    "topic": "Rates, Conversions, & Ratios"
+  },
+  {
+    "id": "math-diag-q011",
+    "word": "Other Types of Equation Questions",
+    "question": "The equation (2x + a)(x − 3) = 2x^2 − 3x − 9 is true for all values of x, where a is a constant. What is the value of a?",
+    "context": null,
+    "options": [
+      "−3",
+      "3",
+      "6",
+      "9"
+    ],
+    "correct_answer": "B",
+    "explanation": "Expanding the left side: 2x^2 − 6x + ax − 3a = 2x^2 + (a − 6)x − 3a. Equating constant terms: −3a = −9 → a = 3. Checking linear terms: 3 − 6 = −3, which matches.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Other Types of Equation Questions"
+  },
+  {
+    "id": "math-diag-q012",
+    "word": "Lines & Linear Relationships",
+    "question": "In the xy-plane, the line 3x + 4y = 24 has x-intercept (a, 0) and y-intercept (0, b). What is the value of a + b?",
+    "context": null,
+    "options": [],
+    "correct_answer": "14",
+    "explanation": "To find x-intercept (y = 0): 3a = 24 → a = 8. To find y-intercept (x = 0): 4b = 24 → b = 6. Thus, a + b = 8 + 6 = 14.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 1,
+    "topic": "Lines & Linear Relationships"
+  },
+  {
+    "id": "math-diag-q013",
+    "word": "Word Problems",
+    "question": "A student’s mean score on her first 5 quizzes was 76. After the 6th quiz, the mean of all 6 scores was 79. What was her score on the 6th quiz?",
+    "context": null,
+    "options": [
+      "79",
+      "82",
+      "91",
+      "94"
+    ],
+    "correct_answer": "D",
+    "explanation": "Sum of first 5 quizzes = 5 × 76 = 380. Sum of all 6 quizzes = 6 × 79 = 474. Score on 6th quiz = 474 − 380 = 94.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Word Problems"
+  },
+  {
+    "id": "math-diag-q014",
+    "word": "Functions",
+    "question": "The function h(x) = x^2 + bx − 10, where b is a constant, has a zero at x = 5. What is the value of b?",
+    "context": null,
+    "options": [
+      "−3",
+      "−1",
+      "1",
+      "3"
+    ],
+    "correct_answer": "A",
+    "explanation": "Since x = 5 is a zero, h(5) = 0: (5)^2 + 5b − 10 = 0 → 25 + 5b − 10 = 0 → 15 + 5b = 0 → 5b = −15 → b = −3.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Functions"
+  },
+  {
+    "id": "math-diag-q015",
+    "word": "Quadratic Equations",
+    "question": "The solutions to x^2 + 6x − 4 = 0 are x = −3 ± √k. What is the value of k?",
+    "context": null,
+    "options": [],
+    "correct_answer": "13",
+    "explanation": "Complete the square: (x + 3)^2 − 9 − 4 = 0 → (x + 3)^2 = 13 → x + 3 = ±√13 → x = −3 ± √13. Thus, k = 13.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 1,
+    "topic": "Quadratic Equations"
+  },
+  {
+    "id": "math-diag-q016",
+    "word": "Manipulating & Solving Equations",
+    "question": "The formula S = (n(a + l))/2 gives the sum S of an arithmetic sequence with n terms, first term a, and last term l. Which equation expresses l in terms of S, n, and a?",
+    "context": null,
+    "options": [
+      "l = 2S/n + a",
+      "l = (2S − a)/n",
+      "l = S/(2n) − a",
+      "l = 2S/n − a"
+    ],
+    "correct_answer": "D",
+    "explanation": "Multiply both sides by 2: 2S = n(a + l). Divide by n: 2S/n = a + l. Subtract a: l = 2S/n − a.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Manipulating & Solving Equations"
+  },
+  {
+    "id": "math-diag-q017",
+    "word": "Interpreting Linear Equations & Models",
+    "question": "A ride-share company charges a fixed booking fee plus a constant charge per kilometer. A 4-kilometer trip costs $14 and a 10-kilometer trip costs $26. How much, in dollars, does a 15-kilometer trip cost?",
+    "context": null,
+    "options": [],
+    "correct_answer": "36",
+    "explanation": "Charge per km = (26 − 14) / (10 − 4) = 12 / 6 = $2/km. Fixed fee = 14 − (4 × 2) = $6. Cost for 15 km = 6 + 15 × 2 = 6 + 30 = $36.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 1,
+    "topic": "Interpreting Linear Equations & Models"
+  },
+  {
+    "id": "math-diag-q018",
+    "word": "Systems of Equations",
+    "question": "If 3x + 2y = 19 and 2x + 3y = 16, what is the value of x + y?",
+    "context": null,
+    "options": [
+      "7",
+      "16",
+      "19",
+      "35"
+    ],
+    "correct_answer": "A",
+    "explanation": "Add the two equations directly: (3x + 2y) + (2x + 3y) = 19 + 16 → 5x + 5y = 35. Divide by 5: x + y = 7.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Systems of Equations"
+  },
+  {
+    "id": "math-diag-q019",
+    "word": "Expressions",
+    "question": "Which expression is equivalent to 2/(x − 1) + 3/(x + 2), where x ≠ 1 and x ≠ −2?",
+    "context": null,
+    "options": [
+      "5/(2x + 1)",
+      "(5x + 7)/((x − 1)(x + 2))",
+      "(5x + 1)/((x − 1)(x + 2))",
+      "6/((x − 1)(x + 2))"
+    ],
+    "correct_answer": "C",
+    "explanation": "Find common denominator: [2(x + 2) + 3(x − 1)] / [(x − 1)(x + 2)] = [2x + 4 + 3x − 3] / [(x − 1)(x + 2)] = (5x + 1)/((x − 1)(x + 2)).",
+    "difficulty": "hard",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Expressions"
+  },
+  {
+    "id": "math-diag-q020",
+    "word": "Exponential vs. Linear Growth",
+    "question": "Account A starts with $200 and gains $40 each month. Account B starts with $100 and doubles each month. After how many whole months does Account B first have a greater balance than Account A?",
+    "context": null,
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "correct_answer": "B",
+    "explanation": "Month 0: A = $200, B = $100.\nMonth 1: A = 200 + 40 = $240; B = 100 × 2 = $200 (A > B).\nMonth 2: A = 240 + 40 = $280; B = 200 × 2 = $400 (B > A).\nSo after 2 whole months Account B first has a greater balance.",
+    "difficulty": "hard",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 1,
+    "topic": "Exponential vs. Linear Growth"
+  },
+  {
+    "id": "math-diag-q021",
+    "word": "Rates, Conversions, & Ratios",
+    "question": "A plant is 12 centimeters tall at week 2 and 33 centimeters tall at week 9. What is the plant’s average rate of growth, in centimeters per week, from week 2 to week 9?",
+    "context": null,
+    "options": [
+      "3.0",
+      "3.7",
+      "6.0",
+      "10.5"
+    ],
+    "correct_answer": "A",
+    "explanation": "Average rate of growth = (33 − 12) / (9 − 2) = 21 / 7 = 3.0 cm/week.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Rates, Conversions, & Ratios"
+  },
+  {
+    "id": "math-diag-q022",
+    "word": "Percent",
+    "question": "The population of a town increased from 12,500 to 15,000. By what percent did the population increase?",
+    "context": null,
+    "options": [
+      "16.7%",
+      "20%",
+      "25%",
+      "120%"
+    ],
+    "correct_answer": "B",
+    "explanation": "Increase = 15,000 − 12,500 = 2,500. Percentage increase = (2,500 / 12,500) × 100% = 0.20 × 100% = 20%.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Percent"
+  },
+  {
+    "id": "math-diag-q023",
+    "word": "Interpreting Linear Equations & Models",
+    "question": "A gym charges a one-time joining fee plus a fixed monthly fee. The total cost, T dollars, for m months is T = 35 + 28m. What does 28 represent in this context?",
+    "context": null,
+    "options": [
+      "The monthly fee, in dollars",
+      "The one-time joining fee, in dollars",
+      "The number of months",
+      "The total cost, in dollars, of the first month"
+    ],
+    "correct_answer": "A",
+    "explanation": "In T = 35 + 28m, m is the number of months, 35 is the fixed one-time fee (y-intercept), and 28 is the rate charged per month (the monthly fee).",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Interpreting Linear Equations & Models"
+  },
+  {
+    "id": "math-diag-q024",
+    "word": "Expressions",
+    "question": "The expression (3x^2 + 5x − 2) − (x^2 − 4x + 6) is equivalent to which of the following?",
+    "context": null,
+    "options": [
+      "2x^2 + x − 8",
+      "2x^2 + 9x + 4",
+      "2x^2 + 9x − 8",
+      "4x^2 + x + 4"
+    ],
+    "correct_answer": "C",
+    "explanation": "Distribute the negative sign: 3x^2 + 5x − 2 − x^2 + 4x − 6 = (3x^2 − x^2) + (5x + 4x) + (−2 − 6) = 2x^2 + 9x − 8.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Expressions"
+  },
+  {
+    "id": "math-diag-q025",
+    "word": "Lines & Linear Relationships",
+    "question": "A line in the xy-plane passes through the points (−2, 5) and (4, −7). What is the slope of the line?",
+    "context": null,
+    "options": [
+      "−2",
+      "−1/2",
+      "1/2",
+      "2"
+    ],
+    "correct_answer": "A",
+    "explanation": "Slope m = (y2 − y1) / (x2 − x1) = (−7 − 5) / (4 − (−2)) = −12 / 6 = −2.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Lines & Linear Relationships"
+  },
+  {
+    "id": "math-diag-q026",
+    "word": "Rates, Conversions, & Ratios",
+    "question": "The ratio of boys to girls in a class is 5 to 7. If the class has 36 students, how many are girls?",
+    "context": null,
+    "options": [
+      "12",
+      "15",
+      "18",
+      "21"
+    ],
+    "correct_answer": "D",
+    "explanation": "Total parts = 5 + 7 = 12 parts. Each part = 36 / 12 = 3 students. Number of girls = 7 × 3 = 21 girls.",
+    "difficulty": "easy",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Rates, Conversions, & Ratios"
+  },
+  {
+    "id": "math-diag-q027",
+    "word": "Exponents & Radicals",
+    "question": "If √72 + √50 = k√2, what is the value of k?",
+    "context": null,
+    "options": [],
+    "correct_answer": "11",
+    "explanation": "Simplify radicals: √72 = √(36 × 2) = 6√2, and √50 = √(25 × 2) = 5√2. Therefore, 6√2 + 5√2 = 11√2. Thus k = 11.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 2,
+    "topic": "Exponents & Radicals"
+  },
+  {
+    "id": "math-diag-q028",
+    "word": "Functions",
+    "question": "The functions f and g are defined by f(x) = 2x + 3 and g(x) = x^2 − 1. What is the value of f(g(3))?",
+    "context": null,
+    "options": [
+      "17",
+      "19",
+      "72",
+      "80"
+    ],
+    "correct_answer": "B",
+    "explanation": "First evaluate the inner function: g(3) = 3^2 − 1 = 9 − 1 = 8. Now evaluate f(8): f(8) = 2(8) + 3 = 16 + 3 = 19.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Functions"
+  },
+  {
+    "id": "math-diag-q029",
+    "word": "Word Problems",
+    "question": "Aziz is 7 years younger than twice Dilnoza’s age. Aziz is 27 years old. How old will Dilnoza be in 4 years?",
+    "context": null,
+    "options": [
+      "10",
+      "14",
+      "17",
+      "21"
+    ],
+    "correct_answer": "D",
+    "explanation": "Let D = Dilnoza's current age. 2D − 7 = 27 → 2D = 34 → D = 17. In 4 years, Dilnoza will be 17 + 4 = 21.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Word Problems"
+  },
+  {
+    "id": "math-diag-q030",
+    "word": "Exponential vs. Linear Growth",
+    "question": "The mass, in milligrams, of a radioactive sample after t years is modeled by M(t) = 96(1/2)^{t/6}. What is the mass of the sample, in milligrams, after 18 years?",
+    "context": null,
+    "options": [],
+    "correct_answer": "12",
+    "explanation": "Substitute t = 18: M(18) = 96(1/2)^{18/6} = 96(1/2)^3 = 96 × (1/8) = 12.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 2,
+    "topic": "Exponential vs. Linear Growth"
+  },
+  {
+    "id": "math-diag-q031",
+    "word": "Manipulating & Solving Equations",
+    "question": "If (3x + 1)/(x − 2) = 4, what is the value of x?",
+    "context": null,
+    "options": [
+      "−7",
+      "3",
+      "9",
+      "11"
+    ],
+    "correct_answer": "C",
+    "explanation": "Multiply both sides by x − 2: 3x + 1 = 4(x − 2) → 3x + 1 = 4x − 8 → 1 + 8 = 4x − 3x → x = 9.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Manipulating & Solving Equations"
+  },
+  {
+    "id": "math-diag-q032",
+    "word": "Lines & Linear Relationships",
+    "question": "Line ℓ has equation 4x + 2y = 10. Line m is perpendicular to ℓ and passes through the point (0, 3). Which is an equation of line m?",
+    "context": null,
+    "options": [
+      "y = −2x + 3",
+      "y = −(1/2)x + 3",
+      "y = 2x + 3",
+      "y = (1/2)x + 3"
+    ],
+    "correct_answer": "D",
+    "explanation": "Rewrite ℓ in slope-intercept form: 2y = −4x + 10 → y = −2x + 5. The slope of ℓ is −2. The slope of perpendicular line m is the negative reciprocal: −1/(−2) = 1/2. With y-intercept (0, 3), the equation is y = (1/2)x + 3.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Lines & Linear Relationships"
+  },
+  {
+    "id": "math-diag-q033",
+    "word": "Systems of Equations",
+    "question": "A theater sold 200 tickets. Adult tickets cost $12 each and child tickets cost $7 each. Total ticket sales were $1,850. How many adult tickets were sold?",
+    "context": null,
+    "options": [
+      "80",
+      "90",
+      "100",
+      "110"
+    ],
+    "correct_answer": "B",
+    "explanation": "Let A = adult tickets, C = child tickets. A + C = 200 → C = 200 − A. 12A + 7C = 1850 → 12A + 7(200 − A) = 1850 → 12A + 1400 − 7A = 1850 → 5A = 450 → A = 90.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Systems of Equations"
+  },
+  {
+    "id": "math-diag-q034",
+    "word": "Percent",
+    "question": "After a 20% increase, the price of a laptop is $540. What was the price before the increase?",
+    "context": null,
+    "options": [
+      "$450",
+      "$486",
+      "$648",
+      "$675"
+    ],
+    "correct_answer": "A",
+    "explanation": "Let P be original price. P × (1 + 0.20) = 540 → 1.20P = 540 → P = 540 / 1.2 = $450.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Percent"
+  },
+  {
+    "id": "math-diag-q035",
+    "word": "Quadratic Equations",
+    "question": "What is the sum of the solutions to the equation 2x^2 − 12x + 7 = 0?",
+    "context": null,
+    "options": [
+      "−6",
+      "6",
+      "7",
+      "12"
+    ],
+    "correct_answer": "B",
+    "explanation": "For any quadratic equation ax^2 + bx + c = 0, the sum of the solutions is given by −b/a. Here a = 2 and b = −12, so the sum is −(−12) / 2 = 12 / 2 = 6.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Quadratic Equations"
+  },
+  {
+    "id": "math-diag-q036",
+    "word": "Other Types of Equation Questions",
+    "question": "What is the sum of all solutions to the equation |2x − 6| = 10?",
+    "context": null,
+    "options": [
+      "0",
+      "3",
+      "6",
+      "8"
+    ],
+    "correct_answer": "C",
+    "explanation": "Case 1: 2x − 6 = 10 → 2x = 16 → x = 8.\nCase 2: 2x − 6 = −10 → 2x = −4 → x = −2.\nSum of solutions = 8 + (−2) = 6.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Other Types of Equation Questions"
+  },
+  {
+    "id": "math-diag-q037",
+    "word": "Quadratic Equations",
+    "question": "A ball is thrown upward from a platform. Its height above the ground, in feet, t seconds after it is thrown is h(t) = −16t^2 + 64t + 80. After how many seconds does the ball hit the ground?",
+    "context": null,
+    "options": [],
+    "correct_answer": "5",
+    "explanation": "The ball hits the ground when h(t) = 0: −16t^2 + 64t + 80 = 0. Divide by −16: t^2 − 4t − 5 = 0 → (t − 5)(t + 1) = 0. Since time t ≥ 0, t = 5 seconds.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 2,
+    "topic": "Quadratic Equations"
+  },
+  {
+    "id": "math-diag-q038",
+    "word": "Functions",
+    "question": "The function g is defined by g(x) = (x + 3)/(x^2 − 5x + 6). For which of the following values of x is g(x) undefined?",
+    "context": null,
+    "options": [
+      "−3",
+      "0",
+      "3",
+      "6"
+    ],
+    "correct_answer": "C",
+    "explanation": "The function is undefined where the denominator is 0: x^2 − 5x + 6 = 0 → (x − 2)(x − 3) = 0, so x = 2 or x = 3. Among the choices, 3 is undefined.",
+    "difficulty": "medium",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Functions"
+  },
+  {
+    "id": "math-diag-q039",
+    "word": "Manipulating & Solving Equations",
+    "question": "Which of the following gives all solutions to √(x + 7) = x − 5?",
+    "context": null,
+    "options": [
+      "x = 2 only",
+      "Both x = 2 and x = 9",
+      "There are no solutions",
+      "x = 9 only"
+    ],
+    "correct_answer": "D",
+    "explanation": "Square both sides: x + 7 = (x − 5)^2 = x^2 − 10x + 25 → x^2 − 11x + 18 = 0 → (x − 9)(x − 2) = 0, so x = 9 or x = 2.\nCheck extraneous solutions: For x = 2: √(2 + 7) = 3, but 2 − 5 = −3 (3 ≠ −3, so x = 2 is extraneous).\nFor x = 9: √(9 + 7) = 4, and 9 − 5 = 4 (valid). Thus x = 9 only.",
+    "difficulty": "hard",
+    "category": "math",
+    "question_type": "math-multiple-choice",
+    "module": 2,
+    "topic": "Manipulating & Solving Equations"
+  },
+  {
+    "id": "math-diag-q040",
+    "word": "Systems of Equations",
+    "question": "The system 3x + 5y = 20 and kx + 15y = 60 has infinitely many solutions, where k is a constant. What is the value of k?",
+    "context": null,
+    "options": [],
+    "correct_answer": "9",
+    "explanation": "For infinitely many solutions, the two equations must be proportional multiples of each other. Comparing y-coefficients: 15 / 5 = 3. Comparing constants: 60 / 20 = 3. Thus k / 3 = 3 → k = 9.",
+    "difficulty": "hard",
+    "category": "math",
+    "question_type": "math-grid-in",
+    "module": 2,
+    "topic": "Systems of Equations"
+  }
+]

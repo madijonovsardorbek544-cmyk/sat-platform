@@ -89,6 +89,70 @@ async function seed() {
     console.log('✅  Default vocabulary test questions linked successfully');
   }
 
+  // ─── Math Questions ─────────────────────────────────────────────
+  const mathQuestionsPath = path.join(__dirname, '..', 'data', 'math_questions.json');
+  const mathQuestions = JSON.parse(fs.readFileSync(mathQuestionsPath, 'utf8'));
+
+  const insertMathQ = db.prepare(`
+    INSERT OR IGNORE INTO questions
+      (id, word, question, context, options, correct_answer, explanation, difficulty, category, question_type, is_active)
+    VALUES
+      (@id, @word, @question, @context, @options, @correct_answer, @explanation, @difficulty, @category, @question_type, 1)
+  `);
+
+  const insertMathMany = db.transaction((qs) => {
+    let count = 0;
+    for (const q of qs) {
+      const changes = insertMathQ.run({
+        id: q.id,
+        word: q.word,
+        question: q.question,
+        context: q.context || null,
+        options: JSON.stringify(q.options),
+        correct_answer: q.correct_answer,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        category: q.category,
+        question_type: q.question_type,
+      });
+      if (changes.changes > 0) count++;
+    }
+    return count;
+  });
+
+  const mathInserted = insertMathMany(mathQuestions);
+  console.log(`✅  ${mathInserted} math questions inserted (${mathQuestions.length - mathInserted} already existed)`);
+
+  // ─── Math Diagnostic Test ────────────────────────────────────────
+  const mathTestId = 'test-math-diagnostic-001';
+  const existingMathTest = db.prepare('SELECT id FROM tests WHERE id = ?').get(mathTestId);
+
+  if (!existingMathTest) {
+    db.prepare(`
+      INSERT INTO tests (id, title, test_type, duration_seconds, question_count, status, show_explanations, access_code, published_at)
+      VALUES (?, 'SAT Math Diagnostic — Form A', 'math', 3600, 40, 'published', 1, '1891', strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    `).run(mathTestId);
+    console.log('✅  Math diagnostic test created (access code: 1891)');
+  } else {
+    db.prepare(`UPDATE tests SET access_code = '1891' WHERE id = ?`).run(mathTestId);
+    console.log('ℹ️   Math diagnostic test already exists — access code ensured');
+  }
+
+  // Clear and re-link math questions to ensure exact 40 questions from Form A
+  db.prepare('DELETE FROM test_questions WHERE test_id = ?').run(mathTestId);
+  const insertMathTQ = db.prepare(`
+    INSERT INTO test_questions (id, test_id, question_id, section, question_order)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  const insertMathTestQuestions = db.transaction((qs) => {
+    qs.forEach((q, idx) => {
+      const section = q.module === 1 ? 'math-module-1' : 'math-module-2';
+      insertMathTQ.run(uuidv4(), mathTestId, q.id, section, idx + 1);
+    });
+  });
+  insertMathTestQuestions(mathQuestions);
+  console.log(`✅  Linked ${mathQuestions.length} math questions to ${mathTestId}`);
+
   console.log('\n🎉 Seed complete!');
   console.log(`\nTeacher login:\n  Email:    ${teacherEmail}\n  Password: ${teacherPassword}\n`);
   process.exit(0);

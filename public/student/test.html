@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vocabulary Test — SAT Platform</title>
+  <title>SAT Diagnostic Test — SAT Platform</title>
   <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
   <style>
     body { background: var(--gray-50); }
 
@@ -74,9 +81,47 @@
     .review-q    { font-size:14px; color:var(--gray-700); margin-bottom:8px; }
     .review-answers { font-size:13px; display:flex; gap:16px; }
     .review-explanation { font-size:13px; color:var(--gray-600); background:var(--gray-50); border-radius:7px; padding:10px 12px; margin-top:10px; }
+    /* ── Modal Overlays ── */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(17,24,39,0.7); backdrop-filter:blur(6px); z-index:200; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.2s ease-out; }
+    .modal-box { background:#fff; border-radius:16px; padding:40px; max-width:440px; width:90%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); text-align:center; animation:scaleIn 0.2s ease-out; }
+    .modal-box h2 { font-size:24px; font-weight:800; margin-bottom:10px; color:var(--gray-900); }
+    .modal-box p  { font-size:15px; color:var(--gray-500); margin-bottom:24px; line-height:1.5; }
+    .code-input { width:100%; text-align:center; font-size:32px; font-weight:700; letter-spacing:12px; padding:16px; border:2px solid var(--gray-300); border-radius:12px; outline:none; margin-bottom:16px; font-family:var(--font); color:var(--gray-900); transition:border-color 0.2s, box-shadow 0.2s; background:var(--gray-50); text-transform:uppercase; }
+    .code-input:focus { border-color:var(--blue); box-shadow:0 0 0 4px var(--blue-light); background:#fff; }
+    .module-badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700; margin-bottom:16px; }
+    .module-badge.m1 { background:#dbeafe; color:#1d4ed8; }
+    .module-badge.m2 { background:#fef3c7; color:#92400e; }
   </style>
 </head>
 <body>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  ACCESS CODE MODAL                            -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="access-code-modal" class="modal-backdrop" style="display:none">
+  <div class="modal-box">
+    <div style="font-size:36px;margin-bottom:12px">🔒</div>
+    <h2>Access Code Required</h2>
+    <p>This test requires an access code from your teacher. Please enter it below to begin.</p>
+    <input type="text" class="code-input" id="access-code-input" maxlength="10" placeholder="- - - -" autocomplete="off" />
+    <div id="code-error" class="alert alert-error hidden" style="margin-bottom:12px;text-align:left"></div>
+    <button class="btn btn-primary" style="width:100%" id="btn-verify-code" onclick="verifyAccessCode()">Verify Code</button>
+    <div style="margin-top:12px"><a href="/student/dashboard.html" class="text-muted" style="font-size:13px">← Back to Dashboard</a></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  MODULE TRANSITION OVERLAY                    -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="module-transition" class="modal-backdrop" style="display:none">
+  <div class="modal-box">
+    <div style="font-size:40px;margin-bottom:12px">⏱</div>
+    <h2>Module 1 Complete</h2>
+    <p>Time for Module 1 has expired. Your answers have been saved automatically.</p>
+    <p style="margin-top:8px"><strong>Module 2 is now beginning.</strong> You have 30 minutes for the remaining 20 questions.</p>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="startModule2()">Begin Module 2 →</button>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════════ -->
 <!--  PRE-TEST SCREEN                              -->
@@ -95,7 +140,7 @@
     </div>
 
     <div class="instructions">
-      <ul>
+      <ul id="pre-instructions">
         <li>Complete the test independently.</li>
         <li>The test contains <strong>40 questions</strong> in three sections.</li>
         <li>Questions 1–10 assess vocabulary definitions.</li>
@@ -126,7 +171,7 @@
 <div id="test-screen">
   <div class="test-header">
     <div>
-      <div style="font-size:12px;color:var(--gray-500);font-weight:600">SAT VOCABULARY DIAGNOSTIC</div>
+      <div style="font-size:12px;color:var(--gray-500);font-weight:600" id="header-test-title">SAT VOCABULARY DIAGNOSTIC</div>
       <div class="progress-info"><strong id="q-progress">Question 1 of 40</strong></div>
     </div>
     <div class="timer" id="timer">45:00</div>
@@ -211,8 +256,18 @@ const attemptIdQuery = params.get('attemptId');
 if (!testId && !attemptIdQuery) location.href = '/student/dashboard.html';
 
 let questions = [], answers = {}, currentIdx = 0, attemptId = null;
-let timerInterval = null, secondsLeft = 0, isSaving = false;
-let sectionLabels = { 'definition': 'Section 1 — Definitions', 'isolated-word': 'Section 2 — Word Knowledge', 'passage-in-context': 'Section 3 — Passage in Context', 'math-multiple-choice': 'Math (Multiple Choice)', 'math-grid-in': 'Math (Grid-In)' };
+let timerInterval = null, secondsLeft = 0, moduleSecondsLeft = 0, isSaving = false;
+let isMathTest = false, currentModule = 1, module1Size = 20;
+let enteredAccessCode = '';
+let sectionLabels = {
+  'definition': 'Section 1 — Definitions',
+  'isolated-word': 'Section 2 — Word Knowledge',
+  'passage-in-context': 'Section 3 — Passage in Context',
+  'math-module-1': 'Module 1 — Questions 1 to 20',
+  'math-module-2': 'Module 2 — Questions 21 to 40',
+  'math-multiple-choice': 'Multiple Choice',
+  'math-grid-in': 'Student-Produced Response (Grid-In)'
+};
 
 // ── Init ─────────────────────────────────────────────────
 async function init() {
@@ -229,74 +284,218 @@ async function init() {
       const test = (dash.tests || []).find(t => t.id === testId);
       if (test) {
         document.getElementById('pre-title').textContent = test.title;
-        document.getElementById('pre-meta').textContent = `${test.question_count} questions • ${Math.round(test.duration_seconds/60)} minutes`;
+        const mins = Math.round(test.duration_seconds / 60);
+        document.getElementById('pre-meta').textContent = `${test.question_count} questions • ${mins} minutes`;
+        isMathTest = test.test_type === 'math';
+
+        if (isMathTest) {
+          const preInst = document.getElementById('pre-instructions');
+          if (preInst) {
+            preInst.innerHTML = `
+              <li><strong>Digital SAT Math Diagnostic Test (Form A)</strong></li>
+              <li>Two modules of 20 questions each (<strong>30 minutes per module</strong>).</li>
+              <li>Total time: <strong>60 minutes</strong>.</li>
+              <li><strong>Strict SAT Timing:</strong> Once time for Module 1 expires, Module 1 is locked and you cannot return to it.</li>
+              <li>Questions include <strong>multiple-choice</strong> and <strong>answer-box (grid-in)</strong> items.</li>
+              <li>A calculator is allowed. Do your work on scratch paper.</li>
+              <li>Answers are saved automatically as you work.</li>
+            `;
+          }
+        }
+
+        // Show access code modal if needed
+        if (test.has_access_code) {
+          document.getElementById('pre-test').style.display = 'none';
+          document.getElementById('access-code-modal').style.display = 'flex';
+          const codeInput = document.getElementById('access-code-input');
+          codeInput.focus();
+          codeInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') verifyAccessCode();
+          });
+          return;
+        }
       }
       if (dash.user?.student_id) document.getElementById('pre-student-id').textContent = 'ID: ' + dash.user.student_id;
     }
+    document.getElementById('pre-test').style.display = '';
   } catch(e) { console.error(e); }
 }
 
-// ── Start ─────────────────────────────────────────────────
+// ── Access Code Verification ──────────────────────────────
+async function verifyAccessCode() {
+  const btn = document.getElementById('btn-verify-code');
+  const input = document.getElementById('access-code-input');
+  const errEl = document.getElementById('code-error');
+  const code = input.value.trim();
+  if (!code) {
+    errEl.textContent = 'Please enter a code.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  
+  try {
+    const r = await fetch(`/api/student/test/${testId}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessCode: code, dryRun: true })
+    });
+    const d = await r.json();
+    btn.disabled = false;
+    btn.textContent = 'Verify Code';
+
+    if (r.status === 403 || !r.ok) {
+      errEl.textContent = d.error || 'Incorrect access code. Please try again.';
+      errEl.classList.remove('hidden');
+      input.value = '';
+      input.focus();
+      return;
+    }
+
+    enteredAccessCode = code;
+    document.getElementById('access-code-modal').style.display = 'none';
+    document.getElementById('pre-test').style.display = '';
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Verify Code';
+    errEl.textContent = 'Network error verifying code.';
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ── Start Test ────────────────────────────────────────────
 async function startTest() {
   const btn = document.getElementById('btn-start');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Starting…';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Starting…';
   try {
     let r;
     if (attemptIdQuery) {
       r = await fetch(`/api/student/attempt/${attemptIdQuery}/resume`, { method: 'POST' });
     } else {
-      r = await fetch(`/api/student/test/${testId}/start`, { method: 'POST' });
+      r = await fetch(`/api/student/test/${testId}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessCode: enteredAccessCode })
+      });
     }
     
     const d = await r.json();
-    if (!r.ok) { showPreError(d.error || 'Could not start test'); btn.disabled=false; btn.textContent='Start Test'; return; }
+    if (!r.ok) {
+      showPreError(d.error || 'Could not start test');
+      btn.disabled = false;
+      btn.textContent = 'Start Test';
+      return;
+    }
     attemptId = d.attemptId;
     questions = d.questions;
     secondsLeft = Math.max(0, Math.round((new Date(d.expiresAt) - Date.now()) / 1000));
+    isMathTest = d.testType === 'math' || questions.some(q => q.section && q.section.startsWith('math'));
 
-    // Initialize answers map
+    if (isMathTest) {
+      module1Size = 20;
+      currentModule = 1;
+      moduleSecondsLeft = Math.min(1800, secondsLeft);
+    } else {
+      moduleSecondsLeft = secondsLeft;
+    }
+
     for (const q of questions) answers[q.id] = null;
     
     if (d.resumed) {
       const ar = await fetch(`/api/student/attempt/${attemptId}/answers`).then(res=>res.json());
       (ar.answers || []).forEach(a => answers[a.question_id] = a.selected_answer);
+      if (isMathTest && Object.keys(answers).length > 20) {
+        currentModule = 2;
+        currentIdx = 20;
+      }
     }
 
     setupIntegrityListeners();
     requestFullscreen();
     document.getElementById('pre-test').style.display = 'none';
     document.getElementById('test-screen').style.display = 'block';
-    renderQuestion(0);
+    renderQuestion(isMathTest && currentModule === 2 ? 20 : 0);
     renderDots();
     startTimer();
     startAutosave();
-  } catch(e) { showPreError('Network error. Please try again.'); btn.disabled=false; btn.textContent='Start Test'; }
+  } catch(e) {
+    showPreError('Network error. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Start Test';
+  }
 }
 
 // ── Timer ─────────────────────────────────────────────────
 function startTimer() {
   updateTimerDisplay();
+  if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     secondsLeft--;
+    moduleSecondsLeft--;
     updateTimerDisplay();
-    if (secondsLeft <= 0) { clearInterval(timerInterval); autoSubmit(); }
+
+    if (isMathTest && currentModule === 1 && moduleSecondsLeft <= 0) {
+      clearInterval(timerInterval);
+      lockModule1AndTransition();
+      return;
+    }
+
+    if (moduleSecondsLeft <= 0 || secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      autoSubmit();
+    }
   }, 1000);
 }
 
 function updateTimerDisplay() {
-  const m = Math.floor(secondsLeft / 60), s = secondsLeft % 60;
+  const displaySec = isMathTest ? moduleSecondsLeft : secondsLeft;
+  const m = Math.floor(Math.max(0, displaySec) / 60);
+  const s = Math.max(0, displaySec) % 60;
   const el = document.getElementById('timer');
   el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  el.className = 'timer' + (secondsLeft <= 300 ? (secondsLeft <= 60 ? ' danger' : ' warning') : '');
+  el.className = 'timer' + (displaySec <= 300 ? (displaySec <= 60 ? ' danger' : ' warning') : '');
 }
 
-// ── Render question ───────────────────────────────────────
+// ── Module 1 -> Module 2 Transition ───────────────────────
+function lockModule1AndTransition() {
+  currentModule = 2;
+  for (const [qid, ans] of Object.entries(answers)) {
+    if (ans !== null) saveAnswer(qid, ans);
+  }
+  document.getElementById('module-transition').style.display = 'flex';
+}
+
+function startModule2() {
+  document.getElementById('module-transition').style.display = 'none';
+  currentModule = 2;
+  moduleSecondsLeft = 1800; // 30 minutes for Module 2
+  currentIdx = 20; // Question 21
+  renderDots();
+  renderQuestion(currentIdx);
+  startTimer();
+}
+
+// ── Render Question ───────────────────────────────────────
 function renderQuestion(idx) {
   currentIdx = idx;
   const q = questions[idx];
   const section = q.section || q.question_type;
   const selectedAnswer = answers[q.id];
   const letters = ['A','B','C','D'];
+
+  const headerTitle = document.getElementById('header-test-title');
+  if (headerTitle) {
+    if (isMathTest) {
+      headerTitle.textContent = currentModule === 1
+        ? 'SAT MATH DIAGNOSTIC — MODULE 1'
+        : 'SAT MATH DIAGNOSTIC — MODULE 2';
+    } else {
+      headerTitle.textContent = 'SAT VOCABULARY DIAGNOSTIC';
+    }
+  }
 
   let html = `<div class="question-card">
     <div class="section-label">${sectionLabels[section] || section}</div>
@@ -306,14 +505,16 @@ function renderQuestion(idx) {
     html += `<div class="passage-box">${q.context.replace(/______/g, '<span style="font-weight:700;color:var(--blue);font-size:18px">______</span>')}</div>`;
   }
 
-  const showWord = q.question_type !== 'passage-in-context';
+  // Hide blue word highlight on math questions and passage-in-context
+  const showWord = !isMathTest && q.question_type !== 'passage-in-context';
   html += `<div class="question-text">${(q.word && showWord) ? `<span class="word-highlight">${q.word}</span> — ` : ''}${q.question}</div>`;
   
   if (q.question_type === 'math-grid-in') {
     const val = selectedAnswer || '';
     html += `<div style="margin-top:24px">
-      <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--gray-600)">Student-Produced Response:</label>
-      <input type="text" style="width:100%;max-width:300px;padding:12px 16px;font-size:18px;border:2px solid var(--gray-200);border-radius:8px;outline:none" placeholder="e.g. 5/2, 2.5, or 7" value="${val}" oninput="selectGridIn('${q.id}', this.value)">
+      <label style="display:block;margin-bottom:12px;font-weight:700;color:var(--gray-900);font-size:15px;">Student-Produced Response (Answer-Box):</label>
+      <input type="text" style="width:100%;max-width:320px;padding:16px 20px;font-size:20px;font-weight:700;border:2px solid var(--gray-300);border-radius:12px;outline:none;transition:all 0.2s;color:var(--gray-900);font-family:var(--font);" placeholder="e.g. 5, 20, or 5/4" value="${val}" onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 4px var(--blue-light)';" onblur="this.style.borderColor='var(--gray-300)';this.style.boxShadow='none';" oninput="selectGridIn('${q.id}', this.value)">
+      <div style="font-size:13px;color:var(--gray-500);margin-top:10px;display:flex;align-items:center;gap:6px;"><span style="font-size:16px">ℹ️</span> Enter exact integer, decimal, or fraction (no units).</div>
     </div></div>`;
   } else {
     html += `<ul class="options-list">`;
@@ -330,10 +531,27 @@ function renderQuestion(idx) {
   }
 
   document.getElementById('question-area').innerHTML = html;
-  if (window.MathJax) MathJax.typesetPromise();
-  document.getElementById('q-progress').textContent = `Question ${idx+1} of ${questions.length}`;
-  document.getElementById('btn-prev').disabled = idx === 0;
-  document.getElementById('btn-next').textContent = idx === questions.length - 1 ? 'Review' : 'Next →';
+  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
+
+  if (isMathTest) {
+    const modQNum = currentModule === 1 ? (idx + 1) : (idx - 19);
+    document.getElementById('q-progress').textContent = `Question ${modQNum} of 20 (Module ${currentModule} • Q${idx+1})`;
+  } else {
+    document.getElementById('q-progress').textContent = `Question ${idx+1} of ${questions.length}`;
+  }
+
+  // Prev button logic
+  const minIdx = isMathTest && currentModule === 2 ? 20 : 0;
+  document.getElementById('btn-prev').disabled = idx <= minIdx;
+
+  // Next button logic
+  const nextBtn = document.getElementById('btn-next');
+  if (isMathTest && currentModule === 1) {
+    nextBtn.textContent = idx === 19 ? 'Finish Module 1 →' : 'Next →';
+  } else {
+    nextBtn.textContent = idx === questions.length - 1 ? 'Review' : 'Next →';
+  }
+
   updateAnsweredCount();
   highlightCurrentDot();
   window.scrollTo(0, 0);
@@ -357,20 +575,58 @@ function selectGridIn(questionId, value) {
 
 function navigate(dir) {
   const next = currentIdx + dir;
-  if (next >= 0 && next < questions.length) renderQuestion(next);
+  if (isMathTest) {
+    if (currentModule === 1) {
+      if (next < 0) return;
+      if (next >= 20) {
+        if (confirm("Are you sure you want to finish Module 1?\n\nOnce you proceed to Module 2, you CANNOT return to Module 1.")) {
+          clearInterval(timerInterval);
+          lockModule1AndTransition();
+        }
+        return;
+      }
+    } else if (currentModule === 2) {
+      if (next < 20) return; // Locked out of Module 1
+      if (next >= questions.length) return;
+    }
+  } else {
+    if (next < 0 || next >= questions.length) return;
+  }
+  renderQuestion(next);
 }
 
-// ── Dots ─────────────────────────────────────────────────
+// ── Dots ──────────────────────────────────────────────────
 function renderDots() {
   const container = document.getElementById('question-dots');
-  container.innerHTML = questions.map((q, i) =>
-    `<div class="q-dot ${answers[q.id] ? 'answered' : ''} ${i===currentIdx?'current':''}" id="dot-${i}" onclick="renderQuestion(${i})" title="Q${i+1}">${i+1}</div>`
-  ).join('');
+  container.innerHTML = questions.map((q, i) => {
+    let locked = false;
+    let title = `Q${i+1}`;
+    if (isMathTest) {
+      if (currentModule === 1 && i >= 20) {
+        locked = true;
+        title = `Q${i+1} (Module 2 — Locked)`;
+      } else if (currentModule === 2 && i < 20) {
+        locked = true;
+        title = `Q${i+1} (Module 1 — Locked)`;
+      }
+    }
+    const answeredClass = answers[q.id] ? 'answered' : '';
+    const currentClass = i === currentIdx ? 'current' : '';
+    const lockedStyle = locked ? 'opacity:0.35;cursor:not-allowed;background:var(--gray-200);' : '';
+    const clickHandler = locked
+      ? `onclick="alert('This question is part of ${i < 20 ? 'Module 1 (completed and locked)' : 'Module 2 (locked until Module 1 is finished)'}.')"`
+      : `onclick="renderQuestion(${i})"`;
+
+    return `<div class="q-dot ${answeredClass} ${currentClass}" id="dot-${i}" style="${lockedStyle}" ${clickHandler} title="${title}">${i+1}</div>`;
+  }).join('');
 }
 
 function updateDot(idx) {
   const dot = document.getElementById(`dot-${idx}`);
-  if (dot) dot.className = `q-dot ${answers[questions[idx].id] ? 'answered' : ''} ${idx===currentIdx?'current':''}`;
+  if (dot) {
+    const isAnswered = answers[questions[idx].id] !== null && answers[questions[idx].id] !== '';
+    dot.className = `q-dot ${isAnswered ? 'answered' : ''} ${idx === currentIdx ? 'current' : ''}`;
+  }
 }
 
 function highlightCurrentDot() {
@@ -380,15 +636,26 @@ function highlightCurrentDot() {
 }
 
 function updateAnsweredCount() {
-  const n = Object.values(answers).filter(v => v !== null).length;
-  document.getElementById('answered-count').textContent = `${n} / ${questions.length} answered`;
+  if (isMathTest) {
+    const start = currentModule === 1 ? 0 : 20;
+    const end = currentModule === 1 ? 20 : questions.length;
+    let modAnswered = 0;
+    for (let i = start; i < end; i++) {
+      if (answers[questions[i]?.id] !== null && answers[questions[i]?.id] !== '') modAnswered++;
+    }
+    document.getElementById('answered-count').textContent = `${modAnswered} / 20 answered (Mod ${currentModule})`;
+  } else {
+    const n = Object.values(answers).filter(v => v !== null && v !== '').length;
+    document.getElementById('answered-count').textContent = `${n} / ${questions.length} answered`;
+  }
 }
 
 // ── Autosave ──────────────────────────────────────────────
 async function saveAnswer(questionId, answer) {
   try {
     await fetch(`/api/student/attempt/${attemptId}/answer`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ questionId, selectedAnswer: answer })
     });
   } catch(e) {}
@@ -397,16 +664,16 @@ async function saveAnswer(questionId, answer) {
 function startAutosave() {
   setInterval(async () => {
     for (const [qid, ans] of Object.entries(answers)) {
-      if (ans !== null) await saveAnswer(qid, ans);
+      if (ans !== null && ans !== '') await saveAnswer(qid, ans);
     }
-  }, 30000);
+  }, 25000);
 }
 
 // ── Submit ────────────────────────────────────────────────
 function confirmSubmit() {
-  const unanswered = Object.values(answers).filter(v => v === null).length;
+  const unanswered = Object.values(answers).filter(v => v === null || v === '').length;
   if (unanswered > 0) {
-    if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+    if (!confirm(`You have ${unanswered} unanswered question(s). Submit test anyway?`)) return;
   }
   submitTest();
 }
@@ -421,13 +688,16 @@ async function submitTest() {
   document.getElementById('test-screen').style.display = 'none';
 
   try {
-    // Save all answers first
     for (const [qid, ans] of Object.entries(answers)) {
-      await saveAnswer(qid, ans);
+      if (ans !== null && ans !== '') await saveAnswer(qid, ans);
     }
     const r = await fetch(`/api/student/attempt/${attemptId}/submit`, { method: 'POST' });
     const d = await r.json();
-    if (!r.ok) { alert('Submission failed: ' + (d.error || 'Unknown error')); location.href='/student/dashboard.html'; return; }
+    if (!r.ok) {
+      alert('Submission failed: ' + (d.error || 'Unknown error'));
+      location.href = '/student/dashboard.html';
+      return;
+    }
     showResults(d.result);
   } catch(e) {
     alert('Network error during submission. Please contact your teacher.');
@@ -447,10 +717,15 @@ function showResults(result) {
   document.getElementById('res-time').textContent = fmtTime(result.timeUsed);
   document.getElementById('res-date').textContent = new Date(result.submittedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
 
-  // Type breakdown
   const tb = result.questionTypeBreakdown || {};
-  const typeNames = { 'definition': 'Definitions', 'isolated-word': 'Word Knowledge', 'passage-in-context': 'Passage in Context' };
-  let tbHtml = '<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:600;color:var(--gray-500);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Breakdown by Section</div>';
+  const typeNames = {
+    'definition': 'Definitions',
+    'isolated-word': 'Word Knowledge',
+    'passage-in-context': 'Passage in Context',
+    'math-multiple-choice': 'Math (Multiple Choice)',
+    'math-grid-in': 'Math (Answer-Box / Grid-In)'
+  };
+  let tbHtml = '<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:600;color:var(--gray-500);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Breakdown by Type</div>';
   for (const [type, counts] of Object.entries(tb)) {
     const total = (counts.correct||0) + (counts.incorrect||0) + (counts.unanswered||0);
     const pct = total > 0 ? Math.round(counts.correct/total*100) : 0;
@@ -472,20 +747,38 @@ function showResults(result) {
       const status = item.is_correct === 1 ? 'correct' : item.selected_answer ? 'incorrect' : 'unanswered';
       const icon = status === 'correct' ? '✓' : status === 'incorrect' ? '✗' : '—';
       const badgeCls = status === 'correct' ? 'badge-green' : status === 'incorrect' ? 'badge-red' : 'badge-gray';
+
+      const hasOpts = item.options && item.options.length > 0;
+      let userAnsDisplay = '—';
+      if (item.selected_answer) {
+        if (hasOpts && letters.includes(item.selected_answer)) {
+          userAnsDisplay = `${item.selected_answer} (${item.options[letters.indexOf(item.selected_answer)]})`;
+        } else {
+          userAnsDisplay = item.selected_answer;
+        }
+      }
+
+      let correctAnsDisplay = item.correct_answer;
+      if (hasOpts && letters.includes(item.correct_answer)) {
+        correctAnsDisplay = `${item.correct_answer} (${item.options[letters.indexOf(item.correct_answer)]})`;
+      }
+
       return `<div class="review-item ${status}">
         <div class="review-header">
-          <span class="review-word">${item.word}</span>
+          <span class="review-word">${item.word || ('Question ' + (i+1))}</span>
           <span class="badge ${badgeCls}">${icon} ${status.charAt(0).toUpperCase()+status.slice(1)}</span>
         </div>
         ${item.context ? `<div style="font-size:13px;color:var(--gray-600);margin-bottom:8px;font-style:italic">${item.context}</div>` : ''}
         <div class="review-q">${item.question}</div>
         <div class="review-answers">
-          <span>Your answer: <strong style="color:${status==='correct'?'var(--green)':'var(--red)'}">${item.selected_answer ? item.options[['A','B','C','D'].indexOf(item.selected_answer)] : '—'}</strong></span>
-          <span style="margin-left: 12px;">Correct: <strong style="color:var(--green)">${item.options[['A','B','C','D'].indexOf(item.correct_answer)]}</strong></span>
+          <span>Your answer: <strong style="color:${status==='correct'?'var(--green)':'var(--red)'}">${userAnsDisplay}</strong></span>
+          <span style="margin-left: 12px;">Correct: <strong style="color:var(--green)">${correctAnsDisplay}</strong></span>
         </div>
         ${item.explanation ? `<div class="review-explanation">💡 ${item.explanation}</div>` : ''}
       </div>`;
     }).join('');
+
+    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
   }
 
   exitFullscreen();

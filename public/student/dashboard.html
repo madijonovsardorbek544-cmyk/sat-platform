@@ -26,7 +26,11 @@
     <!-- filled by JS -->
   </div>
 
-
+  <!-- ══════ MATH ══════ -->
+  <h2 style="font-size:15px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin:28px 0 16px">🧮 Math</h2>
+  <div class="module-grid" id="math-grid">
+    <!-- filled by JS -->
+  </div>
 
   <!-- Progress Overview -->
   <div class="card mt-3" id="progress-card" style="display:none; margin-bottom:24px">
@@ -118,6 +122,7 @@ async function init() {
 
     const tests = dash.tests || [];
     renderVocab(tests.filter(t => t.test_type === 'vocabulary'));
+    renderMath(tests.filter(t => t.test_type === 'math'));
     await loadHistory();
   } catch (e) { console.error(e); }
 }
@@ -129,15 +134,24 @@ function renderVocab(tests) {
   grid.innerHTML = tests.map(test => renderTestCard(test, '📚')).join('');
 }
 
+/* ── Math section ─────────────────────────────────────── */
+function renderMath(tests) {
+  const grid = document.getElementById('math-grid');
+  if (!tests.length) { grid.innerHTML = '<p class="text-muted">No math tests available yet.</p>'; return; }
+  grid.innerHTML = tests.map(test => renderTestCard(test, '🧮')).join('');
+}
+
 /* ── Shared card renderer ─────────────────────────────── */
 function renderTestCard(test, icon) {
   const done = test.lastAttempt?.status === 'submitted';
   const score = done ? `${test.lastAttempt.score}/${test.question_count}` : '';
   const accuracy = done ? `${test.lastAttempt.accuracy}%` : '';
+  const lockBadge = test.has_access_code ? '<span style="font-size:11px;background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 6px;font-weight:600">🔒 Code Required</span>' : '';
   return `
-    <div class="module-card" onclick="goToTest('${test.id}', ${done})">
+    <div class="module-card" onclick="goToTest('${test.id}', ${!!test.has_access_code})">
       <div class="module-icon">${icon}</div>
       <div class="module-name">${test.title}</div>
+      <div style="margin-bottom:8px">${lockBadge}</div>
       <div class="module-status" style="margin-bottom:12px">
         ${done
           ? '<span class="badge badge-green">Completed</span>'
@@ -145,7 +159,7 @@ function renderTestCard(test, icon) {
       </div>
       ${done ? `<div style="font-size:13px;color:var(--gray-700)">Score: <strong>${score}</strong> &bull; ${accuracy}</div>` : ''}
       <div style="margin-top:12px">
-        <button class="btn ${done ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="goToTest('${test.id}', ${done}); event.stopPropagation()">
+        <button class="btn ${done ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="goToTest('${test.id}', ${!!test.has_access_code}); event.stopPropagation()">
           ${done ? 'Retake / Review' : 'Start'}
         </button>
       </div>
@@ -156,7 +170,7 @@ function goToConcept(file, n, title) {
   location.href = `/student/concept.html?chapter=${file}&n=${n}&title=${title}`;
 }
 
-function goToTest(testId, done) {
+function goToTest(testId) {
   location.href = `/student/test.html?testId=${testId}`;
 }
 

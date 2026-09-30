@@ -10,7 +10,8 @@ router.get('/dashboard', (req, res) => {
   const db_user = db.prepare('SELECT id, name, email, username, student_id, created_at FROM users WHERE id = ?').get(req.user.id);
 
   const tests = db.prepare(`
-    SELECT t.id, t.title, t.test_type, t.duration_seconds, t.question_count
+    SELECT t.id, t.title, t.test_type, t.duration_seconds, t.question_count,
+           CASE WHEN t.access_code IS NOT NULL THEN 1 ELSE 0 END as has_access_code
     FROM tests t
     WHERE t.status = 'published'
     ORDER BY t.created_at ASC
@@ -38,6 +39,19 @@ router.post('/test/:testId/start', (req, res) => {
   const test = db.prepare("SELECT * FROM tests WHERE id = ? AND status = 'published'").get(req.params.testId);
   if (!test) return res.status(404).json({ error: 'Test not found or not available' });
 
+  // Validate access code if test requires one
+  if (test.access_code) {
+    const provided = req.body.accessCode || '';
+    if (provided.trim() !== test.access_code.trim()) {
+      return res.status(403).json({ error: 'Incorrect access code. Please enter the code provided by your teacher.' });
+    }
+  }
+
+  // Dry run for code verification without starting an attempt
+  if (req.body.dryRun) {
+    return res.json({ ok: true, message: 'Access code valid' });
+  }
+
   // Check for an existing in-progress attempt
   const existing = db.prepare(`
     SELECT * FROM test_attempts WHERE student_id = ? AND test_id = ? AND status = 'in-progress'
@@ -61,12 +75,15 @@ router.post('/test/:testId/start', (req, res) => {
       if (attemptQs.length > 0) {
         const safeQuestions = attemptQs.map(q => ({
           id: q.id, word: q.word, question: q.question, context: q.context,
-          options: JSON.parse(q.options), difficulty: q.difficulty,
+          options: JSON.parse(q.options || '[]'), difficulty: q.difficulty,
           category: q.category, question_type: q.question_type,
           section: q.section, question_order: q.question_order
         }));
 
         const questionsWithShuffledOptions = safeQuestions.map(q => {
+          if (q.question_type === 'math-grid-in' || !q.options || q.options.length === 0) {
+            return { ...q, options: [], optionMapping: null };
+          }
           const { shuffledOptions, mapping } = shuffleOptions(q.options);
           return { ...q, options: shuffledOptions, optionMapping: mapping };
         });
@@ -76,6 +93,7 @@ router.post('/test/:testId/start', (req, res) => {
           resumed: true,
           expiresAt: existing.expires_at,
           testTitle: test.title,
+          testType: test.test_type,
           durationSeconds: test.duration_seconds,
           questions: questionsWithShuffledOptions
         });
@@ -101,8 +119,9 @@ router.post('/test/:testId/start', (req, res) => {
 
   if (questions.length === 0) return res.status(400).json({ error: 'No active questions in this test' });
 
-  // Randomize within each section (preserve section order)
-  const shuffled = shuffleWithinSections(questions);
+  // Randomize within each section (preserve calibrated order for math)
+  const isMath = test.test_type === 'math';
+  const shuffled = shuffleWithinSections(questions, isMath);
 
   const attemptId = uuidv4();
   const now = new Date();
@@ -129,7 +148,7 @@ router.post('/test/:testId/start', (req, res) => {
     word: q.word,
     question: q.question,
     context: q.context,
-    options: JSON.parse(q.options),
+    options: JSON.parse(q.options || '[]'),
     difficulty: q.difficulty,
     category: q.category,
     question_type: q.question_type,
@@ -137,8 +156,11 @@ router.post('/test/:testId/start', (req, res) => {
     question_order: q.question_order
   }));
 
-  // Randomize answer choices (store mapping for scoring)
+  // Randomize answer choices for multiple-choice questions
   const questionsWithShuffledOptions = safeQuestions.map(q => {
+    if (q.question_type === 'math-grid-in' || !q.options || q.options.length === 0) {
+      return { ...q, options: [], optionMapping: null };
+    }
     const { shuffledOptions, mapping } = shuffleOptions(q.options);
     return { ...q, options: shuffledOptions, optionMapping: mapping };
   });
@@ -151,6 +173,7 @@ router.post('/test/:testId/start', (req, res) => {
     resumed: false,
     expiresAt,
     testTitle: test.title,
+    testType: test.test_type,
     durationSeconds: test.duration_seconds,
     questions: questionsWithShuffledOptions
   });
@@ -233,8 +256,13 @@ router.post('/attempt/:attemptId/answer', (req, res) => {
   const { questionId, selectedAnswer } = req.body;
   if (!questionId) return res.status(400).json({ error: 'questionId required' });
 
-  const validAnswers = ['A', 'B', 'C', 'D', null];
-  if (!validAnswers.includes(selectedAnswer)) return res.status(400).json({ error: 'Invalid answer' });
+  const q = db.prepare('SELECT question_type FROM questions WHERE id = ?').get(questionId);
+  if (!q) return res.status(404).json({ error: 'Question not found' });
+
+  if (q.question_type !== 'math-grid-in') {
+    const validAnswers = ['A', 'B', 'C', 'D', null];
+    if (!validAnswers.includes(selectedAnswer)) return res.status(400).json({ error: 'Invalid answer' });
+  }
 
   db.prepare(`
     UPDATE answers SET selected_answer = ?, answered_at = ?
@@ -298,12 +326,19 @@ router.post('/attempt/:attemptId/submit', (req, res) => {
       if (!a.selected_answer) {
         unanswered++;
         isCorrect = null;
-      } else if (a.selected_answer === a.correct_answer) {
-        correct++;
-        isCorrect = 1;
       } else {
-        incorrect++;
-        isCorrect = 0;
+        const sel = String(a.selected_answer).trim();
+        const cor = String(a.correct_answer).trim();
+        const numSel = Number(sel);
+        const numCor = Number(cor);
+        const matches = (sel.toUpperCase() === cor.toUpperCase()) || (!isNaN(numSel) && !isNaN(numCor) && numSel === numCor);
+        if (matches) {
+          correct++;
+          isCorrect = 1;
+        } else {
+          incorrect++;
+          isCorrect = 0;
+        }
       }
       updateAnswer.run(isCorrect, a.id);
 
@@ -441,7 +476,10 @@ router.get('/history', (req, res) => {
 });
 
 // ── Helpers ─────────────────────────────────────────────────────────
-function shuffleWithinSections(questions) {
+function shuffleWithinSections(questions, isMath = false) {
+  if (isMath) {
+    return [...questions].sort((a, b) => (a.question_order || 0) - (b.question_order || 0));
+  }
   const sections = {};
   for (const q of questions) {
     if (!sections[q.section]) sections[q.section] = [];
@@ -463,9 +501,12 @@ function shuffleWithinSections(questions) {
 }
 
 function shuffleOptions(options) {
+  if (!options || !Array.isArray(options) || options.length === 0) {
+    return { shuffledOptions: [], mapping: null };
+  }
   const letters = ['A', 'B', 'C', 'D'];
-  const indices = [0, 1, 2, 3];
-  for (let i = 3; i > 0; i--) {
+  const indices = [0, 1, 2, 3].slice(0, options.length);
+  for (let i = indices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [indices[i], indices[j]] = [indices[j], indices[i]];
   }
@@ -488,7 +529,7 @@ function buildReview(db, attemptId) {
     WHERE a.attempt_id = ?
   `).all(attemptId).map(r => ({
     ...r,
-    options: JSON.parse(r.options)
+    options: typeof r.options === 'string' ? JSON.parse(r.options || '[]') : (r.options || [])
   }));
 }
 
