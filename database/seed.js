@@ -68,12 +68,13 @@ async function seed() {
 
   if (!existingTest) {
     db.prepare(`
-      INSERT INTO tests (id, title, test_type, duration_seconds, question_count, status, show_explanations, published_at)
-      VALUES (?, 'SAT Vocabulary Diagnostic', 'vocabulary', 2700, 40, 'published', 1, strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+      INSERT INTO tests (id, title, test_type, duration_seconds, question_count, status, show_explanations, access_code, published_at)
+      VALUES (?, 'SAT Vocabulary Diagnostic', 'vocabulary', 2700, 40, 'published', 1, '2847', strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     `).run(testId);
-    console.log('✅  Default vocabulary test created');
+    console.log('✅  Default vocabulary test created (access code: 2847)');
   } else {
-    console.log('ℹ️   Default vocabulary test already exists');
+    db.prepare(`UPDATE tests SET access_code = '2847' WHERE id = ? AND (access_code IS NULL OR access_code = '')`).run(testId);
+    console.log('ℹ️   Default vocabulary test already exists — access code ensured');
   }
 
   // Ensure all 40 questions are linked to the test (fixes missing links if test_questions was wiped)

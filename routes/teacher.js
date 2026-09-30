@@ -183,7 +183,7 @@ router.get('/tests', (req, res) => {
 
 router.put('/tests/:id', (req, res) => {
   const db = getDb();
-  const { status, show_explanations, title, duration_seconds } = req.body;
+  const { status, show_explanations, title, duration_seconds, access_code } = req.body;
   const test = db.prepare('SELECT id FROM tests WHERE id = ?').get(req.params.id);
   if (!test) return res.status(404).json({ error: 'Test not found' });
 
@@ -197,6 +197,10 @@ router.put('/tests/:id', (req, res) => {
   if (show_explanations !== undefined) { updates.push('show_explanations = ?'); params.push(show_explanations ? 1 : 0); }
   if (title) { updates.push('title = ?'); params.push(title); }
   if (duration_seconds) { updates.push('duration_seconds = ?'); params.push(duration_seconds); }
+  if (access_code !== undefined) {
+    updates.push('access_code = ?');
+    params.push(access_code || null);
+  }
   updates.push("updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')");
   params.push(req.params.id);
 
