@@ -4,59 +4,182 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Attempt Review — SAT Platform</title>
-  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'],['\\(','\\)']],
+        displayMath: [['$$','$$'],['\\[','\\]']]
+      },
+      svg: { fontCache: 'global' },
+      startup: { typeset: false }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
   <style>
-    .report-header { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:28px; margin-bottom:20px; }
-    .report-title  { font-size:20px; font-weight:700; margin-bottom:16px; }
-    .info-grid     { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-bottom:20px; }
-    .info-block    { background:var(--gray-50); border-radius:8px; padding:14px; }
-    .info-block .lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-500); margin-bottom:4px; }
-    .info-block .val { font-size:20px; font-weight:700; color:var(--gray-900); }
-    .info-block .val.green  { color:var(--green); }
-    .info-block .val.red    { color:var(--red); }
-    .info-block .val.blue   { color:var(--blue); }
-    .info-block .val.muted  { color:var(--gray-500); }
+    :root {
+      --blue:       #4f46e5;
+      --blue-dark:  #3730a3;
+      --blue-light: #eef2ff;
+      --green:      #059669;
+      --green-bg:   #ecfdf5;
+      --red:        #dc2626;
+      --red-bg:     #fef2f2;
+      --orange:     #d97706;
+      --orange-bg:  #fffbeb;
+      --purple:     #7c3aed;
+      --purple-bg:  #f5f3ff;
+      --gray-50:    #f9fafb;
+      --gray-100:   #f3f4f6;
+      --gray-200:   #e5e7eb;
+      --gray-300:   #d1d5db;
+      --gray-400:   #9ca3af;
+      --gray-500:   #6b7280;
+      --gray-600:   #4b5563;
+      --gray-700:   #374151;
+      --gray-800:   #1f2937;
+      --gray-900:   #111827;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    body { font-family: var(--font); background: #f1f5f9; color: var(--gray-900); min-height: 100vh; }
 
-    .q-review-item { border:1px solid var(--gray-200); border-radius:10px; padding:20px; margin-bottom:12px; background:#fff; }
-    .q-review-item.correct   { border-left:5px solid var(--green); }
-    .q-review-item.incorrect { border-left:5px solid var(--red); }
-    .q-review-item.unanswered { border-left:5px solid var(--gray-300); }
-    .q-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:12px; }
-    .q-meta   { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
-    .q-word   { font-size:17px; font-weight:700; color:var(--blue); margin-bottom:6px; }
-    .q-text   { font-size:15px; color:var(--gray-800); margin-bottom:12px; line-height:1.55; }
-    .passage  { background:var(--gray-50); border-left:3px solid var(--blue); padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:12px; font-size:14px; line-height:1.7; color:var(--gray-700); font-style:italic; }
-    .answer-row { display:flex; gap:24px; font-size:14px; margin-bottom:10px; }
-    .answer-student { color:var(--gray-700); }
-    .answer-correct { color:var(--green); font-weight:600; }
-    .explanation { background:var(--blue-light); border-radius:7px; padding:10px 14px; font-size:13px; color:var(--gray-700); }
+    /* ── Nav ── */
+    .topnav {
+      background: var(--gray-900); color: #fff;
+      padding: 0 32px; height: 64px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { display:flex; align-items:center; gap:10px; }
+    .nav-logo-icon { width:32px; height:32px; border-radius:8px; background: linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .nav-logo-text { font-weight:700; font-size:16px; letter-spacing:.5px; }
+    .nav-right { display:flex; align-items:center; gap:12px; }
+    .btn-nav { padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); background: transparent; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background .15s; font-family: var(--font); }
+    .btn-nav:hover { background: rgba(255,255,255,.1); }
 
-    .integrity-section { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:20px; margin-bottom:20px; }
-    .integrity-event { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--gray-100); font-size:13px; }
-    .integrity-event:last-child { border-bottom:none; }
-    .event-icon { font-size:18px; }
+    /* ── Page ── */
+    .page { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
 
-    .breakdown-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px; }
-    .breakdown-card { background:#fff; border:1px solid var(--gray-200); border-radius:10px; padding:16px; }
-    .breakdown-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-500); margin-bottom:12px; }
-    .breakdown-row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
-    .progress-bar-wrap { background:var(--gray-100); border-radius:99px; height:6px; }
-    .progress-bar-fill { height:100%; border-radius:99px; background:var(--blue); }
+    /* ── Header Card ── */
+    .header-card {
+      background: #fff; border: 1px solid var(--gray-200); border-radius: 20px;
+      padding: 32px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,.04);
+      animation: fadeUp .4s ease-out;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .student-name { font-size: 24px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px; }
+    .test-name { font-size: 14px; color: var(--gray-500); font-weight: 500; }
+    .student-id-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; background: var(--gray-100); color: var(--gray-600); font-size: 12px; font-weight: 600; margin-left: 8px; vertical-align: middle; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+    .stat-box { background: var(--gray-50); border: 1px solid var(--gray-100); border-radius: 12px; padding: 16px; }
+    .stat-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--gray-400); letter-spacing: .5px; margin-bottom: 6px; }
+    .stat-val { font-size: 24px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+    .val-blue { color: var(--blue); } .val-green { color: var(--green); } .val-red { color: var(--red); }
 
-    @media (max-width:640px) { .breakdown-grid { grid-template-columns:1fr; } .info-grid { grid-template-columns:repeat(2,1fr); } }
+    /* ── Integrity Events ── */
+    .integrity-box {
+      background: #fff; border: 1px solid #fca5a5; border-radius: 16px; padding: 20px;
+      margin-bottom: 24px; box-shadow: 0 4px 12px rgba(220,38,38,.08);
+      animation: fadeUp .4s ease-out .1s backwards;
+    }
+    .integrity-title { font-size: 14px; font-weight: 800; color: var(--red); display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .integrity-list { display: flex; flex-direction: column; gap: 8px; }
+    .integrity-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--red-bg); border-radius: 8px; font-size: 13px; }
+    .integrity-item strong { color: #991b1b; }
+    .integrity-item span { color: #b91c1c; }
+
+    /* ── Breakdowns ── */
+    .breakdown-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; animation: fadeUp .4s ease-out .15s backwards; }
+    .breakdown-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.03); }
+    .bd-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--gray-500); margin-bottom: 16px; }
+    .bd-item { margin-bottom: 12px; }
+    .bd-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .bd-bar-bg { background: var(--gray-100); height: 6px; border-radius: 99px; overflow: hidden; }
+    .bd-bar-fill { height: 100%; background: var(--blue); border-radius: 99px; }
+
+    /* ── Review List ── */
+    .review-container { background: #fff; border: 1px solid var(--gray-200); border-radius: 20px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.03); animation: fadeUp .4s ease-out .2s backwards; }
+    .review-header { padding: 20px 24px; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; }
+    .review-title { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+    
+    .filter-bar { display: flex; gap: 8px; padding: 16px 24px; border-bottom: 1px solid var(--gray-100); flex-wrap: wrap; background: var(--gray-50); }
+    .filter-btn { padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--gray-200); background: #fff; cursor: pointer; color: var(--gray-600); transition: all .15s; font-family: var(--font); }
+    .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .filter-btn.active-all { background: var(--gray-900); border-color: var(--gray-900); color: #fff; }
+    .filter-btn.active-correct { background: var(--green); border-color: var(--green); color: #fff; }
+    .filter-btn.active-incorrect { background: var(--red); border-color: var(--red); color: #fff; }
+    .filter-btn.active-unanswered { background: var(--gray-500); border-color: var(--gray-500); color: #fff; }
+
+    .review-list { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    
+    .q-item { border: 1px solid var(--gray-200); border-left: 5px solid var(--gray-300); border-radius: 12px; padding: 20px; transition: box-shadow .2s; }
+    .q-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+    .q-item.correct { border-left-color: var(--green); }
+    .q-item.incorrect { border-left-color: var(--red); }
+    .q-item.unanswered { border-left-color: var(--gray-400); }
+
+    .q-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
+    .q-title { font-size: 16px; font-weight: 800; color: var(--blue); }
+    .q-title.math { font-size: 15px; color: var(--gray-800); }
+    .q-num { font-size: 12px; font-weight: 700; color: var(--gray-400); margin-right: 6px; }
+    .q-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    
+    .chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .chip-green { background: var(--green-bg); color: var(--green); }
+    .chip-red { background: var(--red-bg); color: var(--red); }
+    .chip-gray { background: var(--gray-100); color: var(--gray-500); }
+    .chip-orange { background: var(--orange-bg); color: var(--orange); }
+    .chip-blue { background: var(--blue-light); color: var(--blue); }
+
+    .q-passage { background: var(--gray-50); border-left: 3px solid var(--gray-300); padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 13px; color: var(--gray-600); font-style: italic; margin-bottom: 12px; }
+    .q-text { font-size: 14px; font-weight: 500; color: var(--gray-800); margin-bottom: 16px; line-height: 1.6; }
+
+    .ans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .ans-pill { padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--gray-200); background: var(--gray-50); display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .ans-letter { width: 24px; height: 24px; border-radius: 50%; background: var(--gray-200); color: var(--gray-700); font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ans-pill.correct-opt { background: var(--green-bg); border-color: var(--green); }
+    .ans-pill.correct-opt .ans-letter { background: var(--green); color: #fff; }
+    .ans-pill.wrong-opt { background: var(--red-bg); border-color: var(--red); }
+    .ans-pill.wrong-opt .ans-letter { background: var(--red); color: #fff; }
+
+    .gridin-row { display: flex; gap: 16px; align-items: center; margin-bottom: 14px; font-size: 14px; }
+    .gridin-ans { padding: 8px 16px; border-radius: 8px; font-weight: 700; }
+    .gridin-ans.user-correct { background: var(--green-bg); border: 1.5px solid var(--green); color: var(--green); }
+    .gridin-ans.user-wrong { background: var(--red-bg); border: 1.5px solid var(--red); color: var(--red); }
+    .gridin-ans.correct-ans { background: var(--green-bg); border: 1.5px solid var(--green); color: var(--green); }
+    .gridin-ans.skipped { background: var(--gray-100); border: 1.5px solid var(--gray-300); color: var(--gray-500); }
+
+    .q-exp { background: linear-gradient(135deg, #eef2ff, #f5f3ff); border: 1px solid #ddd6fe; border-radius: 10px; padding: 14px 16px; font-size: 13px; color: var(--gray-700); line-height: 1.6; }
+    .q-exp strong { color: var(--blue); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 6px; }
+
+    .empty-state { text-align: center; padding: 48px; color: var(--gray-400); }
+    
+    @keyframes fadeUp { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+    .skeleton { background: linear-gradient(90deg,var(--gray-100) 25%,var(--gray-200) 50%,var(--gray-100) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   </style>
 </head>
 <body>
+
 <nav class="topnav">
-  <span class="logo">🎓 SAT Platform — Teacher</span>
-  <div class="user-info">
-    <a href="/teacher/dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
-    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🎓</div>
+    <div class="nav-logo-text">SAT Platform — Teacher</div>
+  </div>
+  <div class="nav-right">
+    <a href="/teacher/dashboard.html" class="btn-nav">← Dashboard</a>
+    <button class="btn-nav" onclick="logout()">Sign Out</button>
   </div>
 </nav>
 
-<div class="container page-wrap" id="main-content">
-  <div style="text-align:center;padding:60px;color:var(--gray-500)">Loading attempt…</div>
+<div class="page" id="main-content">
+  <div class="skeleton" style="height:220px; margin-bottom:24px;"></div>
+  <div class="skeleton" style="height:150px; margin-bottom:24px;"></div>
+  <div class="skeleton" style="height:400px;"></div>
 </div>
 
 <script>
@@ -65,10 +188,13 @@ const attemptId = params.get('attemptId');
 if (!attemptId) location.href = '/teacher/dashboard.html';
 
 const eventLabels = {
-  tab_switch:       { icon:'🔄', label:'Tab Switch / Window Blur' },
-  fullscreen_exit:  { icon:'⬛', label:'Exited Full-Screen Mode' },
-  visibility_hidden:{ icon:'👁', label:'Page Hidden' }
+  tab_switch: { icon:'🔄', label:'Tab Switch / Window Blur' },
+  fullscreen_exit: { icon:'⬛', label:'Exited Full-Screen Mode' },
+  visibility_hidden: { icon:'👁', label:'Page Hidden' }
 };
+
+let allAnswers = [];
+let currentFilter = 'all';
 
 async function init() {
   const me = await fetch('/api/auth/me').then(r => r.json());
@@ -76,120 +202,203 @@ async function init() {
 
   const r = await fetch(`/api/teacher/attempts/${attemptId}`);
   const d = await r.json();
-  if (!r.ok) { document.getElementById('main-content').innerHTML = `<div class="alert alert-error">${d.error}</div>`; return; }
+  if (!r.ok) { document.getElementById('main-content').innerHTML = `<div style="background:var(--red-bg);color:var(--red);padding:20px;border-radius:12px;border:1px solid #fca5a5;">${d.error}</div>`; return; }
 
+  allAnswers = d.answers || [];
   render(d);
 }
 
-function render({ attempt, result, answers, integrityEvents }) {
-  const typeNames = { definition:'Definition', 'isolated-word':'Word Knowledge', 'passage-in-context':'Passage in Context' };
-  const diffColor  = { easy:'var(--green)', medium:'var(--orange)', hard:'var(--red)' };
+function getGrade(acc) {
+  if(acc >= 90) return 'A'; if(acc >= 80) return 'B'; if(acc >= 70) return 'C'; if(acc >= 60) return 'D'; return 'F';
+}
+
+function render({ attempt, result, integrityEvents }) {
+  const total = (result?.correct_count||0) + (result?.incorrect_count||0) + (result?.unanswered_count||0);
+  const grade = result ? getGrade(result.accuracy) : '—';
 
   let html = `
-    <!-- ── Report Header ── -->
-    <div class="report-header">
-      <div class="flex-between mb-2">
+    <!-- Header -->
+    <div class="header-card">
+      <div class="header-top">
         <div>
-          <div class="report-title">📋 Attempt Review</div>
-          <div style="font-size:14px;color:var(--gray-500)">
-            <strong>${attempt.studentName}</strong>
-            ${attempt.studentId ? `<span class="badge badge-blue" style="margin-left:6px">${attempt.studentId}</span>` : ''}
-            &nbsp;•&nbsp; ${attempt.testTitle}
-          </div>
+          <div class="student-name">${attempt.studentName} ${attempt.studentId ? `<span class="student-id-badge">${attempt.studentId}</span>` : ''}</div>
+          <div class="test-name">${attempt.testTitle} &nbsp;•&nbsp; Submitted ${fmtDate(attempt.submittedAt)}</div>
         </div>
-        <a href="/teacher/student.html?studentId=${encodeURIComponent(attempt.studentEmail ? '' : '')}" class="btn btn-ghost btn-sm">← Student Profile</a>
+        <a href="/teacher/student.html?studentId=${encodeURIComponent(attempt.studentId || '')}" class="btn-nav" style="color:var(--blue);border-color:var(--blue);background:var(--blue-light)">View Profile</a>
       </div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-lbl">Score</div><div class="stat-val val-blue">${result?.score ?? '—'}<span style="font-size:14px;color:var(--gray-400)"> / ${total||'-'}</span></div></div>
+        <div class="stat-box"><div class="stat-lbl">Accuracy</div><div class="stat-val val-blue">${result?.accuracy ?? '—'}%</div></div>
+        <div class="stat-box"><div class="stat-lbl">Correct</div><div class="stat-val val-green">${result?.correct_count ?? '—'}</div></div>
+        <div class="stat-box"><div class="stat-lbl">Wrong</div><div class="stat-val val-red">${result?.incorrect_count ?? '—'}</div></div>
+        <div class="stat-box"><div class="stat-lbl">Time Used</div><div class="stat-val">${result ? fmtTime(result.time_used) : '—'}</div></div>
+        <div class="stat-box"><div class="stat-lbl">Grade</div><div class="stat-val">${grade}</div></div>
+      </div>
+    </div>
+  `;
 
-      <div class="info-grid">
-        <div class="info-block"><div class="lbl">Score</div><div class="val blue">${result?.score ?? '—'} / 40</div></div>
-        <div class="info-block"><div class="lbl">Correct</div><div class="val green">${result?.correct_count ?? '—'}</div></div>
-        <div class="info-block"><div class="lbl">Incorrect</div><div class="val red">${result?.incorrect_count ?? '—'}</div></div>
-        <div class="info-block"><div class="lbl">Unanswered</div><div class="val muted">${result?.unanswered_count ?? '—'}</div></div>
-        <div class="info-block"><div class="lbl">Accuracy</div><div class="val blue">${result?.accuracy ?? '—'}%</div></div>
-        <div class="info-block"><div class="lbl">Time Used</div><div class="val">${result ? fmtTime(result.time_used) : '—'}</div></div>
-        <div class="info-block"><div class="lbl">Date</div><div class="val" style="font-size:14px">${fmtDate(attempt.submittedAt)}</div></div>
-        <div class="info-block"><div class="lbl">Integrity Events</div><div class="val ${integrityEvents.length > 0 ? 'red' : 'green'}">${integrityEvents.length}</div></div>
+  // Integrity
+  if (integrityEvents && integrityEvents.length > 0) {
+    html += `
+      <div class="integrity-box">
+        <div class="integrity-title">⚠️ Integrity Events Detected (${integrityEvents.length})</div>
+        <div class="integrity-list">
+          ${integrityEvents.map(ev => {
+            const info = eventLabels[ev.event_type] || { icon:'❗', label:ev.event_type };
+            return `<div class="integrity-item">
+              <span style="font-size:18px">${info.icon}</span>
+              <strong>${info.label}</strong>
+              <span>at ${fmtDateTime(ev.timestamp)}</span>
+              ${ev.question_number ? `<span class="chip chip-orange" style="margin-left:auto">Q${ev.question_number}</span>` : ''}
+            </div>`;
+          }).join('')}
+        </div>
       </div>
-    </div>`;
+    `;
+  }
 
   // Breakdowns
   if (result) {
-    html += `<div class="breakdown-grid">
-      ${renderBreakdown('By Section', result.questionTypeBreakdown, typeNames)}
-      ${renderBreakdown('By Difficulty', result.difficultyBreakdown, {easy:'Easy',medium:'Medium',hard:'Hard'})}
-      ${renderBreakdown('By Category', result.categoryBreakdown, {vocabulary:'Vocabulary'})}
-    </div>`;
+    const typeNames = { 'definition':'Definitions', 'isolated-word':'Word Knowledge', 'passage-in-context':'Passage Context', 'math-multiple-choice':'Math (MCQ)', 'math-grid-in':'Math (Grid-In)' };
+    const diffMap = { easy:'Easy', medium:'Medium', hard:'Hard' };
+    html += `
+      <div class="breakdown-row">
+        ${renderBreakdown('By Section / Type', result.questionTypeBreakdown, typeNames)}
+        ${renderBreakdown('By Difficulty', result.difficultyBreakdown, diffMap)}
+      </div>
+    `;
   }
 
-  // Integrity events
-  if (integrityEvents.length > 0) {
-    html += `<div class="integrity-section">
-      <div style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--red)">⚠️ Integrity Events (${integrityEvents.length})</div>`;
-    html += integrityEvents.map(ev => {
-      const info = eventLabels[ev.event_type] || { icon:'❗', label: ev.event_type };
-      return `<div class="integrity-event">
-        <span class="event-icon">${info.icon}</span>
-        <span style="font-weight:600;color:var(--red)">${info.label}</span>
-        <span class="text-muted">at ${fmtDateTime(ev.timestamp)}</span>
-        ${ev.question_number ? `<span class="badge badge-orange">Q${ev.question_number}</span>` : ''}
-      </div>`;
-    }).join('');
-    html += `</div>`;
-  }
-
-  // Per-question review
-  html += `<div class="card">
-    <div class="card-title">Question-by-Question Review</div>`;
-
-  answers.forEach((a, i) => {
-    const status = a.is_correct === 1 ? 'correct' : a.selected_answer ? 'incorrect' : 'unanswered';
-    const icon   = { correct:'✓ Correct', incorrect:'✗ Incorrect', unanswered:'— Unanswered' }[status];
-    const badgeCls = { correct:'badge-green', incorrect:'badge-red', unanswered:'badge-gray' }[status];
-
-    html += `<div class="q-review-item ${status}">
-      <div class="q-header">
-        <div>
-          <div class="q-word">Q${i+1} — ${a.word}</div>
-          <div class="q-meta">
-            <span class="badge badge-blue">${typeNames[a.question_type] || a.question_type}</span>
-            <span class="badge" style="background:${a.difficulty==='easy'?'var(--green-bg)':a.difficulty==='hard'?'var(--red-bg)':'var(--orange-bg)'}; color:${a.difficulty==='easy'?'var(--green)':a.difficulty==='hard'?'var(--red)':'var(--orange)'}">${a.difficulty}</span>
-            <span class="badge badge-gray">${a.category}</span>
-          </div>
-        </div>
-        <span class="badge ${badgeCls}" style="white-space:nowrap">${icon}</span>
+  // Answers Review
+  html += `
+    <div class="review-container">
+      <div class="review-header">
+        <div class="review-title">Detailed Response Review</div>
+        <div style="font-size:13px;color:var(--gray-500)">${allAnswers.length} Questions</div>
       </div>
-      ${a.context ? `<div class="passage">${a.context}</div>` : ''}
-      <div class="q-text">${a.question}</div>
-      <div class="answer-row">
-        <span class="answer-student">Student answered: <strong style="color:${status==='correct'?'var(--green)':status==='incorrect'?'var(--red)':'var(--gray-500)'}">${a.selected_answer || '—'}</strong></span>
-        <span class="answer-correct">Correct answer: <strong>${a.correct_answer}</strong></span>
+      <div class="filter-bar">
+        <button class="filter-btn active-all" id="fb-all" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" id="fb-correct" onclick="setFilter('correct')">✓ Correct</button>
+        <button class="filter-btn" id="fb-incorrect" onclick="setFilter('incorrect')">✗ Incorrect</button>
+        <button class="filter-btn" id="fb-unanswered" onclick="setFilter('unanswered')">— Skipped</button>
       </div>
-      ${a.explanation ? `<div class="explanation">💡 ${a.explanation}</div>` : ''}
-    </div>`;
-  });
-
-  html += `</div>`;
+      <div class="review-list" id="review-list"></div>
+    </div>
+  `;
 
   document.getElementById('main-content').innerHTML = html;
+  if (allAnswers.length > 0) renderReviewList();
 }
 
-function renderBreakdown(title, breakdown, names) {
-  if (!breakdown || !Object.keys(breakdown).length) return `<div class="breakdown-card"><div class="breakdown-title">${title}</div><p class="text-muted" style="font-size:13px">No data</p></div>`;
+function setFilter(f) {
+  currentFilter = f;
+  ['all','correct','incorrect','unanswered'].forEach(k => {
+    const btn = document.getElementById('fb-'+k);
+    if(btn) btn.className = `filter-btn${f===k ? ' active-'+k : ''}`;
+  });
+  renderReviewList();
+}
+
+function renderReviewList() {
+  const filtered = allAnswers.filter(a => {
+    if(currentFilter === 'all') return true;
+    if(currentFilter === 'correct') return a.is_correct === 1;
+    if(currentFilter === 'incorrect') return a.is_correct === 0 && !!a.selected_answer;
+    if(currentFilter === 'unanswered') return !a.selected_answer;
+    return true;
+  });
+
+  const listEl = document.getElementById('review-list');
+  if (!listEl) return;
+
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="empty-state">No questions match this filter.</div>`;
+    return;
+  }
+
+  const isMath = allAnswers.some(i => i.question_type && i.question_type.startsWith('math'));
+
+  listEl.innerHTML = filtered.map((a, i) => {
+    const status = a.is_correct === 1 ? 'correct' : a.selected_answer ? 'incorrect' : 'unanswered';
+    const badgeCls = {correct:'chip-green', incorrect:'chip-red', unanswered:'chip-gray'}[status];
+    const statusIcon = {correct:'✓ Correct', incorrect:'✗ Incorrect', unanswered:'— Skipped'}[status];
+    
+    const isGridIn = a.question_type === 'math-grid-in';
+    const opts = typeof a.options === 'string' ? JSON.parse(a.options) : (a.options || []);
+    const diffCls = {easy:'chip-green', medium:'chip-orange', hard:'chip-red'}[a.difficulty] || 'chip-gray';
+    const letters = ['A','B','C','D'];
+
+    let ansHtml = '';
+    if (isGridIn) {
+      ansHtml = `<div class="gridin-row">
+        <span style="color:var(--gray-600)">Student:</span>
+        <span class="gridin-ans ${!a.selected_answer ? 'skipped' : status==='correct' ? 'user-correct' : 'user-wrong'}">${a.selected_answer || 'Skipped'}</span>
+        ${status !== 'correct' ? `<span style="color:var(--gray-600);margin-left:12px">Correct:</span><span class="gridin-ans correct-ans">${a.correct_answer}</span>` : ''}
+      </div>`;
+    } else if (opts.length > 0) {
+      ansHtml = `<div class="ans-grid">` + opts.map((opt, idx) => {
+        const l = letters[idx];
+        const isC = l === a.correct_answer;
+        const isW = l === a.selected_answer && !isC;
+        return `<div class="ans-pill ${isC?'correct-opt':''} ${isW?'wrong-opt':''}">
+          <span class="ans-letter">${l}</span>
+          <span>${opt}</span>
+          ${isC ? '<span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--green)">Correct</span>' : ''}
+          ${isW ? '<span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--red)">Student</span>' : ''}
+        </div>`;
+      }).join('') + `</div>`;
+    }
+
+    const titleText = isMath ? '' : (a.word || '');
+
+    return `
+      <div class="q-item ${status}">
+        <div class="q-top">
+          <div>
+            <span class="q-num">Q${i+1}</span>
+            <span class="q-title ${isMath?'math':''}">${titleText}</span>
+          </div>
+          <div class="q-badges">
+            <span class="chip chip-blue">${a.question_type.replace(/-/g,' ')}</span>
+            <span class="chip ${diffCls}">${a.difficulty}</span>
+            <span class="chip ${badgeCls}">${statusIcon}</span>
+          </div>
+        </div>
+        ${a.context ? `<div class="q-passage">${a.context}</div>` : ''}
+        <div class="q-text">${a.question}</div>
+        ${ansHtml}
+        ${a.explanation ? `<div class="q-exp"><strong>Explanation</strong>${a.explanation}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise([listEl]).catch(e => console.warn('MathJax error', e));
+  }
+}
+
+function renderBreakdown(title, bd, names) {
+  if (!bd || !Object.keys(bd).length) return `<div class="breakdown-card"><div class="bd-title">${title}</div><div style="font-size:13px;color:var(--gray-400)">No data</div></div>`;
   let rows = '';
-  for (const [key, counts] of Object.entries(breakdown)) {
+  for (const [key, counts] of Object.entries(bd)) {
     const total = (counts.correct||0)+(counts.incorrect||0)+(counts.unanswered||0);
     const pct = total ? Math.round(counts.correct/total*100) : 0;
-    rows += `<div style="margin-bottom:8px">
-      <div class="breakdown-row"><span>${names[key]||key}</span><span><strong>${counts.correct||0}/${total}</strong> (${pct}%)</span></div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
-    </div>`;
+    rows += `
+      <div class="bd-item">
+        <div class="bd-label">
+          <span>${names[key]||key}</span>
+          <span>${counts.correct||0}/${total} <span style="color:var(--gray-400);font-weight:500">(${pct}%)</span></span>
+        </div>
+        <div class="bd-bar-bg"><div class="bd-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+    `;
   }
-  return `<div class="breakdown-card"><div class="breakdown-title">${title}</div>${rows}</div>`;
+  return `<div class="breakdown-card"><div class="bd-title">${title}</div>${rows}</div>`;
 }
 
-function fmtTime(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
-function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
-function fmtDateTime(iso) { if (!iso) return '—'; return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function fmtTime(s) { if(!s)return'—'; const m=Math.floor(s/60), sec=s%60; return `${m}m ${String(sec).padStart(2,'0')}s`; }
+function fmtDate(iso) { if(!iso)return'—'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function fmtDateTime(iso) { if(!iso)return'—'; return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
 async function logout() { await fetch('/api/auth/logout',{method:'POST'}); location.href='/'; }
 
 init();
