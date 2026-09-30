@@ -9,6 +9,15 @@ async function seed() {
   const db = getDb();
   console.log('🌱 Seeding database...');
 
+  // ─── Migrations ─────────────────────────────────────────────────
+  try {
+    // Add access_code column if it doesn't exist
+    db.prepare('ALTER TABLE tests ADD COLUMN access_code TEXT DEFAULT NULL').run();
+    console.log('✅  Applied migration: added access_code to tests table');
+  } catch (err) {
+    // Column already exists, ignore
+  }
+
   // ─── Teacher account ───────────────────────────────────────────
   const teacherEmail = process.env.TEACHER_EMAIL || 'teacher@satplatform.com';
   const teacherPassword = process.env.TEACHER_PASSWORD || 'Teacher2026!';
